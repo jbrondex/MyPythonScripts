@@ -86,4 +86,11 @@ Same as Script_PlotProfileForage_FullSimu80aWithSource_TestInternalTsp.py but wi
 **Remarkable feature:**
 Use of a discrete colormap to set the colors of the successives lines of plots.
 
+### LatinHypercubeSampling_DamageParameters.py
 
+**Description:**
+This file uses the hypercube latin sampling method to get a set of combinations of parameters (Sigmath_ice, B, lambdah) for the damage model
+that correspond to an optimal coverage of the parameter space
+
+**Remarkable feature:**
+Latin Hypercube Sampling. 3D scatter plot.
