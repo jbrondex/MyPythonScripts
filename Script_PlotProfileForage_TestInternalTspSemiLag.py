@@ -1,3 +1,14 @@
+"""
+@author: jbrondex
+
+Description:
+------------
+This file makes subplots at different times of density profiles obtained at a given forage of the Taconnaz glacier with the Particle Advector solver.
+The purpose is to evaluate the impact of the number of internal timesteps on the solutions produced by the Particle solver.
+Here, simulations are run with uniform velocity (Porous is not solved).
+
+"""
+
 ################################################################################
 # import #####
 ################################################################################

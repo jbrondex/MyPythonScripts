@@ -1,3 +1,18 @@
+"""
+@author: jbrondex
+
+Description:
+------------
+This file makes 3 plots to explore the parameterization of sigma_threshold as a function of relative density in firn.
+First plot shows the evolution of Sigmath_firn as a function of relative density for three value of sigmath_ice. We
+explore three parameterization: constant with Sigmath_firn = sigmath_ice, linear with Sigmath_firn = RelDens * sigmath_ice,
+non-linear with Sigmath_firn = Factor * sigmath_ice and Factor=f(a,b,n)
+Second plot is actually made of 11 subplots (one per forage of Taconnaz glacier). It shows profiles of Sigmath_firn for the three values
+of sigmath_ice and for the three considered parameterization as well as the distribution of SigmaI (maximum pronciple stress) as obtained
+after 20 years of simu in Taconnaz glacier.
+Third plot is a zoom-in of second plot in the near-surface region.
+"""
+
 ################################################################################
 # import #####
 ################################################################################

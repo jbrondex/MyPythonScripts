@@ -1,3 +1,16 @@
+"""
+@author: jbrondex
+
+Description:
+------------
+As Script_PlotProfile_DamageChi_VariousParameters.py, this file makes subplots at different times and for different values of sigma_threshold of damage profiles obtained at
+a given forage of the Taconnaz glacier. Damage profiles are represented for different set of parameters (Sigmath, B, lambdah).
+The background of each subplot as a specific color depending on wether chi is positive or negative. This way the band of
+positive chi (positive source of damage) is clearly highlighted.
+In addition, there are 3 sub-subplots for each subplot: one for sigmath constant, one for sigmath as a linear function of Relative Density
+(Sigmath_ice*RelDens), and one for the non-linear parameterization of sigmath as a function of Relative Density.
+"""
+
 ################################################################################
 # import #####
 ################################################################################

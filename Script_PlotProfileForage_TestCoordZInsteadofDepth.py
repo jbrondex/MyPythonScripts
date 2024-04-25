@@ -1,3 +1,17 @@
+"""
+@author: jbrondex
+
+Description:
+------------
+Same as Script_PlotProfileForage except that depth is computed from ztop - z (at that time depth solver was not working on Taconnaz elmer model).
+Below I reproduce description of Script_PlotProfileForage.py:
+This file makes subplots at different times of density profiles obtained at a given forage of the Taconnaz glacier with the Particle Advector solver
+on the one hand, and with the Advection Reaction solver (modified heat solver) on the other hand for different timestep.
+Here, simulations are run with uniform velocity (Stokes not solved) so that obtained solutions
+can be compared to their analytical counterpart. This enables to quantify undesired numerical diffusion.
+
+"""
+
 ################################################################################
 # import #####
 ################################################################################

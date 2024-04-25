@@ -1,3 +1,16 @@
+"""
+@author: jbrondex
+
+Description:
+------------
+This file makes subplots at different times of density profiles obtained at a given forage of the Taconnaz glacier with the Particle Advector solver
+on the one hand, and with the Advection Reaction solver (modified heat solver) on the other hand for different timestep.
+Here, simulations are run with uniform velocity (Porous not solved) so that obtained solutions
+can be compared to their analytical counterpart. This enables to quantify undesired numerical diffusion.
+
+"""
+
+
 ################################################################################
 # import #####
 ################################################################################
