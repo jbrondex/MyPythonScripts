@@ -90,7 +90,8 @@ Use of a discrete colormap to set the colors of the successives lines of plots.
 
 **Description:**
 This file uses the hypercube latin sampling method to get a set of combinations of parameters (Sigmath_ice, B, lambdah) for the damage model
-that correspond to an optimal coverage of the parameter space
+that correspond to an optimal coverage of the parameter space. It makes a 3D plot of the obtained combinations and save the txt file that will
+feed Elmer.
 
 **Remarkable feature:**
-Latin Hypercube Sampling. 3D scatter plot.
+Latin Hypercube Sampling. 3D scatter plot. Save panda dataset to csv.
