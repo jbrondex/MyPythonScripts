@@ -48,7 +48,7 @@ ax.set_zlabel(r'$\lambda_h~\mathrm{(_)}$')
 plt.show()
 
 ### Write combination in dedicated txt file for Elmer Simu
-name_output_file = 'DamEnhancement_Sigmath_Lambdah.IN'
+name_output_file = 'Dam_Sigmath_B_Lambdah.IN'
 name_path = '/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/.'
 path_output_file = Path(name_path).joinpath(name_output_file)
 
