@@ -45,7 +45,7 @@ ax.scatter(X, Y, Z,"o")
 ax.set_xlabel(r'$\sigma_{th}~(\mathrm{MPa})$')
 ax.set_ylabel(r'$B~\mathrm{(MPa^{-1}~a^{-1})}$')
 ax.set_zlabel(r'$\lambda_h~\mathrm{(_)}$')
-plt.show()
+
 
 ### Write combination in dedicated txt file for Elmer Simu
 name_output_file = 'Dam_Sigmath_B_Lambdah.IN'
@@ -54,3 +54,5 @@ path_output_file = Path(name_path).joinpath(name_output_file)
 
 dataset = pd.DataFrame({'Column1': X, 'Column2': Y, 'Column3': Z})
 dataset.to_csv(path_output_file, sep ='\t', header = False, index = False)
+
+plt.show()
