@@ -128,7 +128,9 @@ if __name__ == "__main__":
     Color_List = []
     for i in range(len(Data_ParamSet[(Data_ParamSet['Lambdah']==Lambdah_list[0])])):
         Color_List.append(scalarMap.to_rgba(i))
-
+    ###Alternative choice for colors: a discrete colormap that is colorblind-friendly
+    ###In this order: blue/orange/green/pink/brown/purple/grey/red/yellow
+    ColorBlindFriendly_List = ['#377eb8', '#ff7f00', '#4daf4a','#f781bf', '#a65628', '#984ea3','#999999', '#e41a1c', '#dede00']
     ### Load files containing surface output of the simulations:
     Pathroot_SimuOutput = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/ScalarOutput/.')
     ### Step in the full process from 2010 to 2014
@@ -174,6 +176,9 @@ if __name__ == "__main__":
 
         ###From there do the loop on each damage parameter set
         for l in range(len(Data_ParamSet)):
+            ###It turns out that results with lambdah=0.5 are very close to the ones with lambdah=1.0 so skip the latter
+            if Data_ParamSet['Lambdah'][l] == Lambdah_list[2]:
+                continue
             filename = 'SurfaceOutput_Prono_Dam_B{}_Sigth{}_Lambdah{}_{}_{}_tsp1d_dm315todm255_Out5d_.dat'.format(Data_ParamSet['B_name'][l], Data_ParamSet['Sigmath_name'][l], Data_ParamSet['Lambdah_name'][l], case, Step[0])
             print('Opening file:', filename)
             Data_Simu_D = pd.read_csv(Pathroot_SimuOutput.joinpath(filename), names=Col_Names, delim_whitespace=True)
@@ -195,13 +200,13 @@ if __name__ == "__main__":
             ###Plot MeanW for the case with no damage (ref case) on corresponding subplot
             if Data_ParamSet['Lambdah'][l] == Lambdah_list[0]:
                 LineStyle = LineStyle_List[0]
-                Color = Color_List[l]
+                Color = ColorBlindFriendly_List[l]
             elif Data_ParamSet['Lambdah'][l] == Lambdah_list[1]:
                 LineStyle = LineStyle_List[1]
-                Color = Color_List[l - 8]
+                Color = ColorBlindFriendly_List[l - 8]
             elif Data_ParamSet['Lambdah'][l] == Lambdah_list[2]:
                 LineStyle = LineStyle_List[2]
-                Color = Color_List[l - 16]
+                Color = ColorBlindFriendly_List[l - 16]
             else:
                 print('ERROR: Lambdah_list does not correspond to damage parameter sets input file')
             ax.plot_date(Date, MeanW_D, color= Color, linestyle = LineStyle, linewidth=1.5, marker='None', xdate=True)
