@@ -3,7 +3,7 @@
 
 Description:
 ------------
-To be filled
+This file aims at plotting the evolution of the mean vertical velocity above the cavity between first pumping of 2010 to 2014.
 
 """
 
@@ -16,7 +16,7 @@ import matplotlib.cm as cmx
 
 from pathlib import Path
 from datetime import datetime, date, timedelta ###To handle dates
-from matplotlib.dates import DayLocator, HourLocator, DateFormatter, drange
+from matplotlib.dates import MonthLocator, DayLocator, HourLocator, DateFormatter, drange
 import numpy as np
 from matplotlib.ticker import FormatStrFormatter
 import matplotlib.gridspec as gridspec
@@ -134,7 +134,9 @@ if __name__ == "__main__":
     ### Load files containing surface output of the simulations:
     Pathroot_SimuOutput = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/ScalarOutput/.')
     ### Step in the full process from 2010 to 2014
-    Step = ['Pump2010']
+    Step_List = ['Pump2010', 'Refill20102011']
+    StepTsp_List =[1, 5] ##Timestep size (in days) corresponding to simulation step (Step_List)
+    StepOut_List =[5, 30] ##Output interval (in days) corresponding to simulation step (Step_List)
     ### Where pressure applies: cavity only, restricted to a conduit, everywhere above cold/temperate transition
     Cases = ['PCavityOnly', 'PRestricted', 'PNotRestric']
     ###NAMES OF OUTPUT DATA (same order as in dat.names file)
@@ -146,11 +148,21 @@ if __name__ == "__main__":
         ax = axes[j]
         ax.set_title('{}'.format(case), fontsize=34, weight='bold')
         ###For each pressure scenario get the no damage (ref) case
-        filename = 'SurfaceOutput_Prono_NoD_{}_{}_tsp1d_dm315todm255_Out5d_.dat'.format(case, Step[0])
-        print('Opening file:', filename)
-        Data_Simu_NoD = pd.read_csv(Pathroot_SimuOutput.joinpath(filename), names=Col_Names_NoD, delim_whitespace=True)
-        ###Drop duplicate lines (bug of SaveLine solver
-        Data_Simu_NoD.drop_duplicates(inplace=True)
+        ###We create a single dataframe for all steps
+        Data_Simu_NoD = pd.DataFrame() ##Initialize an empty dataframe
+        for i, (Step, StepTsp, StepOut) in enumerate(zip(Step_List, StepTsp_List, StepOut_List)):
+            filename = 'SurfaceOutput_Prono_NoD_{}_{}_tsp{}d_dm315todm255_Out{}d_.dat'.format(case, Step, str(StepTsp), str(StepOut))
+            print('Opening file:', filename)
+            Data_Simu_NoD_tmp = pd.read_csv(Pathroot_SimuOutput.joinpath(filename), names=Col_Names_NoD, delim_whitespace=True)
+            ###Drop duplicate lines (bug of SaveLine solver)
+            Data_Simu_NoD_tmp.drop_duplicates(inplace=True)
+            ###Set Day of Simu counting from begining of simu corresponding to step Pump2010 (Step 1)
+            if i == 0:
+                Data_Simu_NoD_tmp['DayOfSimu'] = Data_Simu_NoD_tmp['DayOfSimu']*StepTsp
+            else:
+                Data_Simu_NoD_tmp['DayOfSimu'] = np.max(Data_Simu_NoD['DayOfSimu']) + Data_Simu_NoD_tmp['DayOfSimu']*StepTsp
+            data = [Data_Simu_NoD,Data_Simu_NoD_tmp]
+            Data_Simu_NoD=pd.concat(data, ignore_index=True)
         ###Add a column of boolean to dataset depending on wether node is above cavity or not
         Data_Simu_NoD['IsAboveCavity']=IsAboveCavity(Data_Simu_NoD['X'],Data_Simu_NoD['Y'])
         ###Store Node above cavity in a separated dataframe
@@ -160,43 +172,65 @@ if __name__ == "__main__":
         MeanW_NoD = []
         MinW_NoD = []
         MaxW_NoD = []
-        for k in range(np.min(Data_Simu_NoD['Timestep']),np.max(Data_Simu_NoD['Timestep'])+1):
+        ### We want to product a list corresponding to all simulation days at which we have an output
+        SimuDays = Data_Simu_NoD['DayOfSimu']
+        SimuDays.drop_duplicates(inplace=True)
+        for k in range(len(SimuDays)):
+            day =  int(SimuDays.iloc[k])
             ###Convert timestep in terms of date
-            Date.append(StartDate_Pumping2010 + timedelta(days=k-1))
+            Date.append(StartDate_Pumping2010 + timedelta(days=day-1))
             ###Calculate mean/min/max in mm/days
-            MeanW_NoD.append(np.mean(Data_Simu_NoD_AboveCavity[Data_Simu_NoD_AboveCavity['Timestep']==k]['W']) * (1000/365.25))
-            MinW_NoD.append(np.min(Data_Simu_NoD_AboveCavity[Data_Simu_NoD_AboveCavity['Timestep']==k]['W']) * (1000/365.25))
-            MaxW_NoD.append(np.max(Data_Simu_NoD_AboveCavity[Data_Simu_NoD_AboveCavity['Timestep']==k]['W']) * (1000/365.25))
+            MeanW_NoD.append(np.mean(Data_Simu_NoD_AboveCavity[Data_Simu_NoD_AboveCavity['DayOfSimu']==day]['W']) * (1000/365.25))
+            MinW_NoD.append(np.min(Data_Simu_NoD_AboveCavity[Data_Simu_NoD_AboveCavity['DayOfSimu']==day]['W']) * (1000/365.25))
+            MaxW_NoD.append(np.max(Data_Simu_NoD_AboveCavity[Data_Simu_NoD_AboveCavity['DayOfSimu']==day]['W']) * (1000/365.25))
         ###Plot MeanW for the case with no damage (ref case) on corresponding subplot
         ax.plot_date(Date, MeanW_NoD, color= 'k', linestyle = '-', linewidth=2, marker='None', xdate=True)
-        ax.xaxis.set_major_locator(DayLocator(interval=10))
-        ax.xaxis.set_minor_locator(DayLocator(interval=1))
-        ax.xaxis.set_major_formatter(DateFormatter('%Y-%m-%d'))
+        ax.xaxis.set_major_locator(MonthLocator(interval=2))
+        ax.xaxis.set_minor_locator(DayLocator(interval=14))
+        ax.xaxis.set_major_formatter(DateFormatter('%Y-%m'))
         fig.autofmt_xdate()
 
         ###From there do the loop on each damage parameter set
         for l in range(len(Data_ParamSet)):
+            print('Considering Damage parameter set n°',l+1,'/',len(Data_ParamSet))
             ###It turns out that results with lambdah=0.5 are very close to the ones with lambdah=1.0 so skip the latter
             if Data_ParamSet['Lambdah'][l] == Lambdah_list[2]:
                 continue
-            filename = 'SurfaceOutput_Prono_Dam_B{}_Sigth{}_Lambdah{}_{}_{}_tsp1d_dm315todm255_Out5d_.dat'.format(Data_ParamSet['B_name'][l], Data_ParamSet['Sigmath_name'][l], Data_ParamSet['Lambdah_name'][l], case, Step[0])
-            print('Opening file:', filename)
-            Data_Simu_D = pd.read_csv(Pathroot_SimuOutput.joinpath(filename), names=Col_Names, delim_whitespace=True)
-            ###Drop duplicate lines (bug of SaveLine solver
-            Data_Simu_D.drop_duplicates(inplace=True)
+            ###We create a single dataframe for all steps
+            Data_Simu_D = pd.DataFrame()  ##Initialize an empty dataframe
+            for i, (Step, StepTsp, StepOut) in enumerate(zip(Step_List, StepTsp_List, StepOut_List)):
+                filename = 'SurfaceOutput_Prono_Dam_B{}_Sigth{}_Lambdah{}_{}_{}_tsp{}d_dm315todm255_Out{}d_.dat'.format(Data_ParamSet['B_name'][l], Data_ParamSet['Sigmath_name'][l], Data_ParamSet['Lambdah_name'][l], case, Step, str(StepTsp), str(StepOut))
+                print('Opening file:', filename)
+                Data_Simu_D_tmp = pd.read_csv(Pathroot_SimuOutput.joinpath(filename), names=Col_Names, delim_whitespace=True)
+                ###Drop duplicate lines (bug of SaveLine solver
+                Data_Simu_D_tmp.drop_duplicates(inplace=True)
+                ###Set Day of Simu counting from begining of simu corresponding to step Pump2010 (Step 1)
+                if i == 0:
+                    Data_Simu_D_tmp['DayOfSimu'] = Data_Simu_D_tmp['DayOfSimu'] * StepTsp
+                else:
+                    Data_Simu_D_tmp['DayOfSimu'] = np.max(Data_Simu_D['DayOfSimu']) + Data_Simu_D_tmp['DayOfSimu'] * StepTsp
+                data_1 = [Data_Simu_D, Data_Simu_D_tmp]
+                Data_Simu_D = pd.concat(data_1, ignore_index=True)
             ###Add a column of boolean to dataset depending on wether node is above cavity or not
             Data_Simu_D['IsAboveCavity']=IsAboveCavity(Data_Simu_D['X'],Data_Simu_D['Y'])
             ###Store Node above cavity in a separated dataframe
             Data_Simu_D_AboveCavity=Data_Simu_D[Data_Simu_D['IsAboveCavity']]
             ###For each timestep calculate mean, min, max of vertical velocity above cavity
+            Date = []
             MeanW_D = []
             MinW_D = []
             MaxW_D = []
-            for k in range(np.min(Data_Simu_D['Timestep']),np.max(Data_Simu_D['Timestep'])+1):
+            ### We want to product a list corresponding to all simulation days at which we have an output
+            SimuDays = Data_Simu_D['DayOfSimu']
+            SimuDays.drop_duplicates(inplace=True)
+            for k in range(len(SimuDays)):
+                day = int(SimuDays.iloc[k])
+                ###Convert timestep in terms of date
+                Date.append(StartDate_Pumping2010 + timedelta(days=day-1))
                 ###Calculate mean/min/max in mm/days
-                MeanW_D.append(np.mean(Data_Simu_D_AboveCavity[Data_Simu_D_AboveCavity['Timestep']==k]['W']) * (1000/365.25))
-                MinW_D.append(np.min(Data_Simu_D_AboveCavity[Data_Simu_D_AboveCavity['Timestep']==k]['W']) * (1000/365.25))
-                MaxW_D.append(np.max(Data_Simu_D_AboveCavity[Data_Simu_D_AboveCavity['Timestep']==k]['W']) * (1000/365.25))
+                MeanW_D.append(np.mean(Data_Simu_D_AboveCavity[Data_Simu_D_AboveCavity['DayOfSimu']==day]['W']) * (1000/365.25))
+                MinW_D.append(np.min(Data_Simu_D_AboveCavity[Data_Simu_D_AboveCavity['DayOfSimu']==day]['W']) * (1000/365.25))
+                MaxW_D.append(np.max(Data_Simu_D_AboveCavity[Data_Simu_D_AboveCavity['DayOfSimu']==day]['W']) * (1000/365.25))
             ###Plot MeanW for the case with no damage (ref case) on corresponding subplot
             if Data_ParamSet['Lambdah'][l] == Lambdah_list[0]:
                 LineStyle = LineStyle_List[0]
