@@ -19,6 +19,7 @@ from datetime import datetime, date, timedelta ###To handle dates
 from matplotlib.dates import MonthLocator, DayLocator, HourLocator, DateFormatter, drange
 import numpy as np
 from matplotlib.ticker import FormatStrFormatter
+from matplotlib.dates import date2num
 import matplotlib.gridspec as gridspec
 
 import pandas as pd  ###To treat the csv files
@@ -64,57 +65,73 @@ plt.rc('ytick', labelsize=22)
 plt.rc('axes', labelsize=22)
 plt.rc('legend', fontsize=26)
 
-fig, axes = plt.subplots(1, 4, figsize=(60, 20), sharey= True)
+fig, axes = plt.subplots(2, 2, figsize=(60, 20), sharex= True , sharey= True)
 # pimp style
 ##First Row
-ax = axes[0]
-ax.set_ylabel(r'Mean Vertical Velocity (mm/d)', fontsize=34)
+ax = axes[0,0]
+ax.set_ylabel(r'Mean $V_z$ (mm/d)', fontsize=25)
 ax.tick_params(labelsize=18)  # fontsize of the tick labels
 # ax.grid(True)
 ax.yaxis.set_major_formatter(formatter)
-ax.xaxis.set_major_locator(MonthLocator(interval=2))
-ax.xaxis.set_minor_locator(DayLocator(interval=14))
+ax.xaxis.set_major_locator(MonthLocator(interval=3))
+ax.xaxis.set_minor_locator(MonthLocator(interval=1))
 ax.xaxis.set_major_formatter(DateFormatter('%Y-%m'))
 fig.autofmt_xdate()
+###plot one horizontal line for Vz=0
+ax.axhline(y=0.0, color= 'k', linestyle = ':', linewidth=1)
+###Shade periods corresponding to pumping (26/08/2010 to 15/10/10; 28/09/11 to14/10/11; 23/09/12 to 09/10/12)
+ax.axvspan(date(int(2010), 8, 26) ,date(int(2010), 10, 15) , alpha=0.3, color='grey')
+ax.axvspan(date(int(2011), 9, 28) ,date(int(2011), 10, 14) , alpha=0.3, color='grey')
+ax.axvspan(date(int(2012), 9, 23) ,date(int(2012), 10, 9) , alpha=0.3, color='grey')
 
-
-ax = axes[1]
+ax = axes[0,1]
 ax.tick_params(labelsize=18)  # fontsize of the tick labels
 # ax.grid(True)
 ax.yaxis.set_major_formatter(formatter)
-ax.xaxis.set_major_locator(MonthLocator(interval=2))
-ax.xaxis.set_minor_locator(DayLocator(interval=14))
+ax.xaxis.set_major_locator(MonthLocator(interval=3))
+ax.xaxis.set_minor_locator(MonthLocator(interval=1))
 ax.xaxis.set_major_formatter(DateFormatter('%Y-%m'))
 fig.autofmt_xdate()
-# ###Plot vertical lines corresponding to min and max rel density
-# ax.axvline(x=0.38, color= 'k', linestyle = ':', linewidth=3)
-# ax.axvline(x=1, color= 'k', linestyle = ':', linewidth=3)
+###plot one horizontal line for Vz=0
+ax.axhline(y=0.0, color= 'k', linestyle = ':', linewidth=1)
+###Shade periods corresponding to pumping (26/08/2010 to 15/10/10; 28/09/11 to14/10/11; 23/09/12 to 09/10/12)
+ax.axvspan(date(int(2010), 8, 26) ,date(int(2010), 10, 15) , alpha=0.3, color='grey')
+ax.axvspan(date(int(2011), 9, 28) ,date(int(2011), 10, 14) , alpha=0.3, color='grey')
+ax.axvspan(date(int(2012), 9, 23) ,date(int(2012), 10, 9) , alpha=0.3, color='grey')
 
-ax = axes[2]
+
+ax = axes[1,0]
+ax.set_ylabel(r'Mean $V_z$ (mm/d)', fontsize=25)
 ax.tick_params(labelsize=18)  # fontsize of the tick labels
 # ax.grid(True)
 ax.yaxis.set_major_formatter(formatter)
-ax.xaxis.set_major_locator(MonthLocator(interval=2))
-ax.xaxis.set_minor_locator(DayLocator(interval=14))
+ax.xaxis.set_major_locator(MonthLocator(interval=3))
+ax.xaxis.set_minor_locator(MonthLocator(interval=1))
 ax.xaxis.set_major_formatter(DateFormatter('%Y-%m'))
 fig.autofmt_xdate()
-# ###Plot vertical lines corresponding to min and max rel density
-# ax.axvline(x=0.38, color= 'k', linestyle = ':', linewidth=3)
-# ax.axvline(x=1, color= 'k', linestyle = ':', linewidth=3)
+###plot one horizontal line for Vz=0
+ax.axhline(y=0.0, color= 'k', linestyle = ':', linewidth=1)
+###Shade periods corresponding to pumping (26/08/2010 to 15/10/10; 28/09/11 to14/10/11; 23/09/12 to 09/10/12)
+ax.axvspan(date(int(2010), 8, 26) ,date(int(2010), 10, 15) , alpha=0.3, color='grey')
+ax.axvspan(date(int(2011), 9, 28) ,date(int(2011), 10, 14) , alpha=0.3, color='grey')
+ax.axvspan(date(int(2012), 9, 23) ,date(int(2012), 10, 9) , alpha=0.3, color='grey')
 
-ax = axes[3]
+ax = axes[1,1]
 ax.tick_params(labelsize=18)  # fontsize of the tick labels
 # ax.grid(True)
 ax.yaxis.set_major_formatter(formatter)
-ax.xaxis.set_major_locator(MonthLocator(interval=2))
-ax.xaxis.set_minor_locator(DayLocator(interval=14))
+ax.xaxis.set_major_locator(MonthLocator(interval=3))
+ax.xaxis.set_minor_locator(MonthLocator(interval=1))
 ax.xaxis.set_major_formatter(DateFormatter('%Y-%m'))
 fig.autofmt_xdate()
-ax.set_title('No Damage', fontsize=30, weight='bold')
-# ###Plot vertical lines corresponding to min and max rel density
-# ax.axvline(x=0.38, color= 'k', linestyle = ':', linewidth=3)
-# ax.axvline(x=1, color= 'k', linestyle = ':', linewidth=3)
-
+ax.set_title('No Damage', fontsize=26, weight='bold')
+ax.axhline(y=0.0, color= 'k', linestyle = ':', linewidth=1)
+###plot one horizontal line for Vz=0
+ax.axhline(y=0.0, color= 'k', linestyle = ':', linewidth=1)
+###Shade periods corresponding to pumping (26/08/2010 to 15/10/10; 28/09/11 to14/10/11; 23/09/12 to 09/10/12)
+ax.axvspan(date(int(2010), 8, 26) ,date(int(2010), 10, 15) , alpha=0.3, color='grey')
+ax.axvspan(date(int(2011), 9, 28) ,date(int(2011), 10, 14) , alpha=0.3, color='grey')
+ax.axvspan(date(int(2012), 9, 23) ,date(int(2012), 10, 9) , alpha=0.3, color='grey')
 ################################################################################
 # Make the plots #####
 ################################################################################
@@ -158,9 +175,9 @@ if __name__ == "__main__":
     ### Load files containing surface output of the simulations:
     Pathroot_SimuOutput = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/ScalarOutput/.')
     ### Step in the full process from 2010 to 2014
-    Step_List = ['Pump2010', 'Refill20102011', 'Pump2011']
-    StepTsp_List =[1, 5, 1] ##Timestep size (in days) corresponding to simulation step (Step_List)
-    StepOut_List =[5, 30, 5] ##Output interval (in days) corresponding to simulation step (Step_List)
+    Step_List = ['Pump2010', 'Refill20102011', 'Pump2011', 'Refill20112012', 'Pump2012', 'Refill20122013']
+    StepTsp_List =[1, 5, 1, 5, 1, 5] ##Timestep size (in days) corresponding to simulation step (Step_List)
+    StepOut_List =[5, 30, 5, 30, 5, 30] ##Output interval (in days) corresponding to simulation step (Step_List)
     ### Where pressure applies: cavity only, restricted to a conduit, everywhere above cold/temperate transition
     Cases = ['PCavityOnly', 'PRestricted', 'PNotRestric']
     ###NAMES OF OUTPUT DATA (same order as in dat.names file)
@@ -169,8 +186,13 @@ if __name__ == "__main__":
     ###START LOOP over each pressure scenario (one subplot par scenario)
     for j, case in enumerate(Cases):
         ### Get the corresponding subplot
-        ax = axes[j]
-        ax.set_title('{}'.format(case), fontsize=30, weight='bold')
+        if j ==0:
+            ax = axes[0,0]
+        elif j ==1:
+            ax = axes[0,1]
+        elif j==2:
+            ax = axes[1,0]
+        ax.set_title('{}'.format(case), fontsize=26, weight='bold')
         ###For each pressure scenario get the no damage (ref) case
         ###We create a single dataframe for all steps
         Data_Simu_NoD = pd.DataFrame() ##Initialize an empty dataframe
@@ -233,7 +255,7 @@ if __name__ == "__main__":
             if case == 'PRestricted':
                 MeanW_NoD_WRONG.append(np.mean(Data_Simu_NoD_WRONG_AboveCavity[Data_Simu_NoD_WRONG_AboveCavity['DayOfSimu']==day]['W']) * (1000/365.25))
         ###Plot MeanW for the case with no damage (ref case) on corresponding subplot
-        ax.plot_date(Date, MeanW_NoD, color= 'k', linestyle = '-', linewidth=2, marker='None', xdate=True)
+        ax.plot_date(Date, MeanW_NoD, color= 'r', linestyle = '-', linewidth=2, marker='None', xdate=True)
         ###Plot MeanW for the case with no damage (ref case) on subplot 4 for comparison of the 3 pressure scenatio without damage
         if case == 'PCavityOnly':
             Col_PressureScenario='b'
@@ -241,9 +263,9 @@ if __name__ == "__main__":
             Col_PressureScenario='m'
         elif case == 'PNotRestric':
             Col_PressureScenario='r'
-        axes[3].plot_date(Date, MeanW_NoD, color=Col_PressureScenario, linestyle='-', linewidth=2, marker='None', xdate=True)
+        axes[1,1].plot_date(Date, MeanW_NoD, color=Col_PressureScenario, linestyle='-', linewidth=2, marker='None', xdate=True)
         if case == 'PRestricted':
-            axes[3].plot_date(Date[0:len(MeanW_NoD_WRONG)], MeanW_NoD_WRONG, color='m', linestyle=':', linewidth=2, marker='None', xdate=True)
+            axes[1,1].plot_date(Date[0:len(MeanW_NoD_WRONG)], MeanW_NoD_WRONG, color='k', linestyle='--', linewidth=2, marker='None', xdate=True)
 
         ###NOW DO THE LOOP ON EACH DAMAGE PARAMETER SET
         for l in range(len(Data_ParamSet)):
@@ -289,21 +311,60 @@ if __name__ == "__main__":
             ###Plot MeanW for the case with no damage (ref case) on corresponding subplot
             if Data_ParamSet['Lambdah'][l] == Lambdah_list[0]:
                 LineStyle = LineStyle_List[0]
-                Color = ColorBlindFriendly_List[l]
+                Color = Color_List[l]
+                # Color = ColorBlindFriendly_List[l]
             elif Data_ParamSet['Lambdah'][l] == Lambdah_list[1]:
                 LineStyle = LineStyle_List[1]
-                Color = ColorBlindFriendly_List[l - 8]
+                Color = Color_List[l-8]
+                # Color = ColorBlindFriendly_List[l - 8]
             elif Data_ParamSet['Lambdah'][l] == Lambdah_list[2]:
                 LineStyle = LineStyle_List[2]
-                Color = ColorBlindFriendly_List[l - 16]
+                Color = Color_List[l-16]
+                # Color = ColorBlindFriendly_List[l - 16]
             else:
                 print('ERROR: Lambdah_list does not correspond to damage parameter sets input file')
-            ax.plot_date(Date, MeanW_D, color= Color, linestyle = LineStyle, linewidth=1.5, marker='None', xdate=True)
+            ax.plot_date(Date, MeanW_D, color= Color, linestyle = LineStyle, linewidth=1, marker='None', xdate=True)
 
 
     #########################################
     ####   NOW OBSERVATIONS AT STAKES    ####
     #########################################
+    ####Load data corresponding to observations at stake
+    Pathroot_ObsData = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/PostProcessing/Raw_Data_VeloAtStakes/.')
+
+    ###List of all files containing observationnal data
+    ObsDataName_List=['dep14092010-19092010', 'dep19092010-20092010', 'dep20092010-21092010', 'dep21092010-22092010', 'dep22092010-23092010',
+    'dep23092010-29092010', 'dep29092010-06102010', 'dep29092010-09092011', 'dep15062011-01072011', 'dep01072011-15072011',
+    'dep15072011-10082011', 'dep10082011-31082011', 'dep31082011-09092011', 'dep09092011-23092011', 'dep23092011-28092011',
+    'dep28092011-06102011', 'dep06102011-21102011', 'dep21102011-17112011', 'dep06102011-31072012', 'dep13072012-25072012',
+    'dep25072012-09082012', 'dep09082012-22082012', 'dep22082012-05092012', 'dep05092012-20092012', 'dep20092012-28092012',
+    'dep28092012-01102012', 'dep01102012-03102012']
+    ###Name of file containing info on obs data files
+    InfoFile_ObsData_Name = 'info_topo2010-2012.dat'
+    ###For each year, list of stakes that are not above of the cavity (i.e. out of the AboveCavity mask)
+    StakeNotAboveCavity_2010 = [1, 11, 12, 17, 18, 22, 27]
+    StakeNotAboveCavity_2011 = [4, 5, 6, 15, 16, 21, 24, 25, 29, 30]
+    StakeNotAboveCavity_2012 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 16, 17, 23, 24, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44]
+    ###NAMES COLUMS of obs data (same order as in dat.names file)
+    Col_Names_ObsData = ['Stake', 'Ux', 'Uy', 'Uz'] ##obs data file contains stake number, displaments x, y and z (m for 2010/2011 and mm for 2012)
+    ##The info file contains for each obs data file the two days d0 and d1 between which measurement is performed, the day in between these two days, and the number of days separating these two days
+    Col_Names_InfoFile = ['ObsDataFileNumber', 'd0', 'd1', 'dmean', 'NumberOfDays']
+    ###LOAD INFO FILE
+    InfoFile_ObsData = pd.read_csv(Pathroot_ObsData.joinpath(InfoFile_ObsData_Name), names=Col_Names_InfoFile, delim_whitespace=True)
+
+    ###NOW DO THE LOOP ON ALL OBS DATA FILES
+    ###We create a single dataframe for all obs data files
+    ObsData = pd.DataFrame() ##Initialize an empty dataframe
+    for i,ObsDataName in enumerate(ObsDataName_List):
+        year  = ObsDataName[-4:]
+        Path_To_ObsFile = 'topo{}/{}.dat'.format(year,ObsDataName)
+        ObsData_tmp = pd.read_csv(Pathroot_ObsData.joinpath(Path_To_ObsFile), names=Col_Names_ObsData, delim_whitespace=True)
+        ###create additionnal column to dataframe storing, for each stake, info contained in info file
+        for k,info in enumerate(Col_Names_InfoFile):
+            ObsData_tmp[info]=InfoFile_ObsData[info][i]
+        data_obs=[ObsData, ObsData_tmp]
+        ObsData=pd.concat(data_obs, ignore_index=True)
+
 
 
     ################################################################################
