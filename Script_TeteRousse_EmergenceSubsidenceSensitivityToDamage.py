@@ -44,7 +44,7 @@ ReddishPurple = [204 / 255, 121 / 255, 167 / 255]
 ####///~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\\####
 ####//////////////////////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\####
 ############################################################
-# Define function to check wether node is above cavity #####
+# Define function to check whether node is above cavity ####
 ############################################################
 def IsAboveCavity(x,y):
     xc = 948003
@@ -71,6 +71,7 @@ fig, axes = plt.subplots(2, 2, figsize=(60, 20), sharex= True , sharey= True)
 ax = axes[0,0]
 ax.set_ylabel(r'Mean $V_z$ (mm/d)', fontsize=25)
 ax.tick_params(labelsize=18)  # fontsize of the tick labels
+ax.set_ylim([-9.0, 2.0])
 # ax.grid(True)
 ax.yaxis.set_major_formatter(formatter)
 ax.xaxis.set_major_locator(MonthLocator(interval=3))
@@ -86,6 +87,7 @@ ax.axvspan(date(int(2012), 9, 23) ,date(int(2012), 10, 9) , alpha=0.3, color='gr
 
 ax = axes[0,1]
 ax.tick_params(labelsize=18)  # fontsize of the tick labels
+ax.set_ylim([-9.0, 2.0])
 # ax.grid(True)
 ax.yaxis.set_major_formatter(formatter)
 ax.xaxis.set_major_locator(MonthLocator(interval=3))
@@ -102,6 +104,7 @@ ax.axvspan(date(int(2012), 9, 23) ,date(int(2012), 10, 9) , alpha=0.3, color='gr
 
 ax = axes[1,0]
 ax.set_ylabel(r'Mean $V_z$ (mm/d)', fontsize=25)
+ax.set_ylim([-9.0, 2.0])
 ax.tick_params(labelsize=18)  # fontsize of the tick labels
 # ax.grid(True)
 ax.yaxis.set_major_formatter(formatter)
@@ -117,6 +120,7 @@ ax.axvspan(date(int(2011), 9, 28) ,date(int(2011), 10, 14) , alpha=0.3, color='g
 ax.axvspan(date(int(2012), 9, 23) ,date(int(2012), 10, 9) , alpha=0.3, color='grey')
 
 ax = axes[1,1]
+ax.set_ylim([-9.0, 2.0])
 ax.tick_params(labelsize=18)  # fontsize of the tick labels
 # ax.grid(True)
 ax.yaxis.set_major_formatter(formatter)
@@ -353,17 +357,44 @@ if __name__ == "__main__":
     InfoFile_ObsData = pd.read_csv(Pathroot_ObsData.joinpath(InfoFile_ObsData_Name), names=Col_Names_InfoFile, delim_whitespace=True)
 
     ###NOW DO THE LOOP ON ALL OBS DATA FILES
-    ###We create a single dataframe for all obs data files
-    ObsData = pd.DataFrame() ##Initialize an empty dataframe
+    ###We create lists for Date, Wmean, Wmin and Wmax
+    Obs_Date = []
+    Obs_MeanW = []
+    Obs_MinW = []
+    Obs_MaxW = []
     for i,ObsDataName in enumerate(ObsDataName_List):
         year  = ObsDataName[-4:]
         Path_To_ObsFile = 'topo{}/{}.dat'.format(year,ObsDataName)
         ObsData_tmp = pd.read_csv(Pathroot_ObsData.joinpath(Path_To_ObsFile), names=Col_Names_ObsData, delim_whitespace=True)
-        ###create additionnal column to dataframe storing, for each stake, info contained in info file
-        for k,info in enumerate(Col_Names_InfoFile):
-            ObsData_tmp[info]=InfoFile_ObsData[info][i]
-        data_obs=[ObsData, ObsData_tmp]
-        ObsData=pd.concat(data_obs, ignore_index=True)
+        ### For years 2010 and 2011, displacements are in m, convert them in mm
+        if year=='2010' or year=='2011' or ObsDataName == 'dep06102011-31072012':
+            ObsData_tmp[['Ux', 'Uy', 'Uz']] = 1000 * ObsData_tmp[['Ux', 'Uy', 'Uz']]
+        ###Remove stakes that are not above cavity
+        for l in range(len(ObsData_tmp)):
+            StakeNo = ObsData_tmp['Stake'][l]
+            if ((year == '2010') and (StakeNo in StakeNotAboveCavity_2010)):
+                ObsData_tmp.drop([l], inplace= True)
+            elif ((year == '2011') and (StakeNo in StakeNotAboveCavity_2011)):
+                ObsData_tmp.drop([l], inplace= True)
+            elif ((year == '2012') and (StakeNo in StakeNotAboveCavity_2012)):
+                ObsData_tmp.drop([l], inplace= True)
+        ###Store Mean day corresponding to observation file in Obs_Date
+        MeanDayOfObs = RefStartDate + timedelta(days=int(InfoFile_ObsData['dmean'][i]))
+        Obs_Date.append(MeanDayOfObs)
+        ###Calculate and store mean, min and max W over the period
+        MeanW = np.mean(ObsData_tmp['Uz'])/InfoFile_ObsData['NumberOfDays'][i]
+        Obs_MeanW.append(MeanW)
+        MinW =  np.min(ObsData_tmp['Uz'])/InfoFile_ObsData['NumberOfDays'][i]
+        Obs_MinW.append(MinW)
+        MaxW =  np.max(ObsData_tmp['Uz'])/InfoFile_ObsData['NumberOfDays'][i]
+        Obs_MaxW.append(MaxW)
+
+    ###Now plot point (mean) with error bar min/max on each subplot
+    for ax in axes.reshape(-1):
+        ax.errorbar(Obs_Date, Obs_MeanW, yerr=[Obs_MinW, Obs_MaxW],fmt='o')
+
+
+
 
 
 
