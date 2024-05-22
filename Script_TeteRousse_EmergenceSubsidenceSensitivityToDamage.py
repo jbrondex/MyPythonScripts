@@ -143,16 +143,15 @@ if __name__ == "__main__":
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     ####~~~~~~~~~~~   LOAD ALL DATA AND PLOT DIRECTLY IN THIS PART OF THE CODE   ~~~~~~~~~~~~~####
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
-
-    #########################################
-    #### FIRST OUTPUT OF THE SIMULATIONS:####
-    #########################################
     ### General parameter of simu
     RefStartDate = date(int(2011), 7, 1) ##Every days are numbered relative to 1st July 2011 (day 1)
     StartDayNumber_Pumping2010 = "-315"
     StartYear_Pumping2010 = "2010"
     StartDate_Pumping2010 = RefStartDate + timedelta(days=int(StartDayNumber_Pumping2010))
 
+    #########################################
+    #### FIRST OUTPUT OF THE SIMULATIONS:####
+    #########################################
     ###Load file containing all tested parameter sets for damage model
     Pathroot_ParamSet = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/.')
     Filename_ParamSet = 'Dam_Sigmath_B_Lambdah.IN'
@@ -329,32 +328,40 @@ if __name__ == "__main__":
                 print('ERROR: Lambdah_list does not correspond to damage parameter sets input file')
             ax.plot_date(Date, MeanW_D, color= Color, linestyle = LineStyle, linewidth=1, marker='None', xdate=True)
 
-
     #########################################
     ####   NOW OBSERVATIONS AT STAKES    ####
     #########################################
     ####Load data corresponding to observations at stake
-    Pathroot_ObsData = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/PostProcessing/Raw_Data_VeloAtStakes/.')
+    Pathroot_ObsData = Path(
+        '/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/PostProcessing/Raw_Data_VeloAtStakes/.')
 
     ###List of all files containing observationnal data
-    ObsDataName_List=['dep14092010-19092010', 'dep19092010-20092010', 'dep20092010-21092010', 'dep21092010-22092010', 'dep22092010-23092010',
-    'dep23092010-29092010', 'dep29092010-06102010', 'dep29092010-09092011', 'dep15062011-01072011', 'dep01072011-15072011',
-    'dep15072011-10082011', 'dep10082011-31082011', 'dep31082011-09092011', 'dep09092011-23092011', 'dep23092011-28092011',
-    'dep28092011-06102011', 'dep06102011-21102011', 'dep21102011-17112011', 'dep06102011-31072012', 'dep13072012-25072012',
-    'dep25072012-09082012', 'dep09082012-22082012', 'dep22082012-05092012', 'dep05092012-20092012', 'dep20092012-28092012',
-    'dep28092012-01102012', 'dep01102012-03102012']
+    ObsDataName_List = ['dep14092010-19092010', 'dep19092010-20092010', 'dep20092010-21092010', 'dep21092010-22092010',
+                        'dep22092010-23092010',
+                        'dep23092010-29092010', 'dep29092010-06102010', 'dep29092010-09092011', 'dep15062011-01072011',
+                        'dep01072011-15072011',
+                        'dep15072011-10082011', 'dep10082011-31082011', 'dep31082011-09092011', 'dep09092011-23092011',
+                        'dep23092011-28092011',
+                        'dep28092011-06102011', 'dep06102011-21102011', 'dep21102011-17112011', 'dep06102011-31072012',
+                        'dep13072012-25072012',
+                        'dep25072012-09082012', 'dep09082012-22082012', 'dep22082012-05092012', 'dep05092012-20092012',
+                        'dep20092012-28092012',
+                        'dep28092012-01102012', 'dep01102012-03102012']
     ###Name of file containing info on obs data files
     InfoFile_ObsData_Name = 'info_topo2010-2012.dat'
     ###For each year, list of stakes that are not above of the cavity (i.e. out of the AboveCavity mask)
     StakeNotAboveCavity_2010 = [1, 11, 12, 17, 18, 22, 27]
     StakeNotAboveCavity_2011 = [4, 5, 6, 15, 16, 21, 24, 25, 29, 30]
-    StakeNotAboveCavity_2012 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 16, 17, 23, 24, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44]
+    StakeNotAboveCavity_2012 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 16, 17, 23, 24, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
+                                36, 37, 38, 39, 40, 41, 42, 43, 44]
     ###NAMES COLUMS of obs data (same order as in dat.names file)
-    Col_Names_ObsData = ['Stake', 'Ux', 'Uy', 'Uz'] ##obs data file contains stake number, displaments x, y and z (m for 2010/2011 and mm for 2012)
+    Col_Names_ObsData = ['Stake', 'Ux', 'Uy',
+                         'Uz']  ##obs data file contains stake number, displaments x, y and z (m for 2010/2011 and mm for 2012)
     ##The info file contains for each obs data file the two days d0 and d1 between which measurement is performed, the day in between these two days, and the number of days separating these two days
     Col_Names_InfoFile = ['ObsDataFileNumber', 'd0', 'd1', 'dmean', 'NumberOfDays']
     ###LOAD INFO FILE
-    InfoFile_ObsData = pd.read_csv(Pathroot_ObsData.joinpath(InfoFile_ObsData_Name), names=Col_Names_InfoFile, delim_whitespace=True)
+    InfoFile_ObsData = pd.read_csv(Pathroot_ObsData.joinpath(InfoFile_ObsData_Name), names=Col_Names_InfoFile,
+                                   delim_whitespace=True)
 
     ###NOW DO THE LOOP ON ALL OBS DATA FILES
     ###We create lists for Date, Wmean, Wmin and Wmax
@@ -362,41 +369,39 @@ if __name__ == "__main__":
     Obs_MeanW = []
     Obs_MinW = []
     Obs_MaxW = []
-    for i,ObsDataName in enumerate(ObsDataName_List):
-        year  = ObsDataName[-4:]
-        Path_To_ObsFile = 'topo{}/{}.dat'.format(year,ObsDataName)
-        ObsData_tmp = pd.read_csv(Pathroot_ObsData.joinpath(Path_To_ObsFile), names=Col_Names_ObsData, delim_whitespace=True)
+    for i, ObsDataName in enumerate(ObsDataName_List):
+        year = ObsDataName[-4:]
+        Path_To_ObsFile = 'topo{}/{}.dat'.format(year, ObsDataName)
+        ObsData_tmp = pd.read_csv(Pathroot_ObsData.joinpath(Path_To_ObsFile), names=Col_Names_ObsData,
+                                  delim_whitespace=True)
         ### For years 2010 and 2011, displacements are in m, convert them in mm
-        if year=='2010' or year=='2011' or ObsDataName == 'dep06102011-31072012':
+        if year == '2010' or year == '2011' or ObsDataName == 'dep06102011-31072012':
             ObsData_tmp[['Ux', 'Uy', 'Uz']] = 1000 * ObsData_tmp[['Ux', 'Uy', 'Uz']]
         ###Remove stakes that are not above cavity
         for l in range(len(ObsData_tmp)):
             StakeNo = ObsData_tmp['Stake'][l]
             if ((year == '2010') and (StakeNo in StakeNotAboveCavity_2010)):
-                ObsData_tmp.drop([l], inplace= True)
+                ObsData_tmp.drop([l], inplace=True)
             elif ((year == '2011') and (StakeNo in StakeNotAboveCavity_2011)):
-                ObsData_tmp.drop([l], inplace= True)
+                ObsData_tmp.drop([l], inplace=True)
             elif ((year == '2012') and (StakeNo in StakeNotAboveCavity_2012)):
-                ObsData_tmp.drop([l], inplace= True)
+                ObsData_tmp.drop([l], inplace=True)
         ###Store Mean day corresponding to observation file in Obs_Date
         MeanDayOfObs = RefStartDate + timedelta(days=int(InfoFile_ObsData['dmean'][i]))
         Obs_Date.append(MeanDayOfObs)
         ###Calculate and store mean, min and max W over the period
-        MeanW = np.mean(ObsData_tmp['Uz'])/InfoFile_ObsData['NumberOfDays'][i]
+        MeanW = np.mean(ObsData_tmp['Uz']) / InfoFile_ObsData['NumberOfDays'][i]
         Obs_MeanW.append(MeanW)
-        MinW =  np.min(ObsData_tmp['Uz'])/InfoFile_ObsData['NumberOfDays'][i]
+        MinW = np.min(ObsData_tmp['Uz']) / InfoFile_ObsData['NumberOfDays'][i]
         Obs_MinW.append(MinW)
-        MaxW =  np.max(ObsData_tmp['Uz'])/InfoFile_ObsData['NumberOfDays'][i]
+        MaxW = np.max(ObsData_tmp['Uz']) / InfoFile_ObsData['NumberOfDays'][i]
         Obs_MaxW.append(MaxW)
 
     ###Now plot point (mean) with error bar min/max on each subplot
     for ax in axes.reshape(-1):
-        ax.errorbar(Obs_Date, Obs_MeanW, yerr=[Obs_MinW, Obs_MaxW],fmt='o')
-
-
-
-
-
+        ax.errorbar(Obs_Date, Obs_MeanW,
+                    yerr=[abs(np.subtract(Obs_MeanW, Obs_MinW)), abs(np.subtract(Obs_MeanW, Obs_MaxW))], fmt='o',
+                    markerfacecolor='w', capsize=3)
 
     ################################################################################
     # SAVE THE FIGURES #####
