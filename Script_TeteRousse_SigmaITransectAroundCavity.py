@@ -155,8 +155,8 @@ if __name__ == "__main__":
     StartYear_Pumping2010 = "2010"
     StartDate_Pumping2010 = RefStartDate + timedelta(days=int(StartDayNumber_Pumping2010))
     ###Provide coordinate of points defining lines corresponding to transect on which we want to plot SigmaI: one couple of point per transect
-    List_Coord_pt1=[[947954.6,2105001.5], [948024.0,2104971.5]]
-    List_Coord_pt2=[[948027.9,2105114.9], [947994.5,2105094.0]]
+    List_Coord_pt1=[[947954.6,2105001.5], [947976.1, 2105120.6]]
+    List_Coord_pt2=[[948027.9,2105114.9], [948024.0,2104971.5]]
     ### Step in the full process from 2010 to 2014
     Step_List = ['Pump2010', 'Refill20102011']  # , 'Pump2011', 'Refill20112012', 'Pump2012', 'Refill20122013']
     StepTsp_List = [1, 5]  # , 1, 5, 1, 5] ##Timestep size (in days) corresponding to simulation step (Step_List)
@@ -297,24 +297,24 @@ if __name__ == "__main__":
         ###Convert these coord in terms of distance along transect
         DistOfGL_along_transect=Distance_along_transect(Coord_pt1, Coord_pt2, Coord_GL_Projected)
 
-        # ##ANOTHER METHOD TO COMPUTE CAVITY MASK ALONG TRANSECT
-        # ###Interpolate GM on considered transect
-        # Interpolated_GM = Interpolate_field(Df_GM,'GM', coord_transect[0], coord_transect[1])
-        # ###Find indexes of first non-grounded and last non-grounded nodes
-        # for i in range(len(Interpolated_GM)):
-        #     if Interpolated_GM[i]>-0.999:
-        #         continue
-        #     else:
-        #         FirstFloating_Idx=i
-        #         break
-        # for j in range(FirstFloating_Idx,len(Interpolated_GM)):
-        #     if Interpolated_GM[j]<-0.999:
-        #         continue
-        #     else:
-        #         LastFloating_Idx=j-1
-        #         break
-        # DistAlongTransect_CavityStart=dist_along_transect[FirstFloating_Idx]
-        # DistAlongTransect_CavityEnd=dist_along_transect[LastFloating_Idx]
+        ##ANOTHER METHOD TO COMPUTE CAVITY MASK ALONG TRANSECT
+        ###Interpolate GM on considered transect
+        Interpolated_GM = Interpolate_field(Df_GM,'GM', coord_transect[0], coord_transect[1])
+        ###Find indexes of first non-grounded and last non-grounded nodes
+        for i in range(len(Interpolated_GM)):
+            if Interpolated_GM[i]>-0.999:
+                continue
+            else:
+                FirstFloating_Idx=i
+                break
+        for j in range(FirstFloating_Idx,len(Interpolated_GM)):
+            if Interpolated_GM[j]<-0.999:
+                continue
+            else:
+                LastFloating_Idx=j-1
+                break
+        DistAlongTransect_CavityStart=dist_along_transect[FirstFloating_Idx]
+        DistAlongTransect_CavityEnd=dist_along_transect[LastFloating_Idx]
 
         ###plot SigmaI of selected days along considered transect
         k = 0
@@ -334,6 +334,7 @@ if __name__ == "__main__":
             ax.axvline(x=DistOfCrevasses_along_transect.values[l], color='k', linestyle='-', linewidth=3)
         ###Shade area corresponding to cavity based on initial grounded mask
         ax.axvspan(np.min(DistOfGL_along_transect),np.max(DistOfGL_along_transect), alpha=0.3, color='grey')
+        ax.axvspan(DistAlongTransect_CavityStart,DistAlongTransect_CavityEnd, alpha=0.3, color='red')
 
 
 
