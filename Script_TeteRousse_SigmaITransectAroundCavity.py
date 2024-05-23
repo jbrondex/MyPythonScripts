@@ -3,7 +3,7 @@
 
 Description:
 ------------
-This file aims at plotting the evolution of maaximum principle stress along some surface transect around the cavity
+This file aims at plotting the evolution of maaximum principle stress along some surface transect above the cavity
 
 """
 
@@ -47,26 +47,54 @@ ReddishPurple = [204 / 255, 121 / 255, 167 / 255]
 #####################################################################################
 # Define function to interpolate field defined on mesh nodes to the line profile ####
 #####################################################################################
-def interpolate_field(df, field_name, x, y): ###interpolation function
+def Interpolate_field(df, field_name, x, y): ###Returned field interpolated from mesh grid to point (x,y) of transect
     # x, y, and z coordinates of the dataframe
     xi = df['X'].values
     yi = df['Y'].values
     field = df[field_name].values
-
     # Interpolate the value of field
     result = griddata((xi, yi), field, (x, y), rescale=True)
     return result
 
-def Coord_transect(coord_pt1, coord_pt2): ###definition of transect over which to interpolate field
-    # Define the x and y coordinates of the surface
-    xmin=min(coord_pt1[0], coord_pt2[0])
-    xmax=max(coord_pt1[0], coord_pt2[0])
+def Coord_transect(pt1, pt2): ###return list of coordinates corresponding to line passing by pt1 and pt2
+    x1, y1 = pt1 ##pt1 defining transect
+    x2, y2 = pt2 ##pt2 defining transect
+    xmin=min(x1, x2)
+    xmax=max(x1, x2)
     x = np.linspace(xmin, xmax, 1000)
-    y = ((coord_pt2[1]-coord_pt1[1])/(coord_pt2[0]-coord_pt1[0]))*(x-coord_pt1[0])+coord_pt1[1]
+    y = ((y2-y1)/(x2-x1))*(x-x1)+y1
     coord = [x,y]
-    dist_along_line = np.sqrt((x-x[0])**2+(y-y[0])**2)
-    return coord, dist_along_line
+    return coord
 
+def Distance_along_transect(pt1, pt2, pt3): ###return distance of pt3 along transect (pt1,pt2)
+    x1, y1 = pt1 ##pt1 defining transect
+    x2, y2 =pt2 ##pt2 defining transect
+    x, y = pt3
+    x0=min(x1, x2)
+    if x0 == x1:
+        y0 = y1
+    elif x0 == x2:
+        y0 = y2
+    dist_along_line = np.sqrt((x-x0)**2+(y-y0)**2)
+    return dist_along_line
+
+def Distance_to_line(pt1, pt2, pt3): ###return distance of pt3 to line define by points (pt1, pt2)
+    x1, y1 = pt1 ##pt1 defining transect
+    x2, y2 = pt2 ##pt2 defining transect
+    x3, y3 = pt3 ##pt3 out of transect. How far is it from transect ?
+
+    det = (x2-x1)*(y3-y1)-(y2-y1)*(x3-x1) ##This is det(AB;AC) with A and B the two extremities of transect and C is pt3
+    distance = det/np.sqrt((x2-x1)**2 + (y2-y1)**2) ##det(AB;AC)/||AB|| = ||AC||*sin(AB,AC) = ||CD||
+    return distance
+
+def Proj_on_line(pt1, pt2, pt3):##Return coords of pt3 projected on line defined by (pt1,pt2)
+    x1, y1 = pt1
+    x2, y2 = pt2
+    x3, y3 = pt3
+    dx, dy = x2-x1, y2-y1
+    scalarprod = dy*(y3-y1)+dx*(x3-x1) ##AB.AC=||AB||*||AC||*cos(AB,AC)=||AB||*||AD||
+    a = scalarprod/(dx*dx + dy*dy) ## a = ||AB||*||AD|| / ||AB||**2  = ||AD|| / ||AB||
+    return x1+a*dx, y1+a*dy
 
 ################################################################################
 # prepare plots #####
@@ -87,25 +115,16 @@ ax.tick_params(labelsize=18)  # fontsize of the tick labels
 #ax.set_ylim([-9.0, 2.0])
 # ax.grid(True)
 ax.yaxis.set_major_formatter(formatter)
-###plot one horizontal line for Vz=0
+###plot one horizontal line for Stress=0
 ax.axhline(y=0.0, color= 'k', linestyle = ':', linewidth=1)
-###Shade periods corresponding to pumping (26/08/2010 to 15/10/10; 28/09/11 to14/10/11; 23/09/12 to 09/10/12)
-# ax.axvspan(date(int(2010), 8, 26) ,date(int(2010), 10, 15) , alpha=0.3, color='grey')
-# ax.axvspan(date(int(2011), 9, 28) ,date(int(2011), 10, 14) , alpha=0.3, color='grey')
-# ax.axvspan(date(int(2012), 9, 23) ,date(int(2012), 10, 9) , alpha=0.3, color='grey')
 
 ax = axes[0,1]
 ax.tick_params(labelsize=18)  # fontsize of the tick labels
 # ax.set_ylim([-9.0, 2.0])
 # ax.grid(True)
 ax.yaxis.set_major_formatter(formatter)
-###plot one horizontal line for Vz=0
+###plot one horizontal line for Stress=0
 ax.axhline(y=0.0, color= 'k', linestyle = ':', linewidth=1)
-# ###Shade periods corresponding to pumping (26/08/2010 to 15/10/10; 28/09/11 to14/10/11; 23/09/12 to 09/10/12)
-# ax.axvspan(date(int(2010), 8, 26) ,date(int(2010), 10, 15) , alpha=0.3, color='grey')
-# ax.axvspan(date(int(2011), 9, 28) ,date(int(2011), 10, 14) , alpha=0.3, color='grey')
-# ax.axvspan(date(int(2012), 9, 23) ,date(int(2012), 10, 9) , alpha=0.3, color='grey')
-
 
 ax = axes[1,0]
 ax.set_ylabel(r'$\sigma_I$ (MPa)', fontsize=25)
@@ -113,12 +132,8 @@ ax.set_ylabel(r'$\sigma_I$ (MPa)', fontsize=25)
 ax.tick_params(labelsize=18)  # fontsize of the tick labels
 # ax.grid(True)
 ax.yaxis.set_major_formatter(formatter)
-###plot one horizontal line for Vz=0
+###plot one horizontal line for Stress=0
 ax.axhline(y=0.0, color= 'k', linestyle = ':', linewidth=1)
-###Shade periods corresponding to pumping (26/08/2010 to 15/10/10; 28/09/11 to14/10/11; 23/09/12 to 09/10/12)
-# ax.axvspan(date(int(2010), 8, 26) ,date(int(2010), 10, 15) , alpha=0.3, color='grey')
-# ax.axvspan(date(int(2011), 9, 28) ,date(int(2011), 10, 14) , alpha=0.3, color='grey')
-# ax.axvspan(date(int(2012), 9, 23) ,date(int(2012), 10, 9) , alpha=0.3, color='grey')
 
 ax = axes[1,1]
 # ax.set_ylim([-9.0, 2.0])
@@ -126,12 +141,7 @@ ax.tick_params(labelsize=18)  # fontsize of the tick labels
 # ax.grid(True)
 ax.yaxis.set_major_formatter(formatter)
 ax.set_title('Comp Pressure Scenario', fontsize=26, weight='bold')
-###plot one horizontal line for Vz=0
-ax.axhline(y=0.0, color= 'k', linestyle = ':', linewidth=1)
-# ###Shade periods corresponding to pumping (26/08/2010 to 15/10/10; 28/09/11 to14/10/11; 23/09/12 to 09/10/12)
-# ax.axvspan(date(int(2010), 8, 26) ,date(int(2010), 10, 15) , alpha=0.3, color='grey')
-# ax.axvspan(date(int(2011), 9, 28) ,date(int(2011), 10, 14) , alpha=0.3, color='grey')
-# ax.axvspan(date(int(2012), 9, 23) ,date(int(2012), 10, 9) , alpha=0.3, color='grey')
+
 ################################################################################
 # Make the plots #####
 ################################################################################
@@ -144,17 +154,60 @@ if __name__ == "__main__":
     StartDayNumber_Pumping2010 = "-315"
     StartYear_Pumping2010 = "2010"
     StartDate_Pumping2010 = RefStartDate + timedelta(days=int(StartDayNumber_Pumping2010))
+    ###Provide coordinate of points defining lines corresponding to transect on which we want to plot SigmaI: one couple of point per transect
+    List_Coord_pt1=[[947954.6,2105001.5], [948024.0,2104971.5]]
+    List_Coord_pt2=[[948027.9,2105114.9], [947994.5,2105094.0]]
+    ### Step in the full process from 2010 to 2014
+    Step_List = ['Pump2010', 'Refill20102011']  # , 'Pump2011', 'Refill20112012', 'Pump2012', 'Refill20122013']
+    StepTsp_List = [1, 5]  # , 1, 5, 1, 5] ##Timestep size (in days) corresponding to simulation step (Step_List)
+    StepOut_List = [5, 30]  # , 5, 30, 5, 30] ##Output interval (in days) corresponding to simulation step (Step_List)
+    ## Where pressure applies: cavity only: 'PCavityOnly', restricted to a conduit: 'PRestricted', everywhere above cold/temperate transition: 'PNotRestric'
+    Case = 'PRestricted'
 
-    ###Provide coordinate of points defining lines corresponding to transect on which we want to plot SigmaI
-    Coord_pt1=[947954.6,2105001.5]
-    Coord_pt2=[948027.9,2105114.9]
-    ###Use function to return coords of transect and distance along transect
-    coord_transect, dist_along_transect = Coord_transect(Coord_pt1, Coord_pt2)
+    ################################################################
+    ####  OPEN DATA CORRESPONDING TO CREVASSES AND GROUNDEDMASK ####
+    ################################################################
+    Pathroot_Obs = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/Data/.')
+    Filename_Crevasses = 'crevasses_xyz.dat'
+    ###load file as dataframe
+    Df_Crevasses = pd.read_csv(Pathroot_Obs.joinpath(Filename_Crevasses), names=['X', 'Y', 'Z'], delim_whitespace=True)
+    ###Open Data corresponding to grounded mask
+    Pathroot_GM = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/ScalarOutput/.')
+    Filename_GM = 'GroundedMaskInit.dat'
+    Col_Names_GM = ['Timestep', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'GM']
+    ###load file as dataframe
+    Df_GM = pd.read_csv(Pathroot_GM.joinpath(Filename_GM), names=Col_Names_GM, delim_whitespace=True)
+    Df_GM.drop_duplicates(inplace=True)
+    ###Keep only the Grounding Line
+    Df_GL=Df_GM[Df_GM['GM']==0]
+
     #########################################
-    #### FIRST OUTPUT OF THE SIMULATIONS:####
+    ####  OPEN OUTPUT OF THE SIMULATIONS:####
     #########################################
-    ###Load file containing all tested parameter sets for damage model
-    Pathroot_ParamSet = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/.')
+    ### Load files containing surface output of the simulations:
+    Pathroot_SimuOutput = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/ScalarOutput/.')
+    ###NAMES OF OUTPUT DATA (same order as in dat.names file)
+    Col_Names_NoD = ['Timestep', 'DayOfSimu', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'U', 'V', 'W','SigmaI']
+    ###We create a single dataframe for all considered steps of the simu
+    Data_Simu_NoD = pd.DataFrame()  ##Initialize an empty dataframe
+    for i, (Step, StepTsp, StepOut) in enumerate(zip(Step_List, StepTsp_List, StepOut_List)):
+        filename = 'SurfaceOutput_Prono_NoD_{}_{}_tsp{}d_dm315todm255_Out{}d_.dat'.format(Case, Step, str(StepTsp), str(StepOut))
+        print('Opening file:', filename)
+        Data_Simu_NoD_tmp = pd.read_csv(Pathroot_SimuOutput.joinpath(filename), names=Col_Names_NoD, delim_whitespace=True)
+        ###Drop duplicate lines (bug of SaveLine solver)
+        Data_Simu_NoD_tmp.drop_duplicates(inplace=True)
+        ###Set Day of Simu counting from begining of simu corresponding to step Pump2010 (Step 1)
+        if i == 0:
+            Data_Simu_NoD_tmp['DayOfSimu'] = Data_Simu_NoD_tmp['DayOfSimu'] * StepTsp
+        else:
+            Data_Simu_NoD_tmp['DayOfSimu'] = np.max(Data_Simu_NoD['DayOfSimu']) + Data_Simu_NoD_tmp['DayOfSimu'] * StepTsp
+        ###We create an additionnal column storing the step of simu we are dealing with
+        Data_Simu_NoD_tmp['Step'] = Step
+        data = [Data_Simu_NoD, Data_Simu_NoD_tmp]
+        Data_Simu_NoD = pd.concat(data, ignore_index=True)
+        ### We want to product a list corresponding to all simulation days at which we have an output
+    SimuDays = Data_Simu_NoD['DayOfSimu']
+    SimuDays.drop_duplicates(inplace=True)
     ###Create a color map to cover all combinations of (Sigmath, B) for a given value of lamddah
     cm = plt.get_cmap('RdBu_r')
     cNorm = colors.Normalize(vmin=0, vmax=41)
@@ -162,168 +215,128 @@ if __name__ == "__main__":
     Color_List = []
     for i in range(41):
         Color_List.append(scalarMap.to_rgba(i))
-    ###Alternative choice for colors: a discrete colormap that is colorblind-friendly
-    ###In this order: blue/orange/green/pink/brown/purple/grey/red/yellow
-    ColorBlindFriendly_List = ['#377eb8', '#ff7f00', '#4daf4a','#f781bf', '#a65628', '#984ea3','#999999', '#e41a1c', '#dede00']
-    ### Load files containing surface output of the simulations:
-    Pathroot_SimuOutput = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/ScalarOutput/.')
-    ### Step in the full process from 2010 to 2014
-    Step_List = ['Pump2010', 'Refill20102011']#, 'Pump2011', 'Refill20112012', 'Pump2012', 'Refill20122013']
-    StepTsp_List =[1, 5]#, 1, 5, 1, 5] ##Timestep size (in days) corresponding to simulation step (Step_List)
-    StepOut_List =[5, 30]#, 5, 30, 5, 30] ##Output interval (in days) corresponding to simulation step (Step_List)
-    ### Where pressure applies: cavity only, restricted to a conduit, everywhere above cold/temperate transition
-    Cases = ['PCavityOnly', 'PRestricted', 'PNotRestric']
-    ###NAMES OF OUTPUT DATA (same order as in dat.names file)
-    Col_Names_NoD = ['Timestep', 'DayOfSimu', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'U', 'V', 'W', 'SigmaI']  ##For the no damage (ref) case
-    ###START LOOP over each pressure scenario (one subplot par scenario)
-    for j, case in enumerate(Cases):
+
+    ##################################################
+    ####  DO A LOOP OVER EACH CONSIDERED TRANSECT ####
+    ##################################################
+    for i,(Coord_pt1, Coord_pt2) in enumerate(zip(List_Coord_pt1,List_Coord_pt2)):
         ### Get the corresponding subplot
-        if j ==0:
-            ax = axes[0,0]
-        elif j ==1:
-            ax = axes[0,1]
-        elif j==2:
-            ax = axes[1,0]
-        ax.set_title('{}'.format(case), fontsize=26, weight='bold')
-        ###For each pressure scenario get the no damage (ref) case
-        ###We create a single dataframe for all steps
-        Data_Simu_NoD = pd.DataFrame() ##Initialize an empty dataframe
-        for i, (Step, StepTsp, StepOut) in enumerate(zip(Step_List, StepTsp_List, StepOut_List)):
-            filename = 'SurfaceOutput_Prono_NoD_{}_{}_tsp{}d_dm315todm255_Out{}d_.dat'.format(case, Step, str(StepTsp), str(StepOut))
-            print('Opening file:', filename)
-            Data_Simu_NoD_tmp = pd.read_csv(Pathroot_SimuOutput.joinpath(filename), names=Col_Names_NoD, delim_whitespace=True)
-            ###Drop duplicate lines (bug of SaveLine solver)
-            Data_Simu_NoD_tmp.drop_duplicates(inplace=True)
-            ###Set Day of Simu counting from begining of simu corresponding to step Pump2010 (Step 1)
-            if i == 0:
-                Data_Simu_NoD_tmp['DayOfSimu'] = Data_Simu_NoD_tmp['DayOfSimu']*StepTsp
+        if i == 0:
+            ax = axes[0, 0]
+        elif i == 1:
+            ax = axes[0, 1]
+        # elif j == 2:
+        #     ax = axes[1, 0]
+        ax.set_title('Transect n° {}'.format(str(i+1)), fontsize=26, weight='bold')
+
+        ###Use functions to return coords of transect
+        coord_transect = Coord_transect(Coord_pt1, Coord_pt2)
+        ###Convert coords of transect in terms of distance along transect
+        dist_along_transect=Distance_along_transect(Coord_pt1, Coord_pt2, coord_transect)
+        ########################################################
+        ####  PROCESS CREVASSE DATA TO GET THEM ON TRANSECT ####
+        ########################################################
+        ###Calculate distance of each crevasse point to transect
+        Df_Crevasses['Distance_To_Transect']=Distance_to_line(Coord_pt1, Coord_pt2, [Df_Crevasses['X'], Df_Crevasses['Y']])
+        ###Identify the 10 closest crevasses to the considered transect
+        Ten_Closest_Crevasses = Df_Crevasses['Distance_To_Transect'].abs().nsmallest(10)
+        ### Among the 10 closest crevasses points identified above we want to remove those belonging to the same crevasse
+        ### For that we eliminate points that are too close (i.e. below a distance threshold) of points already identified
+        indx_ClosestCrevasses=[]
+        for k, idx in enumerate(Ten_Closest_Crevasses.index):
+            if k==0:
+                indx_ClosestCrevasses.append(idx)
             else:
-                Data_Simu_NoD_tmp['DayOfSimu'] = np.max(Data_Simu_NoD['DayOfSimu']) + Data_Simu_NoD_tmp['DayOfSimu']*StepTsp
-            data = [Data_Simu_NoD,Data_Simu_NoD_tmp]
-            Data_Simu_NoD=pd.concat(data, ignore_index=True)
-            ### We want to product a list corresponding to all simulation days at which we have an output
-        SimuDays = Data_Simu_NoD['DayOfSimu']
-        SimuDays.drop_duplicates(inplace=True)
-        ###loop on days of simu (we want the profile day after day)
-        k=0
-        for j,day in enumerate(SimuDays):
+                for j in range(len(indx_ClosestCrevasses)): ##Look at the distance of current point to all those that have been already kept
+                    print('Comparing pt',idx, 'to pt',indx_ClosestCrevasses[j] )
+                    dist = np.sqrt((Df_Crevasses.iloc[idx]['X']-Df_Crevasses.iloc[indx_ClosestCrevasses[j]]['X'])**2 + (Df_Crevasses.iloc[idx]['Y']-Df_Crevasses.iloc[indx_ClosestCrevasses[j]]['Y'])**2)
+                    print('dist is', dist)
+                    if dist < 5: ##Points belong to same crevasse
+                        print('we discard pt', idx)
+                        break
+                    else:
+                        if j == len(indx_ClosestCrevasses)-1:
+                            print('we keep pt', idx)
+                            indx_ClosestCrevasses.append(idx)
+                        else:
+                            continue
+        ###Now project the coordinates of crevasses on the considered transect
+        Coord_Crevasses_Projected = Proj_on_line(Coord_pt1,Coord_pt2, [Df_Crevasses.iloc[indx_ClosestCrevasses]['X'], Df_Crevasses.iloc[indx_ClosestCrevasses]['Y']])
+        ###Convert these coord in terms of distance along transect
+        DistOfCrevasses_along_transect=Distance_along_transect(Coord_pt1, Coord_pt2, Coord_Crevasses_Projected)
+
+        ###############################################
+        ###NOW PROCESS DATA REGARDING GROUNDEDMASK ####
+        ###############################################
+        ###Calculate distance of each point of the GL to transect
+        DistFromGLToTransect=Distance_to_line(Coord_pt1, Coord_pt2, [Df_GL['X'], Df_GL['Y']])
+        ###Identify the 5 closest GL points to the considered transect
+        Five_Closest_GL = DistFromGLToTransect.abs().nsmallest(5)
+        ### Among the 5 closest GL points identified above we want to identify the two extremities of the cavity
+        ### For that we eliminate GL points that are too close (i.e. below a distance threshold) of points already identified
+        indx_ClosestGL=[]
+        for k, idx in enumerate(Five_Closest_GL.index):
+            if k==0:
+                indx_ClosestGL.append(idx)
+            else:
+                for j in range(len(indx_ClosestGL)): ##Look at the distance of current point to all those that have been already kept
+                    print('Comparing pt',idx, 'to pt',indx_ClosestGL[j] )
+                    dist = np.sqrt((Df_GM.iloc[idx]['X']-Df_GM.iloc[indx_ClosestGL[j]]['X'])**2 + (Df_GM.iloc[idx]['Y']-Df_GM.iloc[indx_ClosestGL[j]]['Y'])**2)
+                    print('dist is', dist)
+                    if dist < 40: ##Points belong to same crevasse
+                        print('we discard pt', idx)
+                        break
+                    else:
+                        if j == len(indx_ClosestGL)-1:
+                            print('we keep pt', idx)
+                            indx_ClosestGL.append(idx)
+                        else:
+                            continue
+        ###Now project the coordinates of crevasses on the considered transect
+        Coord_GL_Projected = Proj_on_line(Coord_pt1,Coord_pt2, [Df_GM.iloc[indx_ClosestGL]['X'], Df_GM.iloc[indx_ClosestGL]['Y']])
+        ###Convert these coord in terms of distance along transect
+        DistOfGL_along_transect=Distance_along_transect(Coord_pt1, Coord_pt2, Coord_GL_Projected)
+
+        # ##ANOTHER METHOD TO COMPUTE CAVITY MASK ALONG TRANSECT
+        # ###Interpolate GM on considered transect
+        # Interpolated_GM = Interpolate_field(Df_GM,'GM', coord_transect[0], coord_transect[1])
+        # ###Find indexes of first non-grounded and last non-grounded nodes
+        # for i in range(len(Interpolated_GM)):
+        #     if Interpolated_GM[i]>-0.999:
+        #         continue
+        #     else:
+        #         FirstFloating_Idx=i
+        #         break
+        # for j in range(FirstFloating_Idx,len(Interpolated_GM)):
+        #     if Interpolated_GM[j]<-0.999:
+        #         continue
+        #     else:
+        #         LastFloating_Idx=j-1
+        #         break
+        # DistAlongTransect_CavityStart=dist_along_transect[FirstFloating_Idx]
+        # DistAlongTransect_CavityEnd=dist_along_transect[LastFloating_Idx]
+
+        ###plot SigmaI of selected days along considered transect
+        k = 0
+        for j, day in enumerate(SimuDays):
             ### for now one profile every 10 days
-            if not day%10==0:
+            if not day % 10 == 0:
                 continue
-            k=k+1
+            k = k + 1 ##count total number of days for which a profile is plot
             print('Plotting SigmaI profile for simu day', day)
-            Data_Simu_NoD_Today = Data_Simu_NoD[Data_Simu_NoD['DayOfSimu']==day]
-            Interpolated_SigmaI = interpolate_field(Data_Simu_NoD_Today,'SigmaI', coord_transect[0], coord_transect[1])
-            ax.plot(dist_along_transect, Interpolated_SigmaI, color= Color_List[k], linestyle = '-', linewidth=2)
-
-        ###
-
-        # ###For each timestep calculate mean, min, max of vertical velocity above cavity
-        # Date = []
-        # MeanW_NoD = []
-        # MinW_NoD = []
-        # MaxW_NoD = []
-        # if case == 'PRestricted':
-        #     MeanW_NoD_WRONG = []
-        # ### We want to product a list corresponding to all simulation days at which we have an output
-        # SimuDays = Data_Simu_NoD['DayOfSimu']
-        # SimuDays.drop_duplicates(inplace=True)
-        # for k in range(len(SimuDays)):
-        #     day =  int(SimuDays.iloc[k])
-        #     ###Convert timestep in terms of date
-        #     Date.append(StartDate_Pumping2010 + timedelta(days=day-1))
-        #     ###Calculate mean/min/max in mm/days
-        #     MeanW_NoD.append(np.mean(Data_Simu_NoD_AboveCavity[Data_Simu_NoD_AboveCavity['DayOfSimu']==day]['W']) * (1000/365.25))
-        #     MinW_NoD.append(np.min(Data_Simu_NoD_AboveCavity[Data_Simu_NoD_AboveCavity['DayOfSimu']==day]['W']) * (1000/365.25))
-        #     MaxW_NoD.append(np.max(Data_Simu_NoD_AboveCavity[Data_Simu_NoD_AboveCavity['DayOfSimu']==day]['W']) * (1000/365.25))
-        #
-        # ###Plot MeanW for the case with no damage (ref case) on corresponding subplot
-        # ax.plot_date(Date, MeanW_NoD, color= 'r', linestyle = '-', linewidth=2, marker='None', xdate=True)
-        # ###Plot MeanW for the case with no damage (ref case) on subplot 4 for comparison of the 3 pressure scenatio without damage
-        # if case == 'PCavityOnly':
-        #     Col_PressureScenario='b'
-        # elif case == 'PRestricted':
-        #     Col_PressureScenario='m'
-        # elif case == 'PNotRestric':
-        #     Col_PressureScenario='r'
-        # axes[1,1].plot_date(Date, MeanW_NoD, color=Col_PressureScenario, linestyle='-', linewidth=2, marker='None', xdate=True)
-        # if case == 'PRestricted':
-        #     axes[1,1].plot_date(Date[0:len(MeanW_NoD_WRONG)], MeanW_NoD_WRONG, color='k', linestyle='--', linewidth=2, marker='None', xdate=True)
+            Data_Simu_NoD_Today = Data_Simu_NoD[Data_Simu_NoD['DayOfSimu'] == day]
+            ###Interpolate the SigmaI of the day on the considered transect
+            Interpolated_SigmaI = Interpolate_field(Data_Simu_NoD_Today, 'SigmaI', coord_transect[0], coord_transect[1])
+            ###Plot interpolated sigmaI as a function of distance along transect
+            ax.plot(dist_along_transect, Interpolated_SigmaI, color=Color_List[k], linestyle='-', linewidth=2)
+        ###plot vertical line corresponding to crevasses
+        for l in range(len(DistOfCrevasses_along_transect)):
+            ax.axvline(x=DistOfCrevasses_along_transect.values[l], color='k', linestyle='-', linewidth=3)
+        ###Shade area corresponding to cavity based on initial grounded mask
+        ax.axvspan(np.min(DistOfGL_along_transect),np.max(DistOfGL_along_transect), alpha=0.3, color='grey')
 
 
-    # #########################################
-    # ####   NOW OBSERVATIONS AT STAKES    ####
-    # #########################################
-    # ####Load data corresponding to observations at stake
-    # Pathroot_ObsData = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/PostProcessing/Raw_Data_VeloAtStakes/.')
-    #
-    # ###List of all files containing observationnal data
-    # ObsDataName_List = ['dep14092010-19092010', 'dep19092010-20092010', 'dep20092010-21092010', 'dep21092010-22092010',
-    #                     'dep22092010-23092010',
-    #                     'dep23092010-29092010', 'dep29092010-06102010', 'dep29092010-09092011', 'dep15062011-01072011',
-    #                     'dep01072011-15072011',
-    #                     'dep15072011-10082011', 'dep10082011-31082011', 'dep31082011-09092011', 'dep09092011-23092011',
-    #                     'dep23092011-28092011',
-    #                     'dep28092011-06102011', 'dep06102011-21102011', 'dep21102011-17112011', 'dep06102011-31072012',
-    #                     'dep13072012-25072012',
-    #                     'dep25072012-09082012', 'dep09082012-22082012', 'dep22082012-05092012', 'dep05092012-20092012',
-    #                     'dep20092012-28092012',
-    #                     'dep28092012-01102012', 'dep01102012-03102012']
-    # ###Name of file containing info on obs data files
-    # InfoFile_ObsData_Name = 'info_topo2010-2012.dat'
-    # ###For each year, list of stakes that are not above of the cavity (i.e. out of the AboveCavity mask)
-    # StakeNotAboveCavity_2010 = [1, 11, 12, 17, 18, 22, 27]
-    # StakeNotAboveCavity_2011 = [4, 5, 6, 15, 16, 21, 24, 25, 29, 30]
-    # StakeNotAboveCavity_2012 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 16, 17, 23, 24, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
-    #                             36, 37, 38, 39, 40, 41, 42, 43, 44]
-    # ###NAMES COLUMS of obs data (same order as in dat.names file)
-    # Col_Names_ObsData = ['Stake', 'Ux', 'Uy',
-    #                      'Uz']  ##obs data file contains stake number, displaments x, y and z (m for 2010/2011 and mm for 2012)
-    # ##The info file contains for each obs data file the two days d0 and d1 between which measurement is performed, the day in between these two days, and the number of days separating these two days
-    # Col_Names_InfoFile = ['ObsDataFileNumber', 'd0', 'd1', 'dmean', 'NumberOfDays']
-    # ###LOAD INFO FILE
-    # InfoFile_ObsData = pd.read_csv(Pathroot_ObsData.joinpath(InfoFile_ObsData_Name), names=Col_Names_InfoFile,
-    #                                delim_whitespace=True)
-    #
-    # ###NOW DO THE LOOP ON ALL OBS DATA FILES
-    # ###We create lists for Date, Wmean, Wmin and Wmax
-    # Obs_Date = []
-    # Obs_MeanW = []
-    # Obs_MinW = []
-    # Obs_MaxW = []
-    # for i, ObsDataName in enumerate(ObsDataName_List):
-    #     year = ObsDataName[-4:]
-    #     Path_To_ObsFile = 'topo{}/{}.dat'.format(year, ObsDataName)
-    #     ObsData_tmp = pd.read_csv(Pathroot_ObsData.joinpath(Path_To_ObsFile), names=Col_Names_ObsData,
-    #                               delim_whitespace=True)
-    #     ### For years 2010 and 2011, displacements are in m, convert them in mm
-    #     if year == '2010' or year == '2011' or ObsDataName == 'dep06102011-31072012':
-    #         ObsData_tmp[['Ux', 'Uy', 'Uz']] = 1000 * ObsData_tmp[['Ux', 'Uy', 'Uz']]
-    #     ###Remove stakes that are not above cavity
-    #     for l in range(len(ObsData_tmp)):
-    #         StakeNo = ObsData_tmp['Stake'][l]
-    #         if ((year == '2010') and (StakeNo in StakeNotAboveCavity_2010)):
-    #             ObsData_tmp.drop([l], inplace=True)
-    #         elif ((year == '2011') and (StakeNo in StakeNotAboveCavity_2011)):
-    #             ObsData_tmp.drop([l], inplace=True)
-    #         elif ((year == '2012') and (StakeNo in StakeNotAboveCavity_2012)):
-    #             ObsData_tmp.drop([l], inplace=True)
-    #     ###Store Mean day corresponding to observation file in Obs_Date
-    #     MeanDayOfObs = RefStartDate + timedelta(days=int(InfoFile_ObsData['dmean'][i]))
-    #     Obs_Date.append(MeanDayOfObs)
-    #     ###Calculate and store mean, min and max W over the period
-    #     MeanW = np.mean(ObsData_tmp['Uz']) / InfoFile_ObsData['NumberOfDays'][i]
-    #     Obs_MeanW.append(MeanW)
-    #     MinW = np.min(ObsData_tmp['Uz']) / InfoFile_ObsData['NumberOfDays'][i]
-    #     Obs_MinW.append(MinW)
-    #     MaxW = np.max(ObsData_tmp['Uz']) / InfoFile_ObsData['NumberOfDays'][i]
-    #     Obs_MaxW.append(MaxW)
-    #
-    # ###Now plot point (mean) with error bar min/max on each subplot
-    # for ax in axes.reshape(-1):
-    #     ax.errorbar(Obs_Date, Obs_MeanW,
-    #                 yerr=[abs(np.subtract(Obs_MeanW, Obs_MinW)), abs(np.subtract(Obs_MeanW, Obs_MaxW))], fmt='o',
-    #                 markerfacecolor='w', capsize=3)
+
 
     ################################################################################
     # SAVE THE FIGURES #####
