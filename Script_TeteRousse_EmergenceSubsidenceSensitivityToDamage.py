@@ -202,14 +202,20 @@ if __name__ == "__main__":
         if case == 'PRestricted':
             Data_Simu_NoD_WRONG = pd.DataFrame() ##Same for the PRestricted scenario with wrong application of pressure (done as such in Gag sif)
         for i, (Step, StepTsp, StepOut) in enumerate(zip(Step_List, StepTsp_List, StepOut_List)):
-            filename = 'SurfaceOutput_Prono_NoD_{}_{}_tsp{}d_dm315todm255_Out{}d_.dat'.format(case, Step, str(StepTsp), str(StepOut))
+            if case == 'PNotRestric'and Step == 'Pump2010': ###for this case we load the file with 0.2day timestep
+                filename = 'SurfaceOutput_Prono_NoD_PNotRestric_Pump2010_tsp02d_dm315todm255_Out5d_.dat'
+            else:
+                filename = 'SurfaceOutput_Prono_NoD_{}_{}_tsp{}d_dm315todm255_Out{}d_.dat'.format(case, Step, str(StepTsp), str(StepOut))
             print('Opening file:', filename)
             Data_Simu_NoD_tmp = pd.read_csv(Pathroot_SimuOutput.joinpath(filename), names=Col_Names_NoD, delim_whitespace=True)
             ###Drop duplicate lines (bug of SaveLine solver)
             Data_Simu_NoD_tmp.drop_duplicates(inplace=True)
             ###Set Day of Simu counting from begining of simu corresponding to step Pump2010 (Step 1)
             if i == 0:
-                Data_Simu_NoD_tmp['DayOfSimu'] = Data_Simu_NoD_tmp['DayOfSimu']*StepTsp
+                if case == 'PNotRestric':
+                    Data_Simu_NoD_tmp['DayOfSimu'] = Data_Simu_NoD_tmp['DayOfSimu']*0.2 ##For the PNotRestricted case and step Pump2010 we load the tsp 0.2day simu
+                else:
+                    Data_Simu_NoD_tmp['DayOfSimu'] = Data_Simu_NoD_tmp['DayOfSimu']*StepTsp
             else:
                 Data_Simu_NoD_tmp['DayOfSimu'] = np.max(Data_Simu_NoD['DayOfSimu']) + Data_Simu_NoD_tmp['DayOfSimu']*StepTsp
             data = [Data_Simu_NoD,Data_Simu_NoD_tmp]
