@@ -106,7 +106,7 @@ plt.rc('ytick', labelsize=22)
 plt.rc('axes', labelsize=22)
 plt.rc('legend', fontsize=26)
 
-fig, axes = plt.subplots(2, 2, figsize=(60, 20), sharex= True , sharey= True)
+fig, axes = plt.subplots(2, 2, figsize=(60, 20), sharey= True)
 # pimp style
 ##First Row
 ax = axes[0,0]
@@ -155,6 +155,7 @@ if __name__ == "__main__":
     StartYear_Pumping2010 = "2010"
     StartDate_Pumping2010 = RefStartDate + timedelta(days=int(StartDayNumber_Pumping2010))
     ###Provide coordinate of points defining lines corresponding to transect on which we want to plot SigmaI: one couple of point per transect
+    List_Transect=["AA'","BB'"]
     List_Coord_pt1=[[947954.6,2105001.5], [947976.1, 2105120.6]]
     List_Coord_pt2=[[948027.9,2105114.9], [948024.0,2104971.5]]
     ### Step in the full process from 2010 to 2014
@@ -178,7 +179,7 @@ if __name__ == "__main__":
     ###load file as dataframe
     Df_GM = pd.read_csv(Pathroot_GM.joinpath(Filename_GM), names=Col_Names_GM, delim_whitespace=True)
     Df_GM.drop_duplicates(inplace=True)
-    ###Keep only the Grounding Line
+    ###Store the node number of nodes corresponding to GL
     Df_GL=Df_GM[Df_GM['GM']==0]
 
     #########################################
@@ -219,7 +220,7 @@ if __name__ == "__main__":
     ##################################################
     ####  DO A LOOP OVER EACH CONSIDERED TRANSECT ####
     ##################################################
-    for i,(Coord_pt1, Coord_pt2) in enumerate(zip(List_Coord_pt1,List_Coord_pt2)):
+    for i,(Transect_Name, Coord_pt1, Coord_pt2) in enumerate(zip(List_Transect, List_Coord_pt1,List_Coord_pt2)):
         ### Get the corresponding subplot
         if i == 0:
             ax = axes[0, 0]
@@ -227,7 +228,7 @@ if __name__ == "__main__":
             ax = axes[0, 1]
         # elif j == 2:
         #     ax = axes[1, 0]
-        ax.set_title('Transect n° {}'.format(str(i+1)), fontsize=26, weight='bold')
+        ax.set_title('Transect {}'.format(Transect_Name), fontsize=26, weight='bold')
 
         ###Use functions to return coords of transect
         coord_transect = Coord_transect(Coord_pt1, Coord_pt2)
@@ -249,7 +250,7 @@ if __name__ == "__main__":
             else:
                 for j in range(len(indx_ClosestCrevasses)): ##Look at the distance of current point to all those that have been already kept
                     print('Comparing pt',idx, 'to pt',indx_ClosestCrevasses[j] )
-                    dist = np.sqrt((Df_Crevasses.iloc[idx]['X']-Df_Crevasses.iloc[indx_ClosestCrevasses[j]]['X'])**2 + (Df_Crevasses.iloc[idx]['Y']-Df_Crevasses.iloc[indx_ClosestCrevasses[j]]['Y'])**2)
+                    dist = np.sqrt((Df_Crevasses.loc[idx]['X']-Df_Crevasses.loc[indx_ClosestCrevasses[j]]['X'])**2 + (Df_Crevasses.loc[idx]['Y']-Df_Crevasses.loc[indx_ClosestCrevasses[j]]['Y'])**2)
                     print('dist is', dist)
                     if dist < 5: ##Points belong to same crevasse
                         print('we discard pt', idx)
@@ -261,7 +262,7 @@ if __name__ == "__main__":
                         else:
                             continue
         ###Now project the coordinates of crevasses on the considered transect
-        Coord_Crevasses_Projected = Proj_on_line(Coord_pt1,Coord_pt2, [Df_Crevasses.iloc[indx_ClosestCrevasses]['X'], Df_Crevasses.iloc[indx_ClosestCrevasses]['Y']])
+        Coord_Crevasses_Projected = Proj_on_line(Coord_pt1,Coord_pt2, [Df_Crevasses.loc[indx_ClosestCrevasses]['X'], Df_Crevasses.loc[indx_ClosestCrevasses]['Y']])
         ###Convert these coord in terms of distance along transect
         DistOfCrevasses_along_transect=Distance_along_transect(Coord_pt1, Coord_pt2, Coord_Crevasses_Projected)
 
@@ -281,7 +282,7 @@ if __name__ == "__main__":
             else:
                 for j in range(len(indx_ClosestGL)): ##Look at the distance of current point to all those that have been already kept
                     print('Comparing pt',idx, 'to pt',indx_ClosestGL[j] )
-                    dist = np.sqrt((Df_GM.iloc[idx]['X']-Df_GM.iloc[indx_ClosestGL[j]]['X'])**2 + (Df_GM.iloc[idx]['Y']-Df_GM.iloc[indx_ClosestGL[j]]['Y'])**2)
+                    dist = np.sqrt((Df_GL.loc[idx]['X']-Df_GL.loc[indx_ClosestGL[j]]['X'])**2 + (Df_GL.loc[idx]['Y']-Df_GL.loc[indx_ClosestGL[j]]['Y'])**2)
                     print('dist is', dist)
                     if dist < 40: ##Points belong to same crevasse
                         print('we discard pt', idx)
@@ -293,28 +294,28 @@ if __name__ == "__main__":
                         else:
                             continue
         ###Now project the coordinates of crevasses on the considered transect
-        Coord_GL_Projected = Proj_on_line(Coord_pt1,Coord_pt2, [Df_GM.iloc[indx_ClosestGL]['X'], Df_GM.iloc[indx_ClosestGL]['Y']])
+        Coord_GL_Projected = Proj_on_line(Coord_pt1,Coord_pt2, [Df_GL.loc[indx_ClosestGL]['X'], Df_GL.loc[indx_ClosestGL]['Y']])
         ###Convert these coord in terms of distance along transect
         DistOfGL_along_transect=Distance_along_transect(Coord_pt1, Coord_pt2, Coord_GL_Projected)
 
-        ##ANOTHER METHOD TO COMPUTE CAVITY MASK ALONG TRANSECT
-        ###Interpolate GM on considered transect
-        Interpolated_GM = Interpolate_field(Df_GM,'GM', coord_transect[0], coord_transect[1])
-        ###Find indexes of first non-grounded and last non-grounded nodes
-        for i in range(len(Interpolated_GM)):
-            if Interpolated_GM[i]>-0.999:
-                continue
-            else:
-                FirstFloating_Idx=i
-                break
-        for j in range(FirstFloating_Idx,len(Interpolated_GM)):
-            if Interpolated_GM[j]<-0.999:
-                continue
-            else:
-                LastFloating_Idx=j-1
-                break
-        DistAlongTransect_CavityStart=dist_along_transect[FirstFloating_Idx]
-        DistAlongTransect_CavityEnd=dist_along_transect[LastFloating_Idx]
+        # ##ANOTHER METHOD TO COMPUTE CAVITY MASK ALONG TRANSECT
+        # ###Interpolate GM on considered transect
+        # Interpolated_GM = Interpolate_field(Df_GM,'GM', coord_transect[0], coord_transect[1])
+        # ###Find indexes of first non-grounded and last non-grounded nodes
+        # for i in range(len(Interpolated_GM)):
+        #     if Interpolated_GM[i]>-0.999:
+        #         continue
+        #     else:
+        #         FirstFloating_Idx=i
+        #         break
+        # for j in range(FirstFloating_Idx,len(Interpolated_GM)):
+        #     if Interpolated_GM[j]<-0.999:
+        #         continue
+        #     else:
+        #         LastFloating_Idx=j-1
+        #         break
+        # DistAlongTransect_CavityStart=dist_along_transect[FirstFloating_Idx]
+        # DistAlongTransect_CavityEnd=dist_along_transect[LastFloating_Idx]
 
         ###plot SigmaI of selected days along considered transect
         k = 0
@@ -334,7 +335,7 @@ if __name__ == "__main__":
             ax.axvline(x=DistOfCrevasses_along_transect.values[l], color='k', linestyle='-', linewidth=3)
         ###Shade area corresponding to cavity based on initial grounded mask
         ax.axvspan(np.min(DistOfGL_along_transect),np.max(DistOfGL_along_transect), alpha=0.3, color='grey')
-        ax.axvspan(DistAlongTransect_CavityStart,DistAlongTransect_CavityEnd, alpha=0.3, color='red')
+        # ax.axvspan(DistAlongTransect_CavityStart,DistAlongTransect_CavityEnd, alpha=0.3, color='red')
 
 
 
