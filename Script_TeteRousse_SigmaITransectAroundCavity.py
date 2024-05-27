@@ -13,6 +13,8 @@ This file aims at plotting the evolution of maaximum principle stress along some
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
+from matplotlib.path import Path as mpltPath
+from matplotlib.patches import PathPatch
 
 from pathlib import Path
 from datetime import datetime, date, timedelta ###To handle dates
@@ -106,31 +108,29 @@ plt.rc('ytick', labelsize=22)
 plt.rc('axes', labelsize=22)
 plt.rc('legend', fontsize=26)
 
-fig = plt.figure(figsize=(60, 90))
-outer = gridspec.GridSpec(3, 2, wspace=0.3, hspace=0.25) ##3 main subplots, 1 on top row, 2 on second row
+###Fig 1 is the map of Teterousse
+fig1 = plt.figure(1, figsize=(40, 20))
+plt.xlabel(r'X [km]', fontsize=21)
+plt.ylabel(r'Y [km]', fontsize=21)
+plt.tick_params(labelsize=20)  # fontsize of the tick labels
+plt.grid(True)
+plt.grid(alpha=0.5)
+
+###Fig 2 is subplots for SigmaI profile over transects (row: step of simu, column: transect)
+fig2 = plt.figure(figsize=(60, 60))
+outer = gridspec.GridSpec(2, 2, wspace=0.3, hspace=0.25) ##3 main subplots, 1 on top row, 2 on second row
 
 # pimp style
-##First Row : map of the glacier
-ax0 = fig.add_subplot(outer[0, :])
-ax0.set_xlabel(r'X (km)', fontsize=21)
-ax0.set_ylabel(r'Y (km)', fontsize=21)
-ax0.tick_params(labelsize=18)  # fontsize of the tick labels
-#ax.set_ylim([-9.0, 2.0])
-ax0.grid(True)
-ax0.grid(alpha=0.5)
-# ax0.yaxis.set_major_formatter(formatter)
-
-
-ax1 = fig.add_subplot(outer[1, 0])
+ax1 = fig2.add_subplot(outer[0, 0])
 ax1.tick_params(labelsize=18)  # fontsize of the tick labels
 # ax.set_ylim([-9.0, 2.0])
 ax1.grid(True)
-ax1.set_ylabel(r'$\sigma_I$ (MPa)', fontsize=21)
+ax1.set_ylabel(r'$\sigma_I$ [MPa]', fontsize=21)
 ax1.yaxis.set_major_formatter(formatter)
 ###plot one horizontal line for Stress=0
 ax1.axhline(y=0.0, color= 'k', linestyle = ':', linewidth=1)
 
-ax2 = fig.add_subplot(outer[1, 1], sharey=ax1)
+ax2 = fig2.add_subplot(outer[0, 1], sharey=ax1)
 # ax.set_ylim([-9.0, 2.0])
 ax2.tick_params(labelsize=18)  # fontsize of the tick labels
 ax2.grid(True)
@@ -138,18 +138,18 @@ ax2.yaxis.set_major_formatter(formatter)
 ###plot one horizontal line for Stress=0
 ax2.axhline(y=0.0, color= 'k', linestyle = ':', linewidth=1)
 
-ax3 = fig.add_subplot(outer[2, 0], sharex=ax1)
+ax3 = fig2.add_subplot(outer[1, 0], sharex=ax1)
 ax3.tick_params(labelsize=18)  # fontsize of the tick labels
 # ax.set_ylim([-9.0, 2.0])
 ax3.grid(True)
-ax3.set_xlabel(r'Distance (m)', fontsize=21)
-ax3.set_ylabel(r'$\sigma_I$ (MPa)', fontsize=21)
+ax3.set_xlabel(r'Distance [m]', fontsize=21)
+ax3.set_ylabel(r'$\sigma_I$ [MPa]', fontsize=21)
 ax3.yaxis.set_major_formatter(formatter)
 ###plot one horizontal line for Stress=0
 ax3.axhline(y=0.0, color= 'k', linestyle = ':', linewidth=1)
 
-ax4 = fig.add_subplot(outer[2, 1], sharex=ax2, sharey=ax3)
-ax4.set_xlabel(r'Distance (m)', fontsize=21)
+ax4 = fig2.add_subplot(outer[1, 1], sharex=ax2, sharey=ax3)
+ax4.set_xlabel(r'Distance [m]', fontsize=21)
 # ax.set_ylim([-9.0, 2.0])
 ax4.tick_params(labelsize=18)  # fontsize of the tick labels
 ax4.grid(True)
@@ -191,6 +191,10 @@ if __name__ == "__main__":
     ###Also load glacier contour
     Filename_GlacierContour = 'Contour_TeteRousse2012.dat'
     Df_GlacierContour = pd.read_csv(Pathroot_Obs.joinpath(Filename_GlacierContour), names=['X', 'Y'], delim_whitespace=True)
+    xc = Df_GlacierContour['X'].values
+    xc=np.append(xc,xc[0]) ##step required to close the contour
+    yc = Df_GlacierContour['Y'].values
+    yc = np.append(yc, yc[0])  ##step required to close the contour
     ###Open Data corresponding to grounded mask
     Pathroot_GM = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/ScalarOutput/.')
     Filename_GM = 'GroundedMaskInit.dat'
@@ -233,32 +237,40 @@ if __name__ == "__main__":
     ######################################################
     ### Get the last day of the step pumping 2010
     Df_LastDayPump2010=Data_Simu_NoD[Data_Simu_NoD['DayOfSimu']==np.max(Data_Simu_NoD[Data_Simu_NoD['Step']=='Pump2010']['DayOfSimu'])]
-    ### Get the subplot
-    ax = ax0
+    ### Get the figure
+    fig1 = plt.figure(1)
+    plt.xlim([(np.floor(np.min(Df_LastDayPump2010['X']))-40)/1000, (np.floor(np.max(Df_LastDayPump2010['X']))+40)/1000])
+    plt.ylim([(np.floor(np.min(Df_LastDayPump2010['Y']))-40)/1000, (np.floor(np.max(Df_LastDayPump2010['Y']))+40)/1000])
+    ###Force x and y axis to same scale
+    ax = plt.gca()
     ax.set_aspect('equal', adjustable='box')
-    ax.set_xlim([(np.floor(np.min(Df_LastDayPump2010['X']))-40)/1000, (np.floor(np.max(Df_LastDayPump2010['X']))+40)/1000])
-    ax.set_ylim([(np.floor(np.min(Df_LastDayPump2010['Y']))-40)/1000, (np.floor(np.max(Df_LastDayPump2010['Y']))+40)/1000])
-
     ###Create refined regular grid and interpolate field over grid
     x = np.arange(np.floor(np.min(Df_LastDayPump2010['X']))-40,np.floor(np.max(Df_LastDayPump2010['X']))+40,0.1)
     y = np.arange(np.floor(np.min(Df_LastDayPump2010['Y']))-40,np.floor(np.max(Df_LastDayPump2010['Y']))+40,0.1)
     X, Y = np.meshgrid(x, y)
     SigmaI = Interpolate_field(Df_LastDayPump2010,'SigmaI',X,Y)
     #shading
-    clevs=np.arange(0.0,0.15,0.0001) ## cbar for shading
+    clevs=np.arange(0.0,0.16,0.001) ## cbar for shading
     cmap='coolwarm'
     ##contour
     levels= np.arange(-0.04,0.2,0.04)# contour internal
     #colorbar
-    levs_ticks=np.arange(-0.04,0.2,0.04)
-    # CS = ax.tricontour(Df_LastDayPump2010['X'], Df_LastDayPump2010['Y'], Df_LastDayPump2010['SigmaI'], levels, colors='black')
+    levs_ticks=np.arange(0.0,0.18,0.02)
+    ###Fills up the map with colors for SigmaI
+    CS1 = plt.contourf(X/1000, Y/1000, SigmaI, clevs, cmap=cmap,extend='both')
+    plt.plot(xc / 1000, yc / 1000, color='k', linewidth=2)
+    ###Show colorbar
+    cbar = plt.colorbar(CS1, ticks=levs_ticks, orientation='vertical', label=r'$\sigma_I$ [MPa]')
     ##contour at SigmaI=0.12 MPa(proposed threshold)
-    # CS = ax.contour(X, Y, SigmaI,[0.0], colors='yellow') ## lines (f(x) contour)
-    # ax.clabel(CS, inline=True, fontsize=10) ## numbers in contours
-    CS1=ax.tricontourf(Df_LastDayPump2010['X']/1000, Df_LastDayPump2010['Y']/1000, Df_LastDayPump2010['SigmaI'], clevs, cmap=cmap,extend='both') ## shading (f(x) contourF)
-    ###plot contour of glacier
-    ax.scatter(Df_GlacierContour['X']/1000, Df_GlacierContour['Y']/1000,marker='o',color='k',linewidth=0.5)
-
+    # CS = plt.contour(X, Y, SigmaI,[0.0], colors='yellow') ## lines (f(x) contour)
+    # plt.clabel(CS, inline=True, fontsize=10) ## numbers in contours
+    ###Below we remove colors that are outside of glacier contour
+    clippath = mpltPath(np.c_[xc/1000, yc/1000])
+    patch = PathPatch(clippath, facecolor='none')
+    ax = plt.gca()
+    ax.add_patch(patch)
+    for c in CS1.collections:
+        c.set_clip_path(patch)
     ###################################################
     ####  NOW WE PLOT SIGMAI OVER CHOSEN TRANSECTS ####
     ###################################################
@@ -278,18 +290,18 @@ if __name__ == "__main__":
         ###Convert coords of transect in terms of distance along transect
         dist_along_transect=Distance_along_transect(Coord_pt1, Coord_pt2, coord_transect)
         ###Plot transect on map
-        ax0.plot(coord_transect[0]/1000,coord_transect[1]/1000,color='k',linestyle='-',linewidth=4)
+        plt.plot(coord_transect[0]/1000,coord_transect[1]/1000,color='k',linestyle='-',linewidth=4)
         ###Annotate transect name
         if Transect_Name == "AA'":
-            ax0.annotate(Transect_Name[0], ((coord_transect[0][0]-16)/1000, (coord_transect[1][0]-16)/1000), size=17, weight='bold')
-            ax0.annotate(Transect_Name[1:], ((coord_transect[0][-1]+4)/1000, (coord_transect[1][-1]+4)/1000), size=17, weight='bold')
+            plt.annotate(Transect_Name[0], ((coord_transect[0][0]-10)/1000, (coord_transect[1][0]-8)/1000), size=17, weight='bold')
+            plt.annotate(Transect_Name[1:], ((coord_transect[0][-1]+3)/1000, (coord_transect[1][-1]-4)/1000), size=17, weight='bold')
         elif Transect_Name == "BB'":
-            ax0.annotate(Transect_Name[0], ((coord_transect[0][0]-16)/1000, (coord_transect[1][0]+5)/1000), size=17, weight='bold')
-            ax0.annotate(Transect_Name[1:], ((coord_transect[0][-1]+10)/1000, (coord_transect[1][-1]-12)/1000), size=17, weight='bold')
+            plt.annotate(Transect_Name[0], ((coord_transect[0][0]-12)/1000, (coord_transect[1][0]+2)/1000), size=17, weight='bold')
+            plt.annotate(Transect_Name[1:], ((coord_transect[0][-1]+3)/1000, (coord_transect[1][-1]-9)/1000), size=17, weight='bold')
         ###Plot cavity contour
-        ax0.scatter(Df_GL['X']/1000,Df_GL['Y']/1000,color='dimgrey',marker='.',linewidths=0.1)
+        plt.scatter(Df_GL['X'].values/1000,Df_GL['Y'].values/1000,color='dimgrey',marker='.',linewidths=0.4)
         ###Plot crevasses on map
-        ax0.scatter(Df_Crevasses['X']/1000,Df_Crevasses['Y']/1000,color=Col_Crevasses,marker='P',linewidths=0.1)
+        plt.scatter(Df_Crevasses['X']/1000,Df_Crevasses['Y']/1000,color=Col_Crevasses,marker='P',linewidths=0.2)
         ########################################################
         ####  PROCESS CREVASSE DATA TO GET THEM ON TRANSECT ####
         ########################################################
@@ -384,6 +396,7 @@ if __name__ == "__main__":
                     ax=ax1
                 elif i==1:
                     ax=ax2
+                ###Prepare the ticks for the colorbar
             elif Step=='Refill20102011':
                 Ouput_Interval = 20 ##one plot every 20 days
                 if i==0:
@@ -396,11 +409,13 @@ if __name__ == "__main__":
             scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=cm)
             ###plot SigmaI of selected days along considered transect
             k = 0
+            levs_ticks_days = [] ##ticks for colorbars
             for j, day in enumerate(SimuDays):
                 ### for pumping step profile every 5 days
                 if not day % Ouput_Interval == 0:
                     continue
                 k = k + 1 ##count total number of days for which a profile is plot
+                levs_ticks_days.append(day)
                 print('Plotting SigmaI profile of step', Step, 'for simu day', day)
                 Data_Simu_NoD_Today = Data_Simu_NoD[Data_Simu_NoD['DayOfSimu'] == day]
                 ###Interpolate the SigmaI of the day on the considered transect
@@ -412,7 +427,11 @@ if __name__ == "__main__":
                 ax.axvline(x=DistOfCrevasses_along_transect.values[l], color=Col_Crevasses, linestyle='-', linewidth=3)
             ###Shade area corresponding to cavity based on initial grounded mask
             ax.axvspan(np.min(DistOfGL_along_transect),np.max(DistOfGL_along_transect), alpha=0.3, color='grey')
-            # ax.axvspan(DistAlongTransect_CavityStart,DistAlongTransect_CavityEnd, alpha=0.3, color='red')
+            if Step == 'Pump2010' and i == 1:
+                levs_ticks_days.insert(0,1)
+                fig2.colorbar(cmx.ScalarMappable(norm=cNorm, cmap=cm), ax=[ax1,ax2], ticks=levs_ticks_days[::2], orientation='vertical', label=r'Time [days]')
+            elif Step == 'Refill20102011' and i==1:
+                fig2.colorbar(cmx.ScalarMappable(norm=cNorm, cmap=cm), ax=[ax3, ax4], ticks=levs_ticks_days[::2], orientation='vertical', label=r'Time [days]')
 
 
 
