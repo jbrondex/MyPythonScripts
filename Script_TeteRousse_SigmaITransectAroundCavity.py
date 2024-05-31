@@ -118,44 +118,61 @@ plt.grid(alpha=0.5)
 
 ###Fig 2 is subplots for SigmaI profile over transects (row: step of simu, column: transect)
 fig2 = plt.figure(figsize=(60, 60))
-outer = gridspec.GridSpec(2, 2, wspace=0.3, hspace=0.25) ##3 main subplots, 1 on top row, 2 on second row
+outer = gridspec.GridSpec(2, 3, wspace=0.3, hspace=0.25) ##3 main subplots, 1 on top row, 2 on second row
 
 # pimp style
-ax1 = fig2.add_subplot(outer[0, 0])
-ax1.tick_params(labelsize=18)  # fontsize of the tick labels
+ax00 = fig2.add_subplot(outer[0, 0])
+ax00.tick_params(labelsize=18)  # fontsize of the tick labels
 # ax.set_ylim([-9.0, 2.0])
-ax1.grid(True)
-ax1.set_ylabel(r'$\sigma_I$ [MPa]', fontsize=21)
-ax1.yaxis.set_major_formatter(formatter)
+ax00.grid(True)
+ax00.set_ylabel(r'$\sigma_I$ [MPa]', fontsize=21)
+ax00.yaxis.set_major_formatter(formatter)
 ###plot one horizontal line for Stress=0
-ax1.axhline(y=0.0, color= 'k', linestyle = ':', linewidth=1)
+ax00.axhline(y=0.0, color='k', linestyle =':', linewidth=1)
 
-ax2 = fig2.add_subplot(outer[0, 1], sharey=ax1)
+ax01 = fig2.add_subplot(outer[0, 1], sharey=ax00)
 # ax.set_ylim([-9.0, 2.0])
-ax2.tick_params(labelsize=18)  # fontsize of the tick labels
-ax2.grid(True)
-ax2.yaxis.set_major_formatter(formatter)
+ax01.tick_params(labelsize=18)  # fontsize of the tick labels
+ax01.grid(True)
+ax01.yaxis.set_major_formatter(formatter)
 ###plot one horizontal line for Stress=0
-ax2.axhline(y=0.0, color= 'k', linestyle = ':', linewidth=1)
+ax01.axhline(y=0.0, color='k', linestyle =':', linewidth=1)
 
-ax3 = fig2.add_subplot(outer[1, 0], sharex=ax1)
-ax3.tick_params(labelsize=18)  # fontsize of the tick labels
+ax02 = fig2.add_subplot(outer[0, 2], sharey=ax00)
 # ax.set_ylim([-9.0, 2.0])
-ax3.grid(True)
-ax3.set_xlabel(r'Distance [m]', fontsize=21)
-ax3.set_ylabel(r'$\sigma_I$ [MPa]', fontsize=21)
-ax3.yaxis.set_major_formatter(formatter)
+ax02.tick_params(labelsize=18)  # fontsize of the tick labels
+ax02.grid(True)
+ax02.yaxis.set_major_formatter(formatter)
 ###plot one horizontal line for Stress=0
-ax3.axhline(y=0.0, color= 'k', linestyle = ':', linewidth=1)
+ax02.axhline(y=0.0, color='k', linestyle =':', linewidth=1)
 
-ax4 = fig2.add_subplot(outer[1, 1], sharex=ax2, sharey=ax3)
-ax4.set_xlabel(r'Distance [m]', fontsize=21)
+ax10 = fig2.add_subplot(outer[1, 0], sharex=ax00)
+ax10.tick_params(labelsize=18)  # fontsize of the tick labels
 # ax.set_ylim([-9.0, 2.0])
-ax4.tick_params(labelsize=18)  # fontsize of the tick labels
-ax4.grid(True)
-ax4.yaxis.set_major_formatter(formatter)
+ax10.grid(True)
+ax10.set_xlabel(r'Distance [m]', fontsize=21)
+ax10.set_ylabel(r'$\sigma_I$ [MPa]', fontsize=21)
+ax10.yaxis.set_major_formatter(formatter)
+###plot one horizontal line for Stress=0
+ax10.axhline(y=0.0, color='k', linestyle =':', linewidth=1)
+
+ax11 = fig2.add_subplot(outer[1, 1], sharex=ax01, sharey=ax10)
+ax11.set_xlabel(r'Distance [m]', fontsize=21)
+# ax.set_ylim([-9.0, 2.0])
+ax11.tick_params(labelsize=18)  # fontsize of the tick labels
+ax11.grid(True)
+ax11.yaxis.set_major_formatter(formatter)
 ##plot one horizontal line for Stress=0
-ax4.axhline(y=0.0, color= 'k', linestyle = ':', linewidth=1)
+ax11.axhline(y=0.0, color='k', linestyle =':', linewidth=1)
+
+ax12 = fig2.add_subplot(outer[1, 2], sharex=ax02, sharey=ax10)
+ax12.set_xlabel(r'Distance [m]', fontsize=21)
+# ax.set_ylim([-9.0, 2.0])
+ax12.tick_params(labelsize=18)  # fontsize of the tick labels
+ax12.grid(True)
+ax12.yaxis.set_major_formatter(formatter)
+##plot one horizontal line for Stress=0
+ax12.axhline(y=0.0, color='k', linestyle =':', linewidth=1)
 
 ################################################################################
 # Make the plots #####
@@ -170,9 +187,9 @@ if __name__ == "__main__":
     StartYear_Pumping2010 = "2010"
     StartDate_Pumping2010 = RefStartDate + timedelta(days=int(StartDayNumber_Pumping2010))
     ###Provide coordinate of points defining lines corresponding to transect on which we want to plot SigmaI: one couple of point per transect
-    List_Transect=["AA'","BB'"]
-    List_Coord_pt1=[[947954.6,2105001.5], [947976.1, 2105120.6]]
-    List_Coord_pt2=[[948027.9,2105114.9], [948024.0,2104971.5]]
+    List_Transect=["AA'","BB'", "CC'"]
+    List_Coord_pt1=[[947954.6,2105001.5], [947976.1, 2105120.6], [947943.3, 2105052.1]]
+    List_Coord_pt2=[[948027.9,2105114.9], [948024.0,2104971.5], [948112.8,2105049.4]]
     ### Step in the full process from 2010 to 2014
     Step_List = ['Pump2010', 'Refill20102011']  # , 'Pump2011', 'Refill20112012', 'Pump2012', 'Refill20122013']
     StepTsp_List = [1, 5]  # , 1, 5, 1, 5] ##Timestep size (in days) corresponding to simulation step (Step_List)
@@ -278,9 +295,11 @@ if __name__ == "__main__":
     for i,(Transect_Name, Coord_pt1, Coord_pt2) in enumerate(zip(List_Transect, List_Coord_pt1,List_Coord_pt2)):
         ### Get the corresponding subplot to show subplot title
         if i == 0:
-            ax = ax1
+            ax = ax00
         elif i == 1:
-            ax = ax2
+            ax = ax01
+        elif i == 2:
+            ax = ax02
         # elif j == 2:
         #     ax = axes[1, 0]
         ax.set_title('Transect {}'.format(Transect_Name), fontsize=21, weight='bold')
@@ -298,6 +317,9 @@ if __name__ == "__main__":
         elif Transect_Name == "BB'":
             plt.annotate(Transect_Name[0], ((coord_transect[0][0]-12)/1000, (coord_transect[1][0]+2)/1000), size=17, weight='bold')
             plt.annotate(Transect_Name[1:], ((coord_transect[0][-1]+3)/1000, (coord_transect[1][-1]-9)/1000), size=17, weight='bold')
+        elif Transect_Name == "CC'":
+            plt.annotate(Transect_Name[0], ((coord_transect[0][0]-12)/1000, (coord_transect[1][0]+2)/1000), size=17, weight='bold')
+            plt.annotate(Transect_Name[1:], ((coord_transect[0][-1]+4)/1000, (coord_transect[1][-1]+2)/1000), size=17, weight='bold')
         ###Plot cavity contour
         plt.scatter(Df_GL['X'].values/1000,Df_GL['Y'].values/1000,color='dimgrey',marker='.',linewidths=0.4)
         ###Plot crevasses on map
@@ -393,16 +415,20 @@ if __name__ == "__main__":
                 Ouput_Interval = 5 ##one plot every 5 days
                 ###first get proper subplot
                 if i==0:
-                    ax=ax1
+                    ax=ax00
                 elif i==1:
-                    ax=ax2
+                    ax=ax01
+                elif i==2:
+                    ax=ax02
                 ###Prepare the ticks for the colorbar
             elif Step=='Refill20102011':
                 Ouput_Interval = 20 ##one plot every 20 days
                 if i==0:
-                    ax=ax3
+                    ax=ax10
                 elif i==1:
-                    ax=ax4
+                    ax=ax11
+                elif i==2:
+                    ax=ax12
             ###Create a color map to cover all days at which the SigmaI profiles are plot
             cm = plt.get_cmap('RdBu_r')
             cNorm = colors.Normalize(vmin=np.min(SimuDays), vmax=np.max(SimuDays))
@@ -422,16 +448,21 @@ if __name__ == "__main__":
                 Interpolated_SigmaI = Interpolate_field(Data_Simu_NoD_Today, 'SigmaI', coord_transect[0], coord_transect[1])
                 ###Plot interpolated sigmaI as a function of distance along transect
                 ax.plot(dist_along_transect, Interpolated_SigmaI, color=scalarMap.to_rgba(day), linestyle='-', linewidth=2)
+                ax.set_xlim([-1, np.max(dist_along_transect)+0.5])
             ###plot vertical line corresponding to crevasses
             for l in range(len(DistOfCrevasses_along_transect)):
+                ###a crevasse point can be very close to the line XX' but out of the segment XX' (i.e. out of transect)
+                ###In that case, we do not plot it
+                if DistOfCrevasses_along_transect.values[l] < 0 or DistOfCrevasses_along_transect.values[l]>np.max(dist_along_transect):
+                    continue
                 ax.axvline(x=DistOfCrevasses_along_transect.values[l], color=Col_Crevasses, linestyle='-', linewidth=3)
             ###Shade area corresponding to cavity based on initial grounded mask
             ax.axvspan(np.min(DistOfGL_along_transect),np.max(DistOfGL_along_transect), alpha=0.3, color='grey')
-            if Step == 'Pump2010' and i == 1:
+            if Step == 'Pump2010' and i == 2:
                 levs_ticks_days.insert(0,1)
-                fig2.colorbar(cmx.ScalarMappable(norm=cNorm, cmap=cm), ax=[ax1,ax2], ticks=levs_ticks_days[::2], orientation='vertical', label=r'Time [days]')
-            elif Step == 'Refill20102011' and i==1:
-                fig2.colorbar(cmx.ScalarMappable(norm=cNorm, cmap=cm), ax=[ax3, ax4], ticks=levs_ticks_days[::2], orientation='vertical', label=r'Time [days]')
+                fig2.colorbar(cmx.ScalarMappable(norm=cNorm, cmap=cm), ax=[ax00, ax01, ax02], ticks=levs_ticks_days[::2], orientation='vertical', label=r'Time [days]')
+            elif Step == 'Refill20102011' and i==2:
+                fig2.colorbar(cmx.ScalarMappable(norm=cNorm, cmap=cm), ax=[ax10, ax11, ax12], ticks=levs_ticks_days[::2], orientation='vertical', label=r'Time [days]')
 
 
 
