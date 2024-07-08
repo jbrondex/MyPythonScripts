@@ -16,20 +16,36 @@ using QGIS. For each transect we add a tunnel footprint considering 3 possible s
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+from pathlib import Path
 
+###Parameters of the various meshes
+### Where to find the DEM files and store the .geo file:
+pathroot_mycode = Path('/home/brondexj/Documents/GrandeMotteTignes/Maillages/.')
 # Test these options
     # edge size of the elements
 el_size = 0.8
 el_sizec = 0.1
-
     # Spline or line 
 spline = True
+    #### Transect and corresponding tunnel floor altitude (1% slope)
+Transect_Names = ['Transect1','Transect2','Transect3','Transect4','Transect5','Transect6']
+Transect=Transect_Names[0]
+Floor_altitudes=[2803.5,2803,2802.5,2802,2801.5,2801.12]
+Floor_altitude=Floor_altitudes[0]
+    #### Possible shapes of the tunnel
+Shapes = ['Rectangle', 'Circle', 'Ovoide']
+Shape= Shapes[0]
+    #### Width of tunnel
+Widths = [1,1.5,2]
+Width = Widths[0]
 
+file_name_top = 'DEM_Top_{}.dat'.format(Transect)
+file_name_bed = 'DEM_Bed_{}.dat'.format(Transect)
     # Load DEM
 Col_Names = ['x', 'y']
-DEM_top = pd.read_csv('./DEM_Top_Transect1.dat', names=Col_Names, delim_whitespace=True)
+DEM_top = pd.read_csv(pathroot_mycode.joinpath(file_name_top), names=Col_Names, delim_whitespace=True)
 Npttop = len(DEM_top.index)
-DEM_bed = pd.read_csv('./DEM_Bed_Transect1.dat', names=Col_Names, delim_whitespace=True)
+DEM_bed = pd.read_csv(pathroot_mycode.joinpath(file_name_bed), names=Col_Names, delim_whitespace=True)
 ###Reverse DEM_bed dataframe so that nodes are consecutive
 DEM_bed = DEM_bed[::-1]
 DEM_bed= DEM_bed.reset_index(drop=True)
@@ -41,10 +57,11 @@ MainContour=MainContour.reset_index(drop=True)
 
 
 # Open the output file
-geo = open('GrandeMotte_Transect1_Rectangle.geo', 'w')
+file_name_output='GrandeMotte_{}_{}.geo'.format(Transect,Shape)
+geo = open(pathroot_mycode.joinpath(file_name_output), 'w')
 geo.write('// This a a geo file created using the python script Makegeo_2.py // \n')
 geo.write('Mesh.Algorithm=5; \n')
-geo.write('// To controle the element size, one can directly modify the lc values in the geo file // \n')
+geo.write('// To control the element size, one can directly modify the lc values in the geo file // \n')
 geo.write('lc = {} ; \n'.format(el_size))
 geo.write('lcc = {} ; \n'.format(el_sizec))
 
@@ -58,7 +75,18 @@ for j in range(0,Npttop):
 ###...continu with bottom nodes
 for j in range(0,Nptbed):
     np=np+1
-    geo.write('Point({0}) = '.format(np)+r'{'+' {0}, {1}, 0.0, lc'.format(DEM_bed['x'][j],DEM_bed['y'][j])+r'}'+'; \n')
+    geo.write('Point({}) = '.format(np)+r'{'+' {0}, {1}, 0.0, lc'.format(DEM_bed['x'][j],DEM_bed['y'][j])+r'}'+'; \n')
+###...now we car about the points corresponding to the tunnel
+np=np+1
+####If rectangle
+##Bottom left corner
+geo.write('Point({}) = '.format(np) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25-Width/2, Floor_altitude) + r'}' + '; \n')
+###Top left corner
+geo.write('Point({}) = '.format(np+1) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25-Width/2, Floor_altitude+2.0) + r'}' + '; \n')
+##Top right corner
+geo.write('Point({}) = '.format(np+2) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25+Width/2, Floor_altitude+2.0) + r'}' + '; \n')
+###Bottom right corner
+geo.write('Point({}) = '.format(np+3) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25+Width/2, Floor_altitude) + r'}' + '; \n')
 
 # if spline
 if spline:
@@ -80,49 +108,34 @@ if spline:
     geo.write('Spline(4) = {')
     geo.write('{},'.format(Npttop+Nptbed))
     geo.write('1}; \n')
+    ###Now the spline for the tunnel
+    #####if rectangle
+    geo.write('Spline(5) = {')
+    geo.write('{},'.format(Npttop+Nptbed + 1))
+    geo.write('{},'.format(Npttop + Nptbed + 2))
+    geo.write('}; \n')
+    geo.write('Spline(6) = {')
+    geo.write('{},'.format(Npttop + Nptbed + 2))
+    geo.write('{},'.format(Npttop + Nptbed + 3))
+    geo.write('}; \n')
+    geo.write('Spline(7) = {')
+    geo.write('{},'.format(Npttop + Nptbed + 3))
+    geo.write('{},'.format(Npttop + Nptbed + 4))
+    geo.write('}; \n')
+    geo.write('Spline(8) = {')
+    geo.write('{},'.format(Npttop + Nptbed + 4))
+    geo.write('{}'.format(Npttop + Nptbed + 1))
+    geo.write('}; \n')
     
-    geo.write('Line Loop(5) = {1, 2, 3, 4}; \n')
-#    geo.write('Line Loop(4) = {2}; \n')
-#    geo.write('Plane Surface(6) = {3,4}; \n')
-    geo.write('Plane Surface(6) = {5}; \n')
-    geo.write('Physical Line(7) = {1}; \n')
-    geo.write('Physical Line(8) = {2}; \n')
-    geo.write('Physical Line(9) = {3}; \n')
-    geo.write('Physical Line(10) = {4}; \n')
-    geo.write('Physical Surface(11) = {6}; \n')
-    
-    
-# else it is lines, as a spline might not work in all case
-else:
-    nl=0
-    for j in range(0,Npt-1):
-        nl=nl+1
-        geo.write('Line({0}) = '.format(nl)+r'{'+'{0},{1}'.format(j+1,j+2)+r'}'+'; \n')
-    geo.write('Line({0}) = '.format(nl+1)+r'{'+'{0},{1}'.format(j+2,1)+r'}'+'; \n')
-    
-    nl = nl+1
-    for j in range(0,Nptc-1):
-        nl=nl+1
-        geo.write('Line({0}) = '.format(nl)+r'{'+'{0},{1}'.format(Npt+j+1,Npt+j+2)+r'}'+'; \n')
-    geo.write('Line({0}) = '.format(nl+1)+r'{'+'{0},{1}'.format(Npt+j+2,Npt+1)+r'}'+'; \n')
-    
-    geo.write('Compound Line({0}) = '.format(nl+2)+r'{')
-    for j in range(0,Npt-1):
-        geo.write('{0}, '.format(j+1))
-    geo.write('{0}'.format(j+2)+'}; \n')
-    
-    geo.write('Compound Line({0}) = '.format(nl+3)+r'{')
-    for j in range(0,Nptc-1):
-        geo.write('{0}, '.format(Npt+j+1))
-    geo.write('{0}'.format(Npt+j+2)+'}; \n')
-    
-    geo.write('Line Loop({0}) = '.format(nl+4)+r'{'+'{0}'.format(nl+2)+r'};'+' \n')
-    geo.write('Line Loop({0}) = '.format(nl+5)+r'{'+'{0}'.format(nl+3)+r'};'+' \n')
-    
-    geo.write('Plane Surface({0}) = '.format(nl+6)+r'{'+'{0},{1}'.format(nl+4,nl+5)+r'};'+' \n')
-    geo.write('Plane Surface({0}) = '.format(nl+7)+r'{'+'{0}'.format(nl+5)+r'};'+' \n')
-    
-    geo.write('Physical Line({0}) = '.format(nl+8)+r'{'+'{0}'.format(nl+2)+r'};'+' \n')
-    geo.write('Physical Surface({0}) = '.format(nl+9)+r'{'+'{0},{1}'.format(nl+6,nl+7)+r'};'+' \n')
+    geo.write('Line Loop(9) = {1, 2, 3, 4}; \n') ###domain contour
+    geo.write('Line Loop(10) = {5, 6, 7, 8}; \n') ###tunnel contour
+    geo.write('Plane Surface(11) = {9,10}; \n')
+    geo.write('Physical Line(12) = {1}; \n') ##BC top
+    geo.write('Physical Line(13) = {2}; \n') ##BC right side
+    geo.write('Physical Line(14) = {3}; \n') ##BC bottom
+    geo.write('Physical Line(15) = {4}; \n') ##BC left side
+    geo.write('Physical Line(16) = {5, 6, 7, 8}; \n') ##BC tunnel (Free surface)
+    geo.write('Physical Surface(17) = {11}; \n')
+
 
 geo.close()
