@@ -23,7 +23,7 @@ from pathlib import Path
 pathroot_mycode = Path('/home/brondexj/Documents/GrandeMotteTignes/Maillages/.')
 # Test these options
     # edge size of the elements
-el_size = 0.8
+el_size = 0.6
 el_sizec = 0.1
     # Spline or line 
 spline = True
@@ -37,7 +37,9 @@ Shapes = ['Rectangle', 'Circle', 'Ovoide']
 Shape= Shapes[0]
     #### Width of tunnel
 Widths = [1,1.5,2]
-Width = Widths[0]
+Width = Widths[2]
+Width_Names=['100','150','200']
+Width_Name = Width_Names[2]
 
 file_name_top = 'DEM_Top_{}.dat'.format(Transect)
 file_name_bed = 'DEM_Bed_{}.dat'.format(Transect)
@@ -57,7 +59,7 @@ MainContour=MainContour.reset_index(drop=True)
 
 
 # Open the output file
-file_name_output='GrandeMotte_{}_{}.geo'.format(Transect,Shape)
+file_name_output='GrandeMotte_{}_{}_W{}cm.geo'.format(Transect,Shape,Width_Name)
 geo = open(pathroot_mycode.joinpath(file_name_output), 'w')
 geo.write('// This a a geo file created using the python script Makegeo_2.py // \n')
 geo.write('Mesh.Algorithm=5; \n')
@@ -76,17 +78,26 @@ for j in range(0,Npttop):
 for j in range(0,Nptbed):
     np=np+1
     geo.write('Point({}) = '.format(np)+r'{'+' {0}, {1}, 0.0, lc'.format(DEM_bed['x'][j],DEM_bed['y'][j])+r'}'+'; \n')
-###...now we car about the points corresponding to the tunnel
+###...now we car about the points corresponding to the tunnel (it is important to turn unclokwise for the half-circle case)
 np=np+1
-####If rectangle
 ##Bottom left corner
 geo.write('Point({}) = '.format(np) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25-Width/2, Floor_altitude) + r'}' + '; \n')
-###Top left corner
-geo.write('Point({}) = '.format(np+1) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25-Width/2, Floor_altitude+2.0) + r'}' + '; \n')
-##Top right corner
-geo.write('Point({}) = '.format(np+2) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25+Width/2, Floor_altitude+2.0) + r'}' + '; \n')
 ###Bottom right corner
-geo.write('Point({}) = '.format(np+3) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25+Width/2, Floor_altitude) + r'}' + '; \n')
+geo.write('Point({}) = '.format(np+1) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25+Width/2, Floor_altitude) + r'}' + '; \n')
+###Top corners
+if Shape == 'Rectangle':
+    ### Top right
+    geo.write('Point({}) = '.format(np+2) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25+Width/2, Floor_altitude+2.5) + r'}' + '; \n')
+    ### Top Left
+    geo.write('Point({}) = '.format(np+3) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25-Width/2, Floor_altitude+2.5) + r'}' + '; \n')
+elif Shape == 'Circle':
+    ### Top right
+    geo.write('Point({}) = '.format(np+2) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25+Width/2, Floor_altitude+2.5-0.5*Width) + r'}' + '; \n')
+    ### Top Left
+    geo.write('Point({}) = '.format(np+3) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25-Width/2, Floor_altitude+2.5-0.5*Width) + r'}' + '; \n')
+###If circle, requires circle center as well
+if Shape == 'Circle':
+    geo.write('Point({}) = '.format(np+4) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25, Floor_altitude+2.5-0.5*Width) + r'}' + '; \n')
 
 # if spline
 if spline:
@@ -108,20 +119,29 @@ if spline:
     geo.write('Spline(4) = {')
     geo.write('{},'.format(Npttop+Nptbed))
     geo.write('1}; \n')
-    ###Now the spline for the tunnel
-    #####if rectangle
+    ###Now the spline for the tunnel (important to turn unclockwise)
+    ###Bottom line
     geo.write('Spline(5) = {')
     geo.write('{},'.format(Npttop+Nptbed + 1))
-    geo.write('{},'.format(Npttop + Nptbed + 2))
+    geo.write('{}'.format(Npttop + Nptbed + 2))
     geo.write('}; \n')
+    ###Right line
     geo.write('Spline(6) = {')
-    geo.write('{},'.format(Npttop + Nptbed + 2))
-    geo.write('{},'.format(Npttop + Nptbed + 3))
+    geo.write('{},'.format(Npttop+Nptbed + 2))
+    geo.write('{}'.format(Npttop + Nptbed + 3))
     geo.write('}; \n')
-    geo.write('Spline(7) = {')
-    geo.write('{},'.format(Npttop + Nptbed + 3))
-    geo.write('{},'.format(Npttop + Nptbed + 4))
-    geo.write('}; \n')
+    ###Top line (or half circle)
+    if Shape == 'Rectangle':
+        geo.write('Spline(7) = {')
+        geo.write('{},'.format(Npttop + Nptbed + 3))
+        geo.write('{}'.format(Npttop + Nptbed + 4))
+        geo.write('}; \n')
+    elif Shape == 'Circle':
+        geo.write('Circle(7) = {')
+        geo.write('{},'.format(Npttop + Nptbed + 3))
+        geo.write('{},'.format(Npttop + Nptbed + 5))
+        geo.write('{}'.format(Npttop + Nptbed + 4))
+        geo.write('}; \n')
     geo.write('Spline(8) = {')
     geo.write('{},'.format(Npttop + Nptbed + 4))
     geo.write('{}'.format(Npttop + Nptbed + 1))
