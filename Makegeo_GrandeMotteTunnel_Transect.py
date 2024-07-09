@@ -18,32 +18,35 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from pathlib import Path
 
-###Parameters of the various meshes
 ### Where to find the DEM files and store the .geo file:
 pathroot_mycode = Path('/home/brondexj/Documents/GrandeMotteTignes/Maillages/.')
-# Test these options
-    # edge size of the elements
+
+###################################################
+######## Parameters of the various meshes #########
+###################################################
+# edge size of the elements
 el_size = 0.6
 el_sizec = 0.1
-    # Spline or line 
-spline = True
-    #### Transect and corresponding tunnel floor altitude (1% slope)
+# Spline or line
+spline = True ###It seems to be working all the time here so True by default
+#### Transect and corresponding tunnel floor altitude (1% slope)
 Transect_Names = ['Transect1','Transect2','Transect3','Transect4','Transect5','Transect6']
 Transect=Transect_Names[0]
 Floor_altitudes=[2803.5,2803,2802.5,2802,2801.5,2801.12]
 Floor_altitude=Floor_altitudes[0]
-    #### Possible shapes of the tunnel
+#### Possible shapes of the tunnel
 Shapes = ['Rectangle', 'Circle', 'Ovoide']
-Shape= Shapes[0]
-    #### Width of tunnel
+Shape= Shapes[2]
+#### Width of tunnel (for Rectangle and Half Circle case only) and corresponding name (in cm) for output file name
 Widths = [1,1.5,2]
 Width = Widths[2]
 Width_Names=['100','150','200']
 Width_Name = Width_Names[2]
 
+###Get the bed and top DEM of the domain contour
 file_name_top = 'DEM_Top_{}.dat'.format(Transect)
 file_name_bed = 'DEM_Bed_{}.dat'.format(Transect)
-    # Load DEM
+# Load DEM
 Col_Names = ['x', 'y']
 DEM_top = pd.read_csv(pathroot_mycode.joinpath(file_name_top), names=Col_Names, delim_whitespace=True)
 Npttop = len(DEM_top.index)
@@ -57,18 +60,36 @@ cont=[DEM_top, DEM_bed]
 MainContour = pd.concat(cont)
 MainContour=MainContour.reset_index(drop=True)
 
-
-# Open the output file
+###If considered tunnel shape is the ovoid, then get the coordinates of the points of the shape
+if Shape=='Ovoide':
+    # x, y of the ovoide from parameterized curve method
+    t = np.linspace(-5, 5, 301)
+    x = 3.2 * t / (1 + t ** 2) ** 2
+    y = 3.2 / (1 + t ** 2) ** 2
+    df = pd.DataFrame({'xt': x, 'yt': y})
+    #### Remove points that are below 2.5m of maximum height
+    df = df[df['yt'] > np.max(df['yt']) - 2.5]
+    ###Add a last point corresponding to the center of the floor as the last line
+    df.loc[len(df.index)] = [0.0, np.max(df['yt']) - 2.5]  # adding a row
+    ###Now shift x to center tunnel at x=25
+    df['xt'] = df['xt'] + 25
+    ###Now shif y so that tunnel floor is at Floor_altitude
+    df['yt'] = Floor_altitude - np.min(df['yt']) + df['yt']
+    DEM_Ovoid = df.reset_index(drop=True)
+#######################################
+###NOW START WRITING THE .geo FILE ####
+#######################################
+# Open the output file and write some general info
 file_name_output='GrandeMotte_{}_{}_W{}cm.geo'.format(Transect,Shape,Width_Name)
 geo = open(pathroot_mycode.joinpath(file_name_output), 'w')
-geo.write('// This a a geo file created using the python script Makegeo_2.py // \n')
+geo.write('// This a a geo file created using the python script Makegeo_GrandeMotteTunnel_Transect.py // \n')
 geo.write('Mesh.Algorithm=5; \n')
 geo.write('// To control the element size, one can directly modify the lc values in the geo file // \n')
 geo.write('lc = {} ; \n'.format(el_size))
 geo.write('lcc = {} ; \n'.format(el_sizec))
-
-# write the points coordinates (x,y,0,lc)
-###DEM top and bed have to be treated separately to have their own BCs
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# write the points coordinates (x,y,0,lc) FOR THE DOMAIN CONTOUR
+###DEM top and bed have to be treated separately to have their own BCs for the domain contour
 np=0
 ###start by top nodes ...
 for j in range(0,Npttop):
@@ -78,77 +99,103 @@ for j in range(0,Npttop):
 for j in range(0,Nptbed):
     np=np+1
     geo.write('Point({}) = '.format(np)+r'{'+' {0}, {1}, 0.0, lc'.format(DEM_bed['x'][j],DEM_bed['y'][j])+r'}'+'; \n')
-###...now we car about the points corresponding to the tunnel (it is important to turn unclokwise for the half-circle case)
-np=np+1
-##Bottom left corner
-geo.write('Point({}) = '.format(np) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25-Width/2, Floor_altitude) + r'}' + '; \n')
-###Bottom right corner
-geo.write('Point({}) = '.format(np+1) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25+Width/2, Floor_altitude) + r'}' + '; \n')
-###Top corners
-if Shape == 'Rectangle':
-    ### Top right
-    geo.write('Point({}) = '.format(np+2) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25+Width/2, Floor_altitude+2.5) + r'}' + '; \n')
-    ### Top Left
-    geo.write('Point({}) = '.format(np+3) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25-Width/2, Floor_altitude+2.5) + r'}' + '; \n')
-elif Shape == 'Circle':
-    ### Top right
-    geo.write('Point({}) = '.format(np+2) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25+Width/2, Floor_altitude+2.5-0.5*Width) + r'}' + '; \n')
-    ### Top Left
-    geo.write('Point({}) = '.format(np+3) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25-Width/2, Floor_altitude+2.5-0.5*Width) + r'}' + '; \n')
-###If circle, requires circle center as well
-if Shape == 'Circle':
-    geo.write('Point({}) = '.format(np+4) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25, Floor_altitude+2.5-0.5*Width) + r'}' + '; \n')
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+###...now write the coordinates (x,y,0,lc) FOR THE TUNNEL CONTOUR
+####For the rectangle and half circle case, only a few points are required (it is important to turn counter-clokwise for the half-circle case)
+if Shape == 'Rectangle' or Shape == 'Circle':
+    ##Bottom left corner
+    geo.write('Point({}) = '.format(np+1) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25-Width/2, Floor_altitude) + r'}' + '; \n')
+    ###Bottom right corner
+    geo.write('Point({}) = '.format(np+2) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25+Width/2, Floor_altitude) + r'}' + '; \n')
+    ###Top corners
+    if Shape == 'Rectangle':
+        ### Top right
+        geo.write('Point({}) = '.format(np+3) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25+Width/2, Floor_altitude+2.5) + r'}' + '; \n')
+        ### Top Left
+        geo.write('Point({}) = '.format(np+4) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25-Width/2, Floor_altitude+2.5) + r'}' + '; \n')
+    elif Shape == 'Circle':
+        ### Top right
+        geo.write('Point({}) = '.format(np+3) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25+Width/2, Floor_altitude+2.5-0.5*Width) + r'}' + '; \n')
+        ### Top Left
+        geo.write('Point({}) = '.format(np+4) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25-Width/2, Floor_altitude+2.5-0.5*Width) + r'}' + '; \n')
+    ###If circle, requires circle center as well
+    if Shape == 'Circle':
+        geo.write('Point({}) = '.format(np+5) + r'{' + ' {0}, {1}, 0.0, lcc'.format(25, Floor_altitude+2.5-0.5*Width) + r'}' + '; \n')
+####For the ovoid shape more points are required
+elif Shape == 'Ovoide':
+    ####Get points coordinates from the DEM dataframe
+    for j in range(len(DEM_Ovoid)):
+        np = np + 1
+        geo.write('Point({}) = '.format(np) + r'{' + ' {0}, {1}, 0.0, lcc'.format(DEM_Ovoid['xt'][j], DEM_Ovoid['yt'][j]) + r'}' + '; \n')
+###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+###Now build the lines from the points
 # if spline
 if spline:
-    ###The spline corresponding to the top surface
+    ###The spline corresponding to the top surface of the domain
     geo.write('Spline(1) = {')
     for j in range(0,Npttop-1):
         geo.write('{},'.format(j+1))
     geo.write('{}'.format(Npttop)+'}; \n')
-    ###The spline corresponding to right side
+    ###The spline corresponding to right side of the domain
     geo.write('Spline(2) = {')
     geo.write('{},'.format(Npttop))
     geo.write('{}'.format(Npttop+1)+'}; \n')
-    ###The spline corresponding to the bed
+    ###The spline corresponding to the bed of the domain
     geo.write('Spline(3) = {')
     for j in range(0,Nptbed-1):
         geo.write('{},'.format(Npttop+j+1))
     geo.write('{}'.format(Npttop + Nptbed) + '}; \n')
-    ###The spline corresponding to right side
+    ###The spline corresponding to right side of the domain
     geo.write('Spline(4) = {')
     geo.write('{},'.format(Npttop+Nptbed))
     geo.write('1}; \n')
-    ###Now the spline for the tunnel (important to turn unclockwise)
-    ###Bottom line
-    geo.write('Spline(5) = {')
-    geo.write('{},'.format(Npttop+Nptbed + 1))
-    geo.write('{}'.format(Npttop + Nptbed + 2))
-    geo.write('}; \n')
-    ###Right line
-    geo.write('Spline(6) = {')
-    geo.write('{},'.format(Npttop+Nptbed + 2))
-    geo.write('{}'.format(Npttop + Nptbed + 3))
-    geo.write('}; \n')
-    ###Top line (or half circle)
-    if Shape == 'Rectangle':
-        geo.write('Spline(7) = {')
-        geo.write('{},'.format(Npttop + Nptbed + 3))
-        geo.write('{}'.format(Npttop + Nptbed + 4))
+    ###Now the spline for the tunnel (important to turn counter-clockwise for the half circle case)
+    if Shape == 'Rectangle' or Shape == 'Circle':
+        ###Bottom line
+        geo.write('Spline(5) = {')
+        geo.write('{},'.format(Npttop+Nptbed + 1))
+        geo.write('{}'.format(Npttop + Nptbed + 2))
         geo.write('}; \n')
-    elif Shape == 'Circle':
-        geo.write('Circle(7) = {')
-        geo.write('{},'.format(Npttop + Nptbed + 3))
-        geo.write('{},'.format(Npttop + Nptbed + 5))
-        geo.write('{}'.format(Npttop + Nptbed + 4))
+        ###Right line
+        geo.write('Spline(6) = {')
+        geo.write('{},'.format(Npttop+Nptbed + 2))
+        geo.write('{}'.format(Npttop + Nptbed + 3))
         geo.write('}; \n')
-    geo.write('Spline(8) = {')
-    geo.write('{},'.format(Npttop + Nptbed + 4))
-    geo.write('{}'.format(Npttop + Nptbed + 1))
-    geo.write('}; \n')
-    
+        ###Top line (or half circle)
+        if Shape == 'Rectangle':
+            geo.write('Spline(7) = {')
+            geo.write('{},'.format(Npttop + Nptbed + 3))
+            geo.write('{}'.format(Npttop + Nptbed + 4))
+            geo.write('}; \n')
+        elif Shape == 'Circle':
+            geo.write('Circle(7) = {')
+            geo.write('{},'.format(Npttop + Nptbed + 3))
+            geo.write('{},'.format(Npttop + Nptbed + 5))
+            geo.write('{}'.format(Npttop + Nptbed + 4))
+            geo.write('}; \n')
+        geo.write('Spline(8) = {')
+        geo.write('{},'.format(Npttop + Nptbed + 4))
+        geo.write('{}'.format(Npttop + Nptbed + 1))
+        geo.write('}; \n')
+    elif Shape == 'Ovoide':
+        ###Ovoid walls without floor
+        geo.write('Spline(5) = {')
+        for j in range(len(DEM_Ovoid)-2):
+            geo.write('{},'.format(Npttop+Nptbed + j + 1))
+        geo.write('{}'.format(Npttop+Nptbed + len(DEM_Ovoid)-1) + '}; \n')
+        ###Ovoid floor
+        geo.write('Spline(6) = {')
+        geo.write('{},'.format(Npttop + Nptbed + len(DEM_Ovoid) - 1))
+        geo.write('{},'.format(Npttop + Nptbed + len(DEM_Ovoid)))
+        geo.write('{}'.format(Npttop + Nptbed + 1))
+        geo.write('}; \n')
+    ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ###Now build the line loops
     geo.write('Line Loop(9) = {1, 2, 3, 4}; \n') ###domain contour
-    geo.write('Line Loop(10) = {5, 6, 7, 8}; \n') ###tunnel contour
+    if Shape == 'Rectangle' or Shape == 'Circle': ###tunnel contour
+        geo.write('Line Loop(10) = {5, 6, 7, 8}; \n')
+    elif Shape == 'Ovoide':
+        geo.write('Line Loop(10) = {5, 6}; \n')
     geo.write('Plane Surface(11) = {9,10}; \n')
     geo.write('Physical Line(12) = {1}; \n') ##BC top
     geo.write('Physical Line(13) = {2}; \n') ##BC right side
