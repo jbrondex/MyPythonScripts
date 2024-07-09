@@ -38,7 +38,17 @@ Shapes = ['Rectangle', 'Circle', 'Ovoide']
 Widths = [1,1.5,2]
 Width_Names=['100','150','200']
 
-
+###Build the ovoid DEM from parameterized curve method for the ovoid shape (based on RTM ppt)
+t = np.linspace(-5, 5, 301)
+x = 3.2 * t / (1 + t ** 2) ** 2
+y = 3.2 / (1 + t ** 2) ** 2
+df = pd.DataFrame({'xo': x, 'yo': y})
+#### Remove points that are below 2.5m of maximum height
+df = df[df['yo'] > np.max(df['yo']) - 2.5]
+###Add a last point corresponding to the center of the floor as the last line
+df.loc[len(df.index)] = [0.0, np.max(df['yo']) - 2.5]  # adding a row
+df = df.reset_index(drop=True)
+Floor_Ovoid = np.min(df['yo'])
 #########################################################
 ########## START LOOP ON TRANSECTS ######################
 #########################################################
@@ -71,20 +81,8 @@ for (Transect, Floor_altitude) in zip(Transect_Names,Floor_altitudes):
         for k,(Width,Width_Name) in enumerate(zip(Widths, Width_Names)):
             if Shape == 'Ovoide':
                 if k==0:
-                    ###Build the ovoid DEM from parameterized curve method for the ovoid shape (based on RTM ppt)
-                    t = np.linspace(-5, 5, 301)
-                    x = 3.2 * t / (1 + t ** 2) ** 2
-                    y = 3.2 / (1 + t ** 2) ** 2
-                    df = pd.DataFrame({'xt': x, 'yt': y})
-                    #### Remove points that are below 2.5m of maximum height
-                    df = df[df['yt'] > np.max(df['yt']) - 2.5]
-                    ###Add a last point corresponding to the center of the floor as the last line
-                    df.loc[len(df.index)] = [0.0, np.max(df['yt']) - 2.5]  # adding a row
                     ###For the ovoid case, the tunnel must be centered based on floor altitude
-                    df['xt'] = df['xt'] + 25
-                    ###Now shif y so that tunnel floor is at Floor_altitude
-                    df['yt'] = Floor_altitude - np.min(df['yt']) + df['yt']
-                    DEM_Ovoid = df.reset_index(drop=True)
+                    DEM_Ovoid = pd.DataFrame({'xt': df['xo'] + 25, 'yt': Floor_altitude - Floor_Ovoid + df['yo']})
                 else: ###for the ovoid tunnel, we do not try several widths so only go through the loop once
                     break
             #######################################
