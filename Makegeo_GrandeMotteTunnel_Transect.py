@@ -14,7 +14,6 @@ using QGIS. For each transect we add a tunnel footprint considering 3 possible s
 # points defining the contour of the glacier and the contour of the cavity
 #
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
 from pathlib import Path
 
@@ -54,8 +53,8 @@ Floor_Ovoid = np.min(df['yo'])
 #########################################################
 for (Transect, Floor_altitude) in zip(Transect_Names,Floor_altitudes):
     ###Get the bed and top DEM of the domain contour
-    file_name_top = 'DEM_Top_{}.dat'.format(Transect)
-    file_name_bed = 'DEM_Bed_{}.dat'.format(Transect)
+    file_name_top = './DEMs/DEM_Top_{}.dat'.format(Transect)
+    file_name_bed = './DEMs/DEM_Bed_{}.dat'.format(Transect)
     # Load DEM of domain
     Col_Names = ['x', 'y']
     DEM_top = pd.read_csv(pathroot_mycode.joinpath(file_name_top), names=Col_Names, delim_whitespace=True)
@@ -216,6 +215,5 @@ for (Transect, Floor_altitude) in zip(Transect_Names,Floor_altitudes):
                 geo.write('Physical Line(15) = {4}; \n') ##BC left side
                 geo.write('Physical Line(16) = {5, 6, 7, 8}; \n') ##BC tunnel (Free surface)
                 geo.write('Physical Surface(17) = {11}; \n')
-
-
             geo.close()
+
