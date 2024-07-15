@@ -41,13 +41,13 @@ el_sizec = 0.1
 # Spline or line
 spline = True ###It seems to be working all the time here so True by default
 #### Transect and corresponding tunnel floor altitude (1% slope)
-Transect_Names = ['Transect1']##,'Transect2','Transect3','Transect4','Transect5','Transect6']
-Floor_altitudes=[2803.5]##,2803,2802.5,2802,2801.5,2801.12]
+Transect_Names = ['Transect1','Transect2','Transect3','Transect4','Transect5','Transect6']
+Floor_altitudes=[2803.5,2803,2802.5,2802,2801.5,2801.12]
 #### Possible shapes of the tunnel
 Shapes = ['Rectangle', 'Circle', 'Ovoide']
 #### Width of tunnel (for Rectangle and Half Circle case only) and corresponding name (in cm) for output file name
-Widths = [1]##,1.5,2]
-Width_Names=['100']##,'150','200']
+Widths = [1,1.5,2]
+Width_Names=['100','150','200']
 
 ###Build the ovoid DEM from parameterized curve method for the ovoid shape (based on RTM ppt)
 t = np.linspace(-5, 5, 301)
