@@ -71,8 +71,8 @@ plt.rc('axes', labelsize=22)
 plt.rc('legend', fontsize=26)
 
 ###Parameters of figure
-fig2, axes = plt.subplots(4, 3, figsize=(12, 17), sharey= True)
-fig2.subplots_adjust(hspace=0.11,wspace=0.0)
+fig2, axes = plt.subplots(4, 3, figsize=(0.84*10, 1.03*18), sharex= True, sharey= True)
+fig2.subplots_adjust(hspace=0.09,wspace=0.05)
 for i in range(0,4):
     for j in range(0,3):
         ax = axes[i,j]
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     #########################################################################
     #### Transect and corresponding tunnel floor altitude (1% slope)
     Col_Names_Transient = ['Tsp','CallCount','BC','Node','X','Y','Z','Vx','Vy','SigmaI','Vn','Sigma_nn']
-    Transect = 'Transect1'
+    Transect = 'Transect5'
     Floor_altitudes = [2803.5]
     #### Cases before/after incision
     Cases=['TunnelInit', 'TunnelIncised_StraightWalls', 'TunnelIncised_IncurvedWalls', 'Channel']
@@ -164,34 +164,34 @@ if __name__ == "__main__":
             elif Shape == 'Rectangle':
                 if Case == 'Channel':
                     filename_output = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_{2}_{0}_Rect_{3}_NoSlid_.dat'.format(Transect, Shape, Case, Width_Name)
-                    # filename_output_w100 = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_{2}_{0}_Rect_W100cm_NoSlid_.dat'.format(Transect, Shape, Case)
+                    filename_output_w100 = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_{2}_{0}_Rect_W100cm_NoSlid_.dat'.format(Transect, Shape, Case)
                     # filename_output_w150 = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_{2}_{0}_Rect_W150cm_NoSlid_.dat'.format(Transect, Shape, Case)
                     # filename_output_w200 = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_{2}_{0}_Rect_W200cm_NoSlid_.dat'.format(Transect, Shape, Case)
                 else:
                     filename_output = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_{2}_{0}_Rect_{3}_.dat'.format(Transect, Shape, Case, Width_Name)
-                    # filename_output_w100 = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_{2}_{0}_Rect_W100cm_.dat'.format(Transect, Shape, Case)
+                    filename_output_w100 = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_{2}_{0}_Rect_W100cm_.dat'.format(Transect, Shape, Case)
                     # filename_output_w150 = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_{2}_{0}_Rect_W150cm_.dat'.format(Transect, Shape, Case)
                     # filename_output_w200 = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_{2}_{0}_Rect_W200cm_.dat'.format(Transect, Shape, Case)
             elif Shape == 'Circle':
                 if Case == 'Channel':
                     filename_output = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_{2}_{0}_Circ_{3}_NoSlid_.dat'.format(Transect, Shape, Case, Width_Name)
-                    # filename_output_w100 = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_{2}_{0}_Circ_W100cm_NoSlid_.dat'.format(Transect, Shape, Case)
+                    filename_output_w100 = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_{2}_{0}_Circ_W100cm_NoSlid_.dat'.format(Transect, Shape, Case)
                     # filename_output_w150 = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_{2}_{0}_Circ_W150cm_NoSlid_.dat'.format(Transect, Shape, Case)
                     # filename_output_w200 = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_{2}_{0}_Circ_W200cm_NoSlid_.dat'.format(Transect, Shape, Case)
                 else:
                     filename_output = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_{2}_{0}_Circ_{3}_.dat'.format(Transect, Shape, Case, Width_Name)
-                    # filename_output_w100 = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_{2}_{0}_Circ_W100cm_.dat'.format(Transect, Shape, Case)
+                    filename_output_w100 = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_{2}_{0}_Circ_W100cm_.dat'.format(Transect, Shape, Case)
                     # filename_output_w150 = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_{2}_{0}_Circ_W150cm_.dat'.format(Transect, Shape, Case)
                     # filename_output_w200 = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_{2}_{0}_Circ_W200cm_.dat'.format(Transect, Shape, Case)
             df0 = pd.read_csv(pathroot_mycode.joinpath(filename_output), names=Col_Names_Transient,delim_whitespace=True)
-            # if not (Shape=='Ovoide'):
-            #     df0_w100 = pd.read_csv(pathroot_mycode.joinpath(filename_output_w100), names=Col_Names_Transient,delim_whitespace=True)
+            if not (Shape=='Ovoide'):
+                 df0_w100 = pd.read_csv(pathroot_mycode.joinpath(filename_output_w100), names=Col_Names_Transient,delim_whitespace=True)
             #     df0_w150 = pd.read_csv(pathroot_mycode.joinpath(filename_output_w150), names=Col_Names_Transient,delim_whitespace=True)
             #     df0_w200 = pd.read_csv(pathroot_mycode.joinpath(filename_output_w200), names=Col_Names_Transient,delim_whitespace=True)
             #### Keep only first tsp
             df = df0[df0['Tsp']==1]
-            # if not (Shape=='Ovoide'):
-            #     df_w100 = df0_w100[df0_w100['Tsp']==1]
+            if not (Shape=='Ovoide'):
+                 df_w100 = df0_w100[df0_w100['Tsp']==1]
             #     df_w150  = df0_w150 [df0_w150['Tsp']==1]
             #     df_w200  = df0_w200 [df0_w200 ['Tsp']==1]
             ### get (closed) contour of initial tunnel
@@ -202,17 +202,23 @@ if __name__ == "__main__":
             ###Sort coordinates of contour clockwise
             xy = np.array([xt_init, yt_init])
             xy = np.transpose(xy)
-            xy_sorted = sort_coordinates(xy)
-            # if not (Shape=='Ovoide'):
-            #     ###case w100
-            #     xt_init_w100 = df_w100['X'].values
-            #     xt_init_w100 = np.append(xt_init_w100, xt_init_w100[0])
-            #     yt_init_w100 = df_w100['Y'].values
-            #     yt_init_w100 = np.append(yt_init_w100, yt_init_w100[0])
-            #     ###Sort coordinates of contour clockwise
-            #     xy_w100 = np.array([xt_init_w100, yt_init_w100])
-            #     xy_w100 = np.transpose(xy_w100)
-            #     xy_w100_sorted = sort_coordinates(xy_w100)
+            if not (Case == 'Channel'):
+                xy_sorted = sort_coordinates(xy)
+            else:
+                xy_sorted = xy
+            if not (Shape=='Ovoide'):
+                 ###case w100
+                 xt_init_w100 = df_w100['X'].values
+                 xt_init_w100 = np.append(xt_init_w100, xt_init_w100[0])
+                 yt_init_w100 = df_w100['Y'].values
+                 yt_init_w100 = np.append(yt_init_w100, yt_init_w100[0])
+                 ###Sort coordinates of contour clockwise
+                 xy_w100 = np.array([xt_init_w100, yt_init_w100])
+                 xy_w100 = np.transpose(xy_w100)
+                 if not (Case == 'Channel'):
+                    xy_w100_sorted = sort_coordinates(xy_w100)
+                 else:
+                    xy_w100_sorted = xy_w100
             #     ###case w150
             #     xt_init_w150 = df_w150['X'].values
             #     xt_init_w150 = np.append(xt_init_w150, xt_init_w150[0])
@@ -249,6 +255,9 @@ if __name__ == "__main__":
             ax.fill_between(np.array(DEM_bed['x'].values, dtype=float), np.array(DEM_bed['y'].values, dtype=float), 2801, color='lightblue')
             ###Plot contour of tunnel and fill in in white
             ax.add_patch(Patch.Polygon(xy_sorted, closed=True, fill=True, facecolor= 'w', edgecolor='k' ))
+            ###Plot contour of tunnel for the rectangle/circle case for w100 and w150
+            if not (Shape == 'Ovoide'):
+                ax.add_patch(Patch.Polygon(xy_w100_sorted, closed=True, fill=False, edgecolor='k', linestyle=':'))
             ###For the circle and rectangle shape plot the width 100cm and 150cm cases
             # if not (Shape=='Ovoide'):
             #     ax.plot(xy_w100_sorted[0],xy_w100_sorted[1],color='k', linewidth=1, linestyle=':')
