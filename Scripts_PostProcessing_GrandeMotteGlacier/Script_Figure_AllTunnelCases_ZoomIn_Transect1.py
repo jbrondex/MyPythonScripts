@@ -270,7 +270,7 @@ if __name__ == "__main__":
     ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
     ###~~~         SAVE THE PLOTS (ONE PER SHAPE/WIDTH)          ~~###
     ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
-    name_output_fig2 = 'AllCases_AllShapes_@0a_{}_'.format(Transect)
+    name_output_fig2 = 'AllCases_AllShapes_@1m_{}_'.format(Transect)
     name_path_fig2 = '/home/brondexj/BETTIK/GrandeMotteTignes/RunTransient_Closure/Postprocessing/Figures/.'
     path_output_fig2 = Path(name_path_fig2)
     fig2.savefig(path_output_fig2.joinpath(name_output_fig2))
