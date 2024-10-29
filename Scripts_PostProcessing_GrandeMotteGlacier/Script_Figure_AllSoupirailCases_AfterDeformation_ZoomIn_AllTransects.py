@@ -92,13 +92,14 @@ if __name__ == "__main__":
     BottomTunnel_altitudes = [2792.2, 2791.7, 2791.2, 2790.7, 2790.2, 2789.82]
     #### Cases before/after incision
     Cases=['Soupirail_WithSlid', 'Soupirail_NoSlid']
+   # Cases=['Soupirail_WithSlid']
     #### Possible shapes of the tunnel
     Shapes = ['Ovoide']
     #### Width of tunnel (for Rectangle and Half Circle case only) and corresponding name (in cm) for output file name
     Widths = [1, 1.5, 2]
     Width_Names = ['W100cm','W150cm', 'W200cm']
     ###Times in months at which we want to plot the deformed tunnel (and corresponding names for title)
-    Times = [6, 9, 12]
+    Times = [6*5, 9*5, 12*5]##5 tsp each month for the case with 60 tsp per year
     Time_Names = ['@6m', '@9m', '@1a']
     ######################################################
     ########## START LOOP ON SHAPES ######################
@@ -128,10 +129,12 @@ if __name__ == "__main__":
                     axes = np.empty(shape=(1, 3), dtype=object)  ##This will be for subsubplots
                     inner = gridspec.GridSpecFromSubplotSpec(1, 3, subplot_spec=outer[k], hspace=0, wspace=0)
                     ###Get the bed and top DEM of the domain contour
-                    file_name_bed = './Maillages/DEMs/DEM_Bed_{}.dat'.format(Transect)
+                    file_name_bed = './RunTransient_Closure/DEMs/DEM_BedRefined_{}.dat'.format(Transect)
                     # Load DEMs of domain
                     Col_Names = ['x', 'y']
                     DEM_bed = pd.read_csv(pathroot_mycode.joinpath(file_name_bed), names=Col_Names,delim_whitespace=True)
+                    ### Remove first line which contains number of line
+                    DEM_bed.drop(index=DEM_bed.index[0], axis=0, inplace=True)
                     ###Get ybed at x=25 for placing the cross
                     df_ybed = DEM_bed.iloc[(DEM_bed['x'] - 25).abs().argsort()[:2]]
                     ybedmiddle = Interpolate_on_bed(DEM_bed, 25)
@@ -142,19 +145,19 @@ if __name__ == "__main__":
                     ###Open the elmer output file
                     if Shape == 'Ovoide':
                         if Case == 'Soupirail_WithSlid':
-                            filename_output = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_Soupirail_{0}_Ovo_Slid_.dat'.format(Transect, Shape)
+                            filename_output = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_Soupirail_{0}_Ovo_Slid_60StepPerY_.dat'.format(Transect, Shape)
                         elif Case == 'Soupirail_NoSlid':
-                            filename_output = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_Soupirail_{0}_Ovo_NoSlid_.dat'.format(Transect, Shape)
+                            filename_output = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_Soupirail_{0}_Ovo_NoSlid_60StepPerY_.dat'.format(Transect, Shape)
                     elif Shape == 'Rectangle':
                         if Case == 'Soupirail_WithSlid':
-                            filename_output = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_Soupirail_{0}_Rect_{2}_Slid_.dat'.format(Transect, Shape, Width_Name)
+                            filename_output = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_Soupirail_{0}_Rect_{2}_Slid_60StepPerY_.dat'.format(Transect, Shape, Width_Name)
                         elif Case == 'Soupirail_NoSlid':
-                            filename_output = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_Soupirail_{0}_Rect_{2}_NoSlid_.dat'.format(Transect, Shape, Width_Name)
+                            filename_output = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_Soupirail_{0}_Rect_{2}_NoSlid_60StepPerY_.dat'.format(Transect, Shape, Width_Name)
                     elif Shape == 'Circle':
                         if Case == 'Soupirail_WithSlid':
-                            filename_output = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_Soupirail_{0}_Circ_{2}_Slid_.dat'.format(Transect, Shape, Width_Name)
+                            filename_output = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_Soupirail_{0}_Circ_{2}_Slid_60StepPerY_.dat'.format(Transect, Shape, Width_Name)
                         elif Case == 'Soupirail_NoSlid':
-                            filename_output = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_Soupirail_{0}_Circ_{2}_NoSlid_.dat'.format(Transect, Shape, Width_Name)
+                            filename_output = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/TunnelOutput_Soupirail_{0}_Circ_{2}_NoSlid_60StepPerY_.dat'.format(Transect, Shape, Width_Name)
                     #####Load the Elmer output file
                     df0 = pd.read_csv(pathroot_mycode.joinpath(filename_output), names=Col_Names_Transient,delim_whitespace=True)
                     ###################################################
@@ -167,23 +170,23 @@ if __name__ == "__main__":
                         xt_init = df['X'].values
                         yt_init = df['Y'].values
                         ### for transect 4 remove righter-most points
-                        if Transect == 'Transect4':
-                            xt_init=xt_init[2::]
-                            yt_init=yt_init[2::]
-                            ###Bring back rightmost point on bed
-                            yt_right_on_bed = Interpolate_on_bed(DEM_bed, xt_init[0])
-                            yt_init[0]=yt_right_on_bed
-                        elif Transect == 'Transect5':##Same for Transect 5 but for only one point
-                            xt_init=xt_init[1::]
-                            yt_init=yt_init[1::]
-                            ###Bring back rightmost point on bed
-                            yt_right_on_bed = Interpolate_on_bed(DEM_bed, xt_init[0])
-                            yt_init[0]=yt_right_on_bed
-                        elif Transect == 'Transect6':##For T6 just reproject first and last point on bed
-                            yt_right_on_bed = Interpolate_on_bed(DEM_bed, xt_init[0])
-                            yt_init[0]=yt_right_on_bed
-                            yt_left_on_bed = Interpolate_on_bed(DEM_bed, xt_init[-1])
-                            yt_init[-1]=yt_left_on_bed
+                        # if Transect == 'Transect4':
+                        #     xt_init=xt_init[2::]
+                        #     yt_init=yt_init[2::]
+                        #     ###Bring back rightmost point on bed
+                        #     yt_right_on_bed = Interpolate_on_bed(DEM_bed, xt_init[0])
+                        #     yt_init[0]=yt_right_on_bed
+                        # # elif Transect == 'Transect5':##Same for Transect 5 but for only one point
+                        #     # xt_init=xt_init[1::]
+                        #     # yt_init=yt_init[1::]
+                        #     ###Bring back rightmost point on bed
+                        #     # yt_right_on_bed = Interpolate_on_bed(DEM_bed, xt_init[0])
+                        #     # yt_init[0]=yt_right_on_bed
+                        # elif Transect == 'Transect6':##For T6 just reproject first and last point on bed
+                        #     yt_right_on_bed = Interpolate_on_bed(DEM_bed, xt_init[0])
+                        #     yt_init[0]=yt_right_on_bed
+                        #     yt_left_on_bed = Interpolate_on_bed(DEM_bed, xt_init[-1])
+                        #     yt_init[-1]=yt_left_on_bed
 
                         # yt_init[-1] = Interpolate_on_bed(DEM_bed,xt_init[-1])
                         ###Add middle point of bed
@@ -247,12 +250,12 @@ if __name__ == "__main__":
                 ###~~~         SAVE THE PLOTS (ONE PER SHAPE/WIDTH)          ~~###
                 ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
                 ###Save figure with full transect profile and initial tunnel shape
-                name_output_fig4 = 'DeformationAt6_9_12months_AllTransects_{0}_Ovoide'.format(Case,Shape)
-                name_path_fig4 = '/home/brondexj/BETTIK/GrandeMotteTignes/RunTransient_Closure/Postprocessing/Figures/.'
-                path_output_fig4 = Path(name_path_fig4)
-                fig4.savefig(path_output_fig4.joinpath(name_output_fig4))
+                # name_output_fig4 = 'DeformationAt6_9_12months_AllTransects_{0}_Ovoide'.format(Case,Shape)
+                # name_path_fig4 = '/home/brondexj/BETTIK/GrandeMotteTignes/RunTransient_Closure/Postprocessing/Figures/.'
+                # path_output_fig4 = Path(name_path_fig4)
+                # fig4.savefig(path_output_fig4.joinpath(name_output_fig4))
 
-                plt.show()
+                # plt.show()
 
 
 
