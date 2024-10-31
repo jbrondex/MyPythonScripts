@@ -198,7 +198,7 @@ if __name__ == "__main__":
         ##Hayurst:
         alphaH = 0.21
         betaH = 0.63
-        Data_Simu_NoD['SigmaHa'] = alphaH*Data_Simu_NoD['SigmaI']+betaH*Data_Simu_NoD['SigmaVM']+(1-alphaH-betaH)*3*Data_Simu_NoD['Pressure']
+        Data_Simu_NoD['SigmaHa'] = alphaH*Data_Simu_NoD['SigmaI']+betaH*Data_Simu_NoD['SigmaVM']+(1-alphaH-betaH)*(-3*Data_Simu_NoD['Pressure'])
         ##Coulomb:
         mu = 0.1
         Data_Simu_NoD['SigmaC'] = 0.5 * (Data_Simu_NoD['SigmaI']-Data_Simu_NoD['SigmaIII']) - 0.5*mu*(Data_Simu_NoD['SigmaI']+Data_Simu_NoD['SigmaIII'])
