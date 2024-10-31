@@ -198,7 +198,7 @@ if __name__ == "__main__":
         ##Hayurst:
         alphaH = 0.21
         betaH = 0.63
-        Data_Simu_NoD['SigmaHa'] = alphaH*Data_Simu_NoD['SigmaI']+betaH*Data_Simu_NoD['SigmaVM']+(1-alphaH-betaH)*Data_Simu_NoD['Pressure']
+        Data_Simu_NoD['SigmaHa'] = alphaH*Data_Simu_NoD['SigmaI']+betaH*Data_Simu_NoD['SigmaVM']+(1-alphaH-betaH)*3*Data_Simu_NoD['Pressure']
         ##Coulomb:
         mu = 0.1
         Data_Simu_NoD['SigmaC'] = 0.5 * (Data_Simu_NoD['SigmaI']-Data_Simu_NoD['SigmaIII']) - 0.5*mu*(Data_Simu_NoD['SigmaI']+Data_Simu_NoD['SigmaIII'])
@@ -207,80 +207,80 @@ if __name__ == "__main__":
     # ###################################################################################################
     # ###     PLOT MAP OF EQUIVALENT STRESS AT THE SURFACE AT THE END OF PUMPING FOR EACH CRITERION   ###
     # ###################################################################################################
-    # ### Get the last day of the step pumping 2010
-    # Df_LastDayPump2010=Data_Simu_NoD[Data_Simu_NoD['DayOfSimu']==np.max(Data_Simu_NoD[Data_Simu_NoD['Step']=='Pump2010']['DayOfSimu'])].copy()
-    # ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ### Start loop on the various criterion considered
-    # for Criterion in ['SigmaI', 'SigmaVM', 'SigmaHa', 'SigmaC']:
-    #     ###Fig 1 is the map of Teterousse, pimp style
-    #     fig1 = plt.figure(1, figsize=(40, 20))
-    #     plt.xlabel(r'X [km]', fontsize=21)
-    #     plt.ylabel(r'Y [km]', fontsize=21)
-    #     plt.tick_params(labelsize=20)  # fontsize of the tick labels
-    #     plt.grid(True)
-    #     plt.grid(alpha=0.5)
-    #     ### Get the figure
-    #     fig1 = plt.figure(1)
-    #     plt.xlim([(np.floor(np.min(Df_LastDayPump2010['X']))-40)/1000, (np.floor(np.max(Df_LastDayPump2010['X']))+40)/1000])
-    #     plt.ylim([(np.floor(np.min(Df_LastDayPump2010['Y']))-40)/1000, (np.floor(np.max(Df_LastDayPump2010['Y']))+40)/1000])
-    #     ###Force x and y axis to same scale
-    #     ax = plt.gca()
-    #     ax.set_aspect('equal', adjustable='box')
-    #     ###Create refined regular grid and interpolate field over grid
-    #     x = np.arange(np.floor(np.min(Df_LastDayPump2010['X']))-40,np.floor(np.max(Df_LastDayPump2010['X']))+40,0.1)
-    #     y = np.arange(np.floor(np.min(Df_LastDayPump2010['Y']))-40,np.floor(np.max(Df_LastDayPump2010['Y']))+40,0.1)
-    #     X, Y = np.meshgrid(x, y)
-    #     SigmaEq = Interpolate_field(Df_LastDayPump2010,Criterion,X,Y)
-    #     #shading
-    #     clevs=np.arange(0.0,0.16,0.001) ## cbar for shading
-    #     cmap='coolwarm'
-    #     ##contour
-    #     levels= np.arange(-0.04,0.2,0.04)# contour internal
-    #     #colorbar
-    #     levs_ticks=np.arange(0.0,0.18,0.02)
-    #     ###Fills up the map with colors for SigmaEq
-    #     CS1 = plt.contourf(X/1000, Y/1000, SigmaEq, clevs, cmap=cmap,extend='both')
-    #     plt.plot(xc / 1000, yc / 1000, color='k', linewidth=2)
-    #     ###Show colorbar
-    #     cbar = plt.colorbar(CS1, ticks=levs_ticks, orientation='vertical', label=r'$\sigma_I$ [MPa]')
-    #     ##contour at SigmaEq=0.12 MPa(proposed threshold)
-    #     # CS = plt.contour(X, Y, SigmaEq,[0.0], colors='yellow') ## lines (f(x) contour)
-    #     # plt.clabel(CS, inline=True, fontsize=10) ## numbers in contours
-    #     ###Below we remove colors that are outside of glacier contour
-    #     clippath = mpltPath(np.c_[xc/1000, yc/1000])
-    #     patch = PathPatch(clippath, facecolor='none')
-    #     ax = plt.gca()
-    #     ax.add_patch(patch)
-    #     for c in CS1.collections:
-    #         c.set_clip_path(patch)
-    #     ####Plot transects over which SigmaEq will be plot on map
-    #     for i,(Transect_Name, Coord_pt1, Coord_pt2) in enumerate(zip(List_Transect, List_Coord_pt1,List_Coord_pt2)):
-    #         ###Use functions to return coords of transect
-    #         coord_transect = Coord_transect(Coord_pt1, Coord_pt2)
-    #         ###Plot transect on map
-    #         plt.plot(coord_transect[0]/1000,coord_transect[1]/1000,color='k',linestyle='-',linewidth=4)
-    #         ###Annotate transect name
-    #         if Transect_Name == "AA'":
-    #             plt.annotate(Transect_Name[0], ((coord_transect[0][0]-10)/1000, (coord_transect[1][0]-8)/1000), size=17, weight='bold')
-    #             plt.annotate(Transect_Name[1:], ((coord_transect[0][-1]+3)/1000, (coord_transect[1][-1]-4)/1000), size=17, weight='bold')
-    #         elif Transect_Name == "BB'":
-    #             plt.annotate(Transect_Name[0], ((coord_transect[0][0]-12)/1000, (coord_transect[1][0]+2)/1000), size=17, weight='bold')
-    #             plt.annotate(Transect_Name[1:], ((coord_transect[0][-1]+3)/1000, (coord_transect[1][-1]-9)/1000), size=17, weight='bold')
-    #         elif Transect_Name == "CC'":
-    #             plt.annotate(Transect_Name[0], ((coord_transect[0][0]-12)/1000, (coord_transect[1][0]+2)/1000), size=17, weight='bold')
-    #             plt.annotate(Transect_Name[1:], ((coord_transect[0][-1]+4)/1000, (coord_transect[1][-1]+2)/1000), size=17, weight='bold')
-    #     ###Plot cavity contour
-    #     # plt.plot(xy_sorted[:, 0]/1000,xy_sorted[:, 1]/1000,color='dimgrey',linestyle='-',linewidth=1.5)
-    #     plt.scatter(Df_GL['X'].values/1000,Df_GL['Y'].values/1000,color='dimgrey',marker='.',linewidths=0.4)
-    #     ###Plot crevasses on map
-    #     plt.scatter(Df_Crevasses['X']/1000,Df_Crevasses['Y']/1000,color=Col_Crevasses,marker='P',linewidths=0.2)
-    #     ###Show map
-    #     plt.show()
-    #     ###Save map
-    #     # name_output_fig = 'TeteRousseMap_EndPumping2010_Criterion{}_'.format(Criterion)
-    #     # name_path = '/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/PostProcessing/.'
-    #     # path_output_fig = Path(name_path)
-    #     # fig1.savefig(path_output_fig.joinpath(name_output_fig))
+    ### Get the last day of the step pumping 2010
+    Df_LastDayPump2010=Data_Simu_NoD[Data_Simu_NoD['DayOfSimu']==np.max(Data_Simu_NoD[Data_Simu_NoD['Step']=='Pump2010']['DayOfSimu'])].copy()
+    ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ### Start loop on the various criterion considered
+    for Criterion in ['SigmaI', 'SigmaVM', 'SigmaHa', 'SigmaC']:
+        ###Fig 1 is the map of Teterousse, pimp style
+        fig1 = plt.figure(1, figsize=(40, 20))
+        plt.xlabel(r'X [km]', fontsize=21)
+        plt.ylabel(r'Y [km]', fontsize=21)
+        plt.tick_params(labelsize=20)  # fontsize of the tick labels
+        plt.grid(True)
+        plt.grid(alpha=0.5)
+        ### Get the figure
+        fig1 = plt.figure(1)
+        plt.xlim([(np.floor(np.min(Df_LastDayPump2010['X']))-40)/1000, (np.floor(np.max(Df_LastDayPump2010['X']))+40)/1000])
+        plt.ylim([(np.floor(np.min(Df_LastDayPump2010['Y']))-40)/1000, (np.floor(np.max(Df_LastDayPump2010['Y']))+40)/1000])
+        ###Force x and y axis to same scale
+        ax = plt.gca()
+        ax.set_aspect('equal', adjustable='box')
+        ###Create refined regular grid and interpolate field over grid
+        x = np.arange(np.floor(np.min(Df_LastDayPump2010['X']))-40,np.floor(np.max(Df_LastDayPump2010['X']))+40,0.1)
+        y = np.arange(np.floor(np.min(Df_LastDayPump2010['Y']))-40,np.floor(np.max(Df_LastDayPump2010['Y']))+40,0.1)
+        X, Y = np.meshgrid(x, y)
+        SigmaEq = Interpolate_field(Df_LastDayPump2010,Criterion,X,Y)
+        #shading
+        clevs=np.arange(0.0,0.16,0.001) ## cbar for shading
+        cmap='coolwarm'
+        ##contour
+        levels= np.arange(-0.04,0.2,0.04)# contour internal
+        #colorbar
+        levs_ticks=np.arange(0.0,0.18,0.02)
+        ###Fills up the map with colors for SigmaEq
+        CS1 = plt.contourf(X/1000, Y/1000, SigmaEq, clevs, cmap=cmap,extend='both')
+        plt.plot(xc / 1000, yc / 1000, color='k', linewidth=2)
+        ###Show colorbar
+        cbar = plt.colorbar(CS1, ticks=levs_ticks, orientation='vertical', label=r'$\sigma_I$ [MPa]')
+        ##contour at SigmaEq=0.12 MPa(proposed threshold)
+        # CS = plt.contour(X, Y, SigmaEq,[0.0], colors='yellow') ## lines (f(x) contour)
+        # plt.clabel(CS, inline=True, fontsize=10) ## numbers in contours
+        ###Below we remove colors that are outside of glacier contour
+        clippath = mpltPath(np.c_[xc/1000, yc/1000])
+        patch = PathPatch(clippath, facecolor='none')
+        ax = plt.gca()
+        ax.add_patch(patch)
+        for c in CS1.collections:
+            c.set_clip_path(patch)
+        ####Plot transects over which SigmaEq will be plot on map
+        for i,(Transect_Name, Coord_pt1, Coord_pt2) in enumerate(zip(List_Transect, List_Coord_pt1,List_Coord_pt2)):
+            ###Use functions to return coords of transect
+            coord_transect = Coord_transect(Coord_pt1, Coord_pt2)
+            ###Plot transect on map
+            plt.plot(coord_transect[0]/1000,coord_transect[1]/1000,color='k',linestyle='-',linewidth=4)
+            ###Annotate transect name
+            if Transect_Name == "AA'":
+                plt.annotate(Transect_Name[0], ((coord_transect[0][0]-10)/1000, (coord_transect[1][0]-8)/1000), size=17, weight='bold')
+                plt.annotate(Transect_Name[1:], ((coord_transect[0][-1]+3)/1000, (coord_transect[1][-1]-4)/1000), size=17, weight='bold')
+            elif Transect_Name == "BB'":
+                plt.annotate(Transect_Name[0], ((coord_transect[0][0]-12)/1000, (coord_transect[1][0]+2)/1000), size=17, weight='bold')
+                plt.annotate(Transect_Name[1:], ((coord_transect[0][-1]+3)/1000, (coord_transect[1][-1]-9)/1000), size=17, weight='bold')
+            elif Transect_Name == "CC'":
+                plt.annotate(Transect_Name[0], ((coord_transect[0][0]-12)/1000, (coord_transect[1][0]+2)/1000), size=17, weight='bold')
+                plt.annotate(Transect_Name[1:], ((coord_transect[0][-1]+4)/1000, (coord_transect[1][-1]+2)/1000), size=17, weight='bold')
+        ###Plot cavity contour
+        # plt.plot(xy_sorted[:, 0]/1000,xy_sorted[:, 1]/1000,color='dimgrey',linestyle='-',linewidth=1.5)
+        plt.scatter(Df_GL['X'].values/1000,Df_GL['Y'].values/1000,color='dimgrey',marker='.',linewidths=0.4)
+        ###Plot crevasses on map
+        plt.scatter(Df_Crevasses['X']/1000,Df_Crevasses['Y']/1000,color=Col_Crevasses,marker='P',linewidths=0.2)
+        ###Show map
+        plt.show()
+        ###Save map
+        # name_output_fig = 'TeteRousseMap_EndPumping2010_Criterion{}_'.format(Criterion)
+        # name_path = '/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/PostProcessing/.'
+        # path_output_fig = Path(name_path)
+        # fig1.savefig(path_output_fig.joinpath(name_output_fig))
 
     ###########################################################################
     ###     PLOT SIGMA EQUIVALENT OVER CHOSEN TRANSECTS FOR VARIOUS TIME    ###
@@ -353,14 +353,6 @@ if __name__ == "__main__":
 
         #### Start loop over considered transects
         for i,(Transect_Name, Coord_pt1, Coord_pt2) in enumerate(zip(List_Transect, List_Coord_pt1,List_Coord_pt2)):
-            ### Get the corresponding subplot to show subplot title
-            if i == 0:
-                ax = ax00
-            elif i == 1:
-                ax = ax01
-            elif i == 2:
-                ax = ax02
-            ax.set_title('Transect {}'.format(Transect_Name), fontsize=21, weight='bold')
             ########################################################
             ####  PROCESS CREVASSE DATA TO GET THEM ON TRANSECT ####
             ########################################################
@@ -459,6 +451,7 @@ if __name__ == "__main__":
                         ax=ax01
                     elif i==2:
                         ax=ax02
+                    ax.set_title('Transect {}'.format(Transect_Name), fontsize=21, weight='bold')
                     ###Prepare the ticks for the colorbar
                 elif Step=='Refill20102011':
                     Ouput_Interval = 20 ##one plot every 20 days
@@ -509,17 +502,10 @@ if __name__ == "__main__":
         ### Show Fig:
         plt.show()
         ### Save Fig:
-        name_output_fig2 = 'TeteRousse_ProfilSigmaEqOverTime_3Transects_Criterion{}_'.format(Criterion)
-        name_path = '/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/PostProcessing/.'
-        path_output_fig = Path(name_path)
-        fig2.savefig(path_output_fig.joinpath(name_output_fig2))
+        # name_output_fig2 = 'TeteRousse_ProfilSigmaEqOverTime_3Transects_Criterion{}_'.format(Criterion)
+        # name_path = '/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/PostProcessing/.'
+        # path_output_fig = Path(name_path)
+        # fig2.savefig(path_output_fig.joinpath(name_output_fig2))
 
 
-    ################################################################################
-    # SAVE THE FIGURES #####
-    ################################################################################
-    # name_output_fig = 'RelDensProfile_Forage{}_{}_DInitHL_'.format(ForageNumber,  Case)
-    # name_path = '/home/brondexj/BETTIK/MyTaconnaz/MyTaco_Porous_DensSemiLagVSModifHeatSolv/Figures/Case_FullSimu_TestNbIntTsp/'
-    # path_output_fig = Path(name_path)
-    # fig.savefig(path_output_fig.joinpath(name_output_fig))
 
