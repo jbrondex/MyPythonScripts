@@ -131,11 +131,11 @@ if __name__ == "__main__":
     List_Coord_pt1=[[947954.6,2105001.5], [947976.1, 2105120.6], [947943.3, 2105052.1]]
     List_Coord_pt2=[[948027.9,2105114.9], [948024.0,2104971.5], [948112.8,2105049.4]]
     ### Step in the full process from 2010 to 2014
-    Step_List = ['Pump2010', 'Refill20102011']  # , 'Pump2011', 'Refill20112012', 'Pump2012', 'Refill20122013']
+    Step_List = ['P2010', 'Refill20102011']  # , 'P2011', 'Refill20112012', 'P2012', 'Refill20122013']
     StepTsp_List = [1, 5]  # , 1, 5, 1, 5] ##Timestep size (in days) corresponding to simulation step (Step_List)
     StepOut_List = [5, 30]  # , 5, 30, 5, 30] ##Output interval (in days) corresponding to simulation step (Step_List)
     ## Where pressure applies: cavity only: 'PCavityOnly', restricted to a conduit: 'PRestricted', everywhere above cold/temperate transition: 'PNotRestric'
-    Case = 'PRestricted'
+    Case = 'PRest'
     Col_Crevasses = 'mediumseagreen' ###Color for representation of crevasses
 
     ################################################################
@@ -177,8 +177,8 @@ if __name__ == "__main__":
     ###We create a single dataframe for all considered steps of the simu
     Data_Simu_NoD = pd.DataFrame()  ##Initialize an empty dataframe
     for i, (Step, StepTsp, StepOut) in enumerate(zip(Step_List, StepTsp_List, StepOut_List)):
-        filename = 'SurfaceOutput_Prono_NoD_{}_{}_tsp{}d_dm315todm255_Out{}d_.dat'.format(Case, Step, str(StepTsp), str(StepOut))
-        # filename = 'SurfaceOutput_Prono_Dam_B097_Sigth006_Lambdah00_{}_{}_tsp{}d_dm315todm255_Out{}d_.dat'.format(Case, Step, str(StepTsp), str(StepOut))
+        filename = 'SurfaceOutput_Prono_NoD_{}_{}_tsp{}d_Out{}d_.dat'.format(Case, Step, str(StepTsp), str(StepOut))
+        # filename = 'SurfaceOutput_Prono_B097_Sth006_Lh00_{}_{}_tsp{}d_Out{}d_CritMPS_.dat'.format(Case, Step, str(StepTsp), str(StepOut))
         print('Opening file:', filename)
         Data_Simu_NoD_tmp = pd.read_csv(Pathroot_SimuOutput.joinpath(filename), names=Col_Names_NoD, delim_whitespace=True)
         ###Drop duplicate lines (bug of SaveLine solver)
@@ -208,7 +208,7 @@ if __name__ == "__main__":
     # ###     PLOT MAP OF EQUIVALENT STRESS AT THE SURFACE AT THE END OF PUMPING FOR EACH CRITERION   ###
     # ###################################################################################################
     ### Get the last day of the step pumping 2010
-    Df_LastDayPump2010=Data_Simu_NoD[Data_Simu_NoD['DayOfSimu']==np.max(Data_Simu_NoD[Data_Simu_NoD['Step']=='Pump2010']['DayOfSimu'])].copy()
+    Df_LastDayPump2010=Data_Simu_NoD[Data_Simu_NoD['DayOfSimu']==np.max(Data_Simu_NoD[Data_Simu_NoD['Step']=='P2010']['DayOfSimu'])].copy()
     ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ### Start loop on the various criterion considered
     for Criterion in ['SigmaI', 'SigmaVM', 'SigmaHa', 'SigmaC']:
@@ -232,7 +232,7 @@ if __name__ == "__main__":
         X, Y = np.meshgrid(x, y)
         SigmaEq = Interpolate_field(Df_LastDayPump2010,Criterion,X,Y)
         #shading
-        clevs=np.arange(0.0,0.16,0.001) ## cbar for shading
+        clevs=np.arange(0.0,0.16,0.01) ## cbar for shading
         cmap='coolwarm'
         ##contour
         levels= np.arange(-0.04,0.2,0.04)# contour internal
@@ -442,7 +442,7 @@ if __name__ == "__main__":
             for Step in Step_List:
                 ### We want to product a list corresponding to all simulation days at which we have an output for the considered step
                 SimuDays=Data_Simu_NoD[Data_Simu_NoD['Step']==Step]['DayOfSimu'].drop_duplicates()
-                if Step=='Pump2010':###The step corresponding to pumping
+                if Step=='P2010':###The step corresponding to pumping
                     Ouput_Interval = 5 ##one plot every 5 days
                     ###first get proper subplot
                     if i==0:
@@ -494,7 +494,7 @@ if __name__ == "__main__":
                     ax.axvline(x=DistOfCrevasses_along_transect.values[l], color=Col_Crevasses, linestyle='-', linewidth=3)
                 ###Shade area corresponding to cavity based on initial grounded mask
                 ax.axvspan(np.min(DistOfGL_along_transect),np.max(DistOfGL_along_transect), alpha=0.3, color='grey')
-                if Step == 'Pump2010' and i == 2:
+                if Step == 'P2010' and i == 2:
                     levs_ticks_days.insert(0,1)
                     fig2.colorbar(cmx.ScalarMappable(norm=cNorm, cmap=cm), ax=[ax00, ax01, ax02], ticks=levs_ticks_days[::2], orientation='vertical', label=r'Time [days]')
                 elif Step == 'Refill20102011' and i==2:
