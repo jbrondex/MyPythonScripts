@@ -162,9 +162,9 @@ if __name__ == "__main__":
     Data_ParamSet['B_name']=Data_ParamSet['B'].astype(str).replace('\.', '',regex=True)
     Data_ParamSet['Lambdah_name']=Data_ParamSet['Lambdah'].astype(str).replace('\.', '',regex=True)
     ###List of tested lambdah values
-    Lambdah_list = [0.0, 0.5, 1.0]
+    Lambdah_list = [0.0]#, 0.5, 1.0]
     ###Corresponding linestyle
-    LineStyle_List = ['-', '--', ':']
+    LineStyle_List = ['-']#, '--', ':']
     ###Create a color map to cover all combinations of (Sigmath, B) for a given value of lamddah
     cm = plt.get_cmap('copper')
     cNorm = colors.Normalize(vmin=0, vmax=len(Data_ParamSet[(Data_ParamSet['Lambdah']==0.0)]))
@@ -178,14 +178,14 @@ if __name__ == "__main__":
     ### Load files containing surface output of the simulations:
     Pathroot_SimuOutput = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/ScalarOutput/.')
     ### Step in the full process from 2010 to 2014
-    Step_List = ['Pump2010', 'Refill20102011', 'Pump2011', 'Refill20112012', 'Pump2012', 'Refill20122013']
+    Step_List = ['P2010', 'Refill20102011', 'P2011', 'Refill20112012', 'P2012', 'Refill20122013']
     StepTsp_List =[1, 5, 1, 5, 1, 5] ##Timestep size (in days) corresponding to simulation step (Step_List)
     StepOut_List =[5, 30, 5, 30, 5, 30] ##Output interval (in days) corresponding to simulation step (Step_List)
     ### Where pressure applies: cavity only, restricted to a conduit, everywhere above cold/temperate transition
-    Cases = ['PCavityOnly', 'PRestricted', 'PNotRestric']
+    Cases = ['PCav', 'PRest', 'PNotRest']
     ###NAMES OF OUTPUT DATA (same order as in dat.names file)
     Col_Names = ['Timestep', 'DayOfSimu', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'U', 'V', 'W', 'SigmaI', 'Damage', 'Chi']
-    Col_Names_NoD = ['Timestep', 'DayOfSimu', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'U', 'V', 'W', 'SigmaI']  ##For the no damage (ref) case
+    Col_Names_NoD = ['Timestep', 'DayOfSimu', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'U', 'V', 'W','Pressure','SigmaIII','SigmaII', 'SigmaI']  ##For the no damage (ref) case
     ###START LOOP over each pressure scenario (one subplot par scenario)
     for j, case in enumerate(Cases):
         ### Get the corresponding subplot
@@ -199,30 +199,24 @@ if __name__ == "__main__":
         ###For each pressure scenario get the no damage (ref) case
         ###We create a single dataframe for all steps
         Data_Simu_NoD = pd.DataFrame() ##Initialize an empty dataframe
-        if case == 'PRestricted':
+        if case == 'PRest':
             Data_Simu_NoD_WRONG = pd.DataFrame() ##Same for the PRestricted scenario with wrong application of pressure (done as such in Gag sif)
         for i, (Step, StepTsp, StepOut) in enumerate(zip(Step_List, StepTsp_List, StepOut_List)):
-            if case == 'PNotRestric'and Step == 'Pump2010': ###for this case we load the file with 0.2day timestep
-                filename = 'SurfaceOutput_Prono_NoD_PNotRestric_Pump2010_tsp02d_dm315todm255_Out5d_.dat'
-            else:
-                filename = 'SurfaceOutput_Prono_NoD_{}_{}_tsp{}d_dm315todm255_Out{}d_.dat'.format(case, Step, str(StepTsp), str(StepOut))
+            filename = 'SurfaceOutput_Prono_NoD_{}_{}_tsp{}d_Out{}d_.dat'.format(case, Step, str(StepTsp), str(StepOut))
             print('Opening file:', filename)
-            Data_Simu_NoD_tmp = pd.read_csv(Pathroot_SimuOutput.joinpath(filename), names=Col_Names_NoD, delim_whitespace=True)
+            Data_Simu_NoD_tmp = pd.read_csv(Pathroot_SimuOutput.joinpath(filename), names=Col_Names_NoD , delim_whitespace=True)
             ###Drop duplicate lines (bug of SaveLine solver)
             Data_Simu_NoD_tmp.drop_duplicates(inplace=True)
             ###Set Day of Simu counting from begining of simu corresponding to step Pump2010 (Step 1)
             if i == 0:
-                if case == 'PNotRestric':
-                    Data_Simu_NoD_tmp['DayOfSimu'] = Data_Simu_NoD_tmp['DayOfSimu']*0.2 ##For the PNotRestricted case and step Pump2010 we load the tsp 0.2day simu
-                else:
-                    Data_Simu_NoD_tmp['DayOfSimu'] = Data_Simu_NoD_tmp['DayOfSimu']*StepTsp
+                Data_Simu_NoD_tmp['DayOfSimu'] = Data_Simu_NoD_tmp['DayOfSimu']*StepTsp
             else:
                 Data_Simu_NoD_tmp['DayOfSimu'] = np.max(Data_Simu_NoD['DayOfSimu']) + Data_Simu_NoD_tmp['DayOfSimu']*StepTsp
             data = [Data_Simu_NoD,Data_Simu_NoD_tmp]
             Data_Simu_NoD=pd.concat(data, ignore_index=True)
             ####For the case PRestricted only, load the version corresponding to wrong application of pressure for comparison (done as such in Gag sif)
-            if case =='PRestricted':
-                filename_WRONG = 'SurfaceOutput_Prono_NoD_{}_{}_tsp{}d_dm315todm255_Out{}d_WRONG_.dat'.format(case, Step,str(StepTsp),str(StepOut))
+            if case =='PRest':
+                filename_WRONG = 'SurfaceOutput_Prono_NoD_{}_{}_tsp{}d_Out{}d_WRONG_.dat'.format(case, Step,str(StepTsp),str(StepOut))
                 print('Opening file:', filename_WRONG)
                 Data_Simu_NoD_WRONG_tmp = pd.read_csv(Pathroot_SimuOutput.joinpath(filename_WRONG), names=Col_Names_NoD, delim_whitespace=True)
                 ###Drop duplicate lines (bug of SaveLine solver)
@@ -236,18 +230,18 @@ if __name__ == "__main__":
                 Data_Simu_NoD_WRONG = pd.concat(data_WRONG, ignore_index=True)
         ###Add a column of boolean to dataset depending on wether node is above cavity or not
         Data_Simu_NoD['IsAboveCavity']=IsAboveCavity(Data_Simu_NoD['X'],Data_Simu_NoD['Y'])
-        if case == 'PRestricted':
+        if case == 'PRest':
             Data_Simu_NoD_WRONG['IsAboveCavity']=IsAboveCavity(Data_Simu_NoD_WRONG['X'],Data_Simu_NoD_WRONG['Y'])
         ###Store Node above cavity in a separated dataframe
         Data_Simu_NoD_AboveCavity=Data_Simu_NoD[Data_Simu_NoD['IsAboveCavity']]
-        if case == 'PRestricted':
+        if case == 'PRest':
             Data_Simu_NoD_WRONG_AboveCavity=Data_Simu_NoD_WRONG[Data_Simu_NoD_WRONG['IsAboveCavity']]
         ###For each timestep calculate mean, min, max of vertical velocity above cavity
         Date = []
         MeanW_NoD = []
         MinW_NoD = []
         MaxW_NoD = []
-        if case == 'PRestricted':
+        if case == 'PRest':
             MeanW_NoD_WRONG = []
         ### We want to product a list corresponding to all simulation days at which we have an output
         SimuDays = Data_Simu_NoD['DayOfSimu']
@@ -261,31 +255,31 @@ if __name__ == "__main__":
             MinW_NoD.append(np.min(Data_Simu_NoD_AboveCavity[Data_Simu_NoD_AboveCavity['DayOfSimu']==day]['W']) * (1000/365.25))
             MaxW_NoD.append(np.max(Data_Simu_NoD_AboveCavity[Data_Simu_NoD_AboveCavity['DayOfSimu']==day]['W']) * (1000/365.25))
             ###Do the same for the wrong version of PRestricted scenario (mean only)
-            if case == 'PRestricted':
+            if case == 'PRest':
                 MeanW_NoD_WRONG.append(np.mean(Data_Simu_NoD_WRONG_AboveCavity[Data_Simu_NoD_WRONG_AboveCavity['DayOfSimu']==day]['W']) * (1000/365.25))
         ###Plot MeanW for the case with no damage (ref case) on corresponding subplot
         ax.plot_date(Date, MeanW_NoD, color= 'r', linestyle = '-', linewidth=2, marker='None', xdate=True)
         ###Plot MeanW for the case with no damage (ref case) on subplot 4 for comparison of the 3 pressure scenatio without damage
-        if case == 'PCavityOnly':
+        if case == 'PCav':
             Col_PressureScenario='b'
-        elif case == 'PRestricted':
+        elif case == 'PRest':
             Col_PressureScenario='m'
-        elif case == 'PNotRestric':
+        elif case == 'PNotRest':
             Col_PressureScenario='r'
         axes[1,1].plot_date(Date, MeanW_NoD, color=Col_PressureScenario, linestyle='-', linewidth=2, marker='None', xdate=True)
-        if case == 'PRestricted':
+        if case == 'PRest':
             axes[1,1].plot_date(Date[0:len(MeanW_NoD_WRONG)], MeanW_NoD_WRONG, color='k', linestyle='--', linewidth=2, marker='None', xdate=True)
 
         ###NOW DO THE LOOP ON EACH DAMAGE PARAMETER SET
-        for l in range(len(Data_ParamSet)):
+        for l in range(8):##range(len(Data_ParamSet)):
             print('Considering Damage parameter set n°',l+1,'/',len(Data_ParamSet))
             ###It turns out that results with lambdah=0.5 are very close to the ones with lambdah=1.0 so skip the latter
-            if Data_ParamSet['Lambdah'][l] == Lambdah_list[2]:
-                continue
+            # if Data_ParamSet['Lambdah'][l] == Lambdah_list[2]:
+            #     continue
             ###We create a single dataframe for all steps
             Data_Simu_D = pd.DataFrame()  ##Initialize an empty dataframe
             for i, (Step, StepTsp, StepOut) in enumerate(zip(Step_List, StepTsp_List, StepOut_List)):
-                filename = 'SurfaceOutput_Prono_Dam_B{}_Sigth{}_Lambdah{}_{}_{}_tsp{}d_dm315todm255_Out{}d_.dat'.format(Data_ParamSet['B_name'][l], Data_ParamSet['Sigmath_name'][l], Data_ParamSet['Lambdah_name'][l], case, Step, str(StepTsp), str(StepOut))
+                filename = 'SurfaceOutput_Prono_B{}_Sth{}_Lh{}_{}_{}_tsp{}d_Out{}d_CritMPS_.dat'.format(Data_ParamSet['B_name'][l], Data_ParamSet['Sigmath_name'][l], Data_ParamSet['Lambdah_name'][l], case, Step, str(StepTsp), str(StepOut))
                 print('Opening file:', filename)
                 Data_Simu_D_tmp = pd.read_csv(Pathroot_SimuOutput.joinpath(filename), names=Col_Names, delim_whitespace=True)
                 ###Drop duplicate lines (bug of SaveLine solver
