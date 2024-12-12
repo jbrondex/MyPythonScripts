@@ -31,11 +31,12 @@ spline = True ###It seems to be working all the time here so True by default
 #### Transect and corresponding tunnel floor altitude (1% slope)
 Transect_Names = ['Transect1','Transect2','Transect3','Transect4','Transect5','Transect6']
 Floor_altitudes=[2803.5,2803,2802.5,2802,2801.5,2801.12]
-BottomTunnel_altitudes=[2792.2,2791.7,2791.2,2790.7,2790.2,2789.82] ### The elevation of tunnel bottom if Tunnel_After_Incision = True
+#BottomTunnel_altitudes=[2792.2,2791.7,2791.2,2790.7,2790.2,2789.82] ### The elevation of tunnel bottom if Tunnel_After_Incision = True
+BottomTunnel_altitudes=[2785.5,2785,2784.5,2784,2783.5,2783.12] ###case with incision to ~few cm above bed at transect 1 and then 1% slope
 #### Possible shapes of the tunnel : Ovoid only for this case
 Shape = 'Ovoide'
 #### Do we want the half tunnel case or the half channel case ?
-Case = 'Channel' ##'Tunnel' Or 'Channel'
+Case = 'Tunnel' ##'Tunnel' Or 'Channel'
 ###Build the ovoid DEM from parameterized curve method for the ovoid shape (based on RTM ppt)
 t = np.linspace(-5, 5, 301)
 x = 3.2 * t / (1 + t ** 2) ** 2
@@ -78,7 +79,7 @@ for (Transect, Floor_altitude, BottomTunnel_altitude) in zip(Transect_Names,Floo
     DEM_Ovoid_Roof = DEM_Ovoid_Roof[::-1]
     DEM_Ovoid_Roof = DEM_Ovoid_Roof.reset_index(drop=True)
     # Open the output file and write some general info
-    file_name_output = 'GrandeMotte_Half{}SyntheSym_{}_{}.geo'.format(Case, Transect, Shape)
+    file_name_output = 'GrandeMotte_Half{}SyntheSym_Deep_{}_{}.geo'.format(Case, Transect, Shape)
     geo = open(pathroot_mycode.joinpath(file_name_output), 'w')
     geo.write('// This a a geo file created using the python script Makegeo_GrandeMotte_SyntheticTunnelSym_Transect.py // \n')
     geo.write('Mesh.Algorithm=5; \n')
