@@ -3,9 +3,8 @@
 
 Description:
 ------------
-This script is used to produce figure showing deformation of channel over time. Beware that the tunnel cases (init, incised straight walls,
-incised incurved walls) are treated in a separated script. A figure is made of six subplots (one per transect). Each subplots is divided in three:
-@ different times. We produce one figure for each shape and for each case (with sliding, without sliding)
+This script is used to produce figure showing a map of velocity X around channel (synthetic sym) only for Transect 4 and shape ovoide right before and right after
+contact
 """
 
 
@@ -30,6 +29,9 @@ import matplotlib.cm as cmx
 from matplotlib.ticker import FormatStrFormatter
 import matplotlib.gridspec as gridspec
 
+from matplotlib.path import Path as mpltPath
+from matplotlib.patches import PathPatch
+
 formatter = ticker.ScalarFormatter(useMathText=True)
 formatter.set_scientific(True)
 formatter.set_powerlimits((-3, 3))
@@ -47,7 +49,10 @@ ReddishPurple = [204 / 255, 121 / 255, 167 / 255]
 ####///~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MAIN PART OF THE CODE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\\####
 ####///~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\\####
 ####//////////////////////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\####
-def Interpolate_field(df, field_name, x, y): ###Returned field interpolated from mesh grid to point (x,y)
+#####################################################################################
+# Define function to interpolate field defined on mesh nodes to the line profile ####
+#####################################################################################
+def Interpolate_field(df, field_name, x, y): ###Returned field interpolated from mesh grid to point (x,y) of transect
     # x, y, and z coordinates of the dataframe
     xi = df['X'].values
     yi = df['Y'].values
@@ -55,15 +60,6 @@ def Interpolate_field(df, field_name, x, y): ###Returned field interpolated from
     # Interpolate the value of field
     result = griddata((xi, yi), field, (x, y), rescale=True)
     return result
-
-##Function below is used to sort point of contour clockwise
-def sort_coordinates(list_of_xy_coords):
-    cx, cy = list_of_xy_coords.mean(0)
-    x, y = list_of_xy_coords.T
-    angles = np.arctan2(x-cx, y-cy)
-    indices = np.argsort(angles)
-    return list_of_xy_coords[indices]
-
 ################################################################################
 # prepare plots #####
 ################################################################################
@@ -74,6 +70,24 @@ plt.rc('ytick', labelsize=20)
 plt.rc('axes', labelsize=20)
 plt.rc('legend', fontsize=24)
 
+###Fig 1 is subplots for right before and right after contact
+fig, axes = plt.subplots(1, 2, figsize=(25, 50), sharey=True)
+fig.tight_layout(pad=28.0, w_pad=-0.1)
+# Adjust layout to make room for the legend
+for j in range(2):
+    ax = axes[j]
+    ax.set_xlim([-1.0, 26])
+    ax.set_ylim([2774, 2829.5])##en altitude
+    # ax.locator_params(axis = 'y', nbins = 5)
+    ####Plot vertical lines corresponding to roof middle and floor middle
+    ax.axvline(x=0.0, color='k', linestyle='--', linewidth=1)
+    # ax.minorticks_on() ###to get subgrid
+    # ax.grid(True)
+    ax.xaxis.set_major_formatter(FormatStrFormatter('%.0f'))
+    ax.yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
+    ax.set_xlabel(r'Distance [m]', fontsize=21)
+    if j==0:
+        ax.set_ylabel(r'z [m]', fontsize=21)
 
 
 if __name__ == "__main__":
@@ -85,155 +99,64 @@ if __name__ == "__main__":
     ####       BELOW CODE LINES TO PRODUCE FIGURES FOR ALL SIMUS         ####
     #########################################################################
     #### Transect and corresponding tunnel floor altitude (1% slope)
-    Col_Names_Transient = ['Tsp','CallCount','BC','Node','X','Y','Z','Vx','Vy','SigmaI','Vn','Sigma_nn']
-    Transect_Names = ['Transect1', 'Transect2', 'Transect3', 'Transect4', 'Transect5', 'Transect6']
-    Floor_altitudes = [2803.5, 2803, 2802.5, 2802, 2801.5, 2801.12]
-    BottomTunnel_altitudes = [2792.2, 2791.7, 2791.2, 2790.7, 2790.2, 2789.82]
-    Bed_altitudes = [2784.75, 2784.75, 2779.53, 2774.56, 2773.12, 2774.82]
-    #### Cases before/after incision
-    Cases=['Channel_WithSlidArg']#, 'Channel_NoSlid']
-    ###Times in months at which we want to plot the deformed tunnel (and corresponding names for title)
-    Times = [1*5, 4*5, 9*5]##5 tsp each month for the case with 60 tsp per year
-    Time_Names = ['@1m', '@4m', '@9m']
-    ################################################
-    ########## START LOOP ON CASES #################
-    ################################################
-    for Case in Cases: ###One Fig per case
-        print('Dealing with Figure for ', Case)
-        ###Parameters of figure
-        fig4 = plt.figure(figsize=(16, 8))
-        outer = gridspec.GridSpec(2, 3, wspace=0.15, hspace=0.05)  ##9 Main Subplots, each divided in 2
-        fig4.text(0.5, 0.06, r'Distance [m]', ha='center', fontsize=22)
-        fig4.text(0.05, 0.5, r'z [m]', va='center', rotation='vertical', fontsize=22)
-        ################################################
-        ########## START LOOP ON TRANSECTS##############
-        ################################################
-        for k, (Transect, Bed_altitude) in enumerate(zip(Transect_Names,Bed_altitudes)):
-            ### Get proper main subplot (one per transect
-            axes = np.empty(shape=(1, 3), dtype=object)  ##This will be for subsubplots
-            inner = gridspec.GridSpecFromSubplotSpec(1, 3, subplot_spec=outer[k], hspace=0, wspace=0)
-            ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
-            ###~~~~~~~~         GET TUNNEL CONTOUR     ~~~~~~~~###
-            ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
-            ###Open the elmer output file
-            if Case == 'Channel_WithSlidArg':
-                filename_output = 'RunTransient_Closure/RunTransient_{0}_Ovoide/ScalarOutput/TunnelOutput_HalfChannelSyntheSym_{0}_Ovo_SlidArg_60StepPerY_.dat'.format(Transect)
-            elif Case == 'Channel_NoSlid':
-                filename_output = 'RunTransient_Closure/RunTransient_{0}_Ovoide/ScalarOutput/TunnelOutput_HalfChannelSyntheSym_{0}_Ovo_NoSlid_60StepPerY_.dat'.format(Transect)
-            #####Load the Elmer output file
-            df0 = pd.read_csv(pathroot_mycode.joinpath(filename_output), names=Col_Names_Transient,delim_whitespace=True)
-            ###################################################
-            ########## START LOOP ON OUTPUT TIME ##############
-            ###################################################
-            for j,(Time,Time_Name) in enumerate(zip(Times,Time_Names)):
-                ###Get Elmer output corresponding to considered time
-                dfright = df0[df0['Tsp']==Time]
-                dfright.reset_index(inplace=True)
-                ### check if contour contains negative x (meaning that walls are touching each other
-                WallTouching = (dfright['X'].values < 0).any()
-                if WallTouching:### If wall touching, then channel is divided into two closed contour that we want to distinguish
-                    ###find index of first node (going from top to bottom) beyond symmetry axis
-                    index_min=min(dfright.index[dfright['X'] < 0])
-                    dfupperright=dfright.loc[0:index_min-1]
-                    dfupperleft = dfupperright[1:] ##we remove the first node as it is on symmetry axis
-                    ###Reverse dfleft to have nodes from bottom to top (clockwise contour)
-                    dfupperleft = dfupperleft.iloc[::-1]
-                    ###Get node coordinates of contour
-                    xupperright = dfupperright['X'].values
-                    xupperleft = -dfupperleft['X'].values
-                    xupperfull = np.append(xupperright, xupperleft)
-                    yupperright = dfupperright['Y'].values
-                    yupperleft = dfupperleft['Y'].values
-                    yupperfull = np.append(yupperright, yupperleft)
-                    ###NOW SAME THING FOR BOTTOM PART OF CONTOUR###
-                    ###find index of last node beyond symmetry axis
-                    index_max=max(dfright.index[dfright['X'] < 0])
-                    dflowerright=dfright.loc[index_max+1::]
-                    dflowerleft = dflowerright[1:] ##we remove the first node as it is on symmetry axis
-                    ###Reverse dfleft to have nodes from bottom to top (clockwise contour)
-                    dflowerleft = dflowerleft.iloc[::-1]
-                    ###Get node coordinates of contour
-                    xlowerright = dflowerright['X'].values
-                    xlowerleft = -dflowerleft['X'].values
-                    xlowerfull = np.append(xlowerright, xlowerleft)
-                    ylowerright = dflowerright['Y'].values
-                    ylowerleft = dflowerleft['Y'].values
-                    ylowerfull = np.append(ylowerright, ylowerleft)
-                else:##No wall touching so one single closed contour built from main data frame
-                    ###Build the symmetric wall
-                    dfleft = dfright[1:] ##we remove the first node as it is on symmetry axis
-                    ###Reverse dfleft to have nodes from bottom to top (clockwise contour)
-                    dfleft = dfleft.iloc[::-1]
-                    ###Get node coordinates of contour
-                    xright=dfright['X'].values
-                    xleft=-dfleft['X'].values
-                    xfull=np.append(xright,xleft)
-                    yright=dfright['Y'].values
-                    yleft=dfleft['Y'].values
-                    yfull=np.append(yright,yleft)
+    Col_Names_Map = ['Node','X','Y','Z','Vx','Vy','Vz']
+    Col_Names_Contour = ['Node','X','Y','Z']
+    Transect = 'Transect4'
+    Shape = 'Ovoide'
+    Case = 'HalfChannelSyntheSym_NoSlid'
+    tsp_list = [10,12]
+
+    ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
+    ###~~~~~~~~         GET DATA     ~~~~~~~~###
+    ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
+    ###################################################
+    ########## START LOOP ON TIMESTEP #################
+    ###################################################
+    for k,tsp in enumerate(tsp_list):
+        ###Get proper axe
+        ax = axes[k]
+        ###Set title of subplot
+        ax.set_title('@{} days'.format(round(tsp*365/60)), fontsize=21, weight='bold')
+        ax.set_aspect('equal', adjustable='box')  ###same horizontal and vertical scales
+        ###Open the elmer output file
+        filename_contour = 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/ContourDomain_Node_X_Y_Z_{2}_60tspPerY_tsp{3}.dat'.format(Transect, Shape, Case, tsp)
+        filename_map= 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/Node_X_Y_Z_U_V_W_{2}_60tspPerY_tsp{3}.dat'.format(Transect, Shape, Case, tsp)
+        #####Load the Elmer output file
+        df_contour = pd.read_csv(pathroot_mycode.joinpath(filename_contour), names=Col_Names_Contour,delim_whitespace=True)
+        ### Close contour by copying first line and adding at the end of data frame
+        df_contour_closed = pd.concat([df_contour, df_contour.iloc[[0]]], ignore_index=True)
+        ###NOW LOAD DATA OVER WHOLE DOMAIN FOR MAP
+        df_map = pd.read_csv(pathroot_mycode.joinpath(filename_map), names=Col_Names_Map,delim_whitespace=True)
+        ###Create refined regular grid and interpolate field over grid
+        x = np.arange(np.floor(np.min(df_map['X'])) - 1, np.floor(np.max(df_map['X'])) + 1, 0.1)
+        y = np.arange(np.floor(np.min(df_map['Y'])) - 1, np.floor(np.max(df_map['Y'])) + 1, 0.1)
+        X, Y = np.meshgrid(x, y)
+        Vx_MeterPerYear = Interpolate_field(df_map, 'Vx', X, Y)
+        Vx = 100/365*Vx_MeterPerYear ###convert in cm/day
+        # shading
+        clevs = np.arange(-1.6, 0.0, 0.1)  ## cbar for shading
+        cmap = 'coolwarm'
+        # colorbar
+        levs_ticks = np.arange(-1.6, 0.2, 0.2)
+        ###Fills up the map with colors for Vx
+        CS1 = ax.contourf(X, Y, Vx, clevs, cmap=cmap, extend='both')
+        ax.plot(df_contour_closed ['X'].values, df_contour_closed ['Y'].values, color='k', linewidth=2)
+        ###Show colorbar (just once)
+        if k ==1:
+            cbar = plt.colorbar(CS1, ticks=levs_ticks, orientation='vertical', label=r'$V_\mathrm{x}$ [cm/day]')
+        ###Below we remove colors that are outside of glacier contour
+        clippath = mpltPath(np.c_[df_contour_closed ['X'].values, df_contour_closed ['Y'].values])
+        patch = PathPatch(clippath, facecolor='none')
+        ax.add_patch(patch)
+        for c in CS1.collections:
+            c.set_clip_path(patch)
 
 
 
-                ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
-                ###~~~         GET PROPER SUB-SUBPLOT AND PLOT          ~~###
-                ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
-                ###Get proper sub-subplots
-                ax = plt.Subplot(fig4, inner[j], sharey=axes[0, 0])
-                ###Name of subsubplots
-                ax.set_title('{}'.format(Time_Name), fontsize=16)
-                ###Only show axis that are needed
-                if not (k==0 or k==3): ##yaxis only for first column
-                    ax.yaxis.set_visible(False)
-                if k <3:
-                    ax.xaxis.set_visible(False) ###xaxis only for bottom row
-                if j > 0:
-                    ax.yaxis.set_visible(False) ###no yaxis between subsubplots
-                ###Add subtitles to subsubplots corresponding to years
-                # Add ghost axes and titles on columns
-                ax_transect = fig4.add_subplot(inner[:])
-                ax_transect.axis('off')
-                ax_transect.set_title('Transect {}'.format(k+1), fontsize=20, weight='bold')
-                ###Set the axe limits and ticks
-                xmin=-10
-                xmax=10
-                ###ymin is relative to bed altitude
-                ymin=2773
-                ymax=2806
-                ax.set_xticks([-6,0,6])
-                ax.set_yticks([2775,2780,2785,2790,2795,2800,2805])
-                ax.set_xlim(xmin, xmax)
-                ax.set_ylim(ymin, ymax)
-                ax.tick_params(labelsize=16)  # fontsize of the tick labels
-                ax.yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
-                ax.set_aspect('equal')
-                # ax.grid(True)
-                axes[0, j] = ax
-                ###Plot the stuff###
-                ###print contour of domain
-                ax.axhline(y=Bed_altitude, color='k', linestyle='-', linewidth=2)
-                ###Brown color for bed
-                ax.fill_between( [xmin,xmax], [Bed_altitude,Bed_altitude], 2750, color='tan')
-                ###Icy color for ice
-                ax.fill_between([xmin,xmax], [Bed_altitude,Bed_altitude], 2830, color='lightblue')
-                ###Plot contour of tunnel and fill in in white if tunnel is not closed
-                if WallTouching:
-                    ax.add_patch(Patch.Polygon(np.transpose(np.array([xupperfull,yupperfull])), closed=True, fill=True, facecolor='w', edgecolor='k'))
-                    ax.add_patch(Patch.Polygon(np.transpose(np.array([xlowerfull,ylowerfull])), closed=True, fill=True, facecolor='w', edgecolor='k'))
-                else:
-                    ax.add_patch(Patch.Polygon(np.transpose(np.array([xfull,yfull])), closed=True, fill=True, facecolor='w', edgecolor='k'))
-                fig4.add_subplot(ax)
-
-        plt.show()
+    plt.show()
 
 
-        ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
-        ###~~~         SAVE THE PLOTS (ONE PER SHAPE/WIDTH)          ~~###
-        ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
-        ###Save figure with full transect profile and initial tunnel shape
-        name_output_fig4 = 'DeformationAt1_4_9months_AllTransects_{0}_HalfChannelSyntheSym'.format(Case)
-        name_path_fig4 = '/home/brondexj/BETTIK/GrandeMotteTignes/RunTransient_Closure/Postprocessing/Figures/.'
-        path_output_fig4 = Path(name_path_fig4)
-        fig4.savefig(path_output_fig4.joinpath(name_output_fig4))
+
 
 
 
