@@ -91,7 +91,7 @@ if __name__ == "__main__":
     BottomTunnel_altitudes = [2792.2, 2791.7, 2791.2, 2790.7, 2790.2, 2789.82]
     Bed_altitudes = [2784.75, 2784.75, 2779.53, 2774.56, 2773.12, 2774.82]
     #### Cases before/after incision
-    Cases=['Channel_WithSlid', 'Channel_NoSlid']
+    Cases=['Channel_WithSlidArg']#, 'Channel_NoSlid']
     ###Times in months at which we want to plot the deformed tunnel (and corresponding names for title)
     Times = [1*5, 4*5, 9*5]##5 tsp each month for the case with 60 tsp per year
     Time_Names = ['@1m', '@4m', '@9m']
@@ -116,8 +116,8 @@ if __name__ == "__main__":
             ###~~~~~~~~         GET TUNNEL CONTOUR     ~~~~~~~~###
             ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
             ###Open the elmer output file
-            if Case == 'Channel_WithSlid':
-                filename_output = 'RunTransient_Closure/RunTransient_{0}_Ovoide/ScalarOutput/TunnelOutput_HalfChannelSyntheSym_{0}_Ovo_Slid_60StepPerY_.dat'.format(Transect)
+            if Case == 'Channel_WithSlidArg':
+                filename_output = 'RunTransient_Closure/RunTransient_{0}_Ovoide/ScalarOutput/TunnelOutput_HalfChannelSyntheSym_{0}_Ovo_SlidArg_60StepPerY_.dat'.format(Transect)
             elif Case == 'Channel_NoSlid':
                 filename_output = 'RunTransient_Closure/RunTransient_{0}_Ovoide/ScalarOutput/TunnelOutput_HalfChannelSyntheSym_{0}_Ovo_NoSlid_60StepPerY_.dat'.format(Transect)
             #####Load the Elmer output file
