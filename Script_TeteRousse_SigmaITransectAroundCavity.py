@@ -154,17 +154,16 @@ if __name__ == "__main__":
     yc = np.append(yc, yc[0])  ##step required to close the contour
     ###Open Data corresponding to grounded mask
     Pathroot_GM = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/ScalarOutput/.')
-    Filename_GM = 'GroundedMaskInit.dat'
+    Filename_GM = 'GroundedLine_CLEANED.dat'
     Col_Names_GM = ['Timestep', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'GM']
     ###load file as dataframe
-    Df_GM = pd.read_csv(Pathroot_GM.joinpath(Filename_GM), names=Col_Names_GM, delim_whitespace=True)
-    Df_GM.drop_duplicates(inplace=True)
-    ###Store the node number of nodes corresponding to GL
-    Df_GL=Df_GM[Df_GM['GM']==0]
+    Df_GL = pd.read_csv(Pathroot_GM.joinpath(Filename_GM), names=Col_Names_GM, delim_whitespace=True)
     ###Sort coordinates of cavity contour clockwise
-    xy = np.array([Df_GL['X'].values, Df_GL['Y'].values])
-    xy = np.transpose(xy)
-    xy_sorted = sort_clockwise(xy)
+    xy_cavity = np.array([Df_GL['X'].values, Df_GL['Y'].values])
+    xy_cavity = np.transpose(xy_cavity)
+    xy_cavity_sorted = sort_clockwise(xy_cavity)
+    ##close contour
+    cavity_contour = np.vstack([xy_cavity_sorted, xy_cavity_sorted[0]])
     #########################################
     ####  OPEN OUTPUT OF THE SIMULATIONS:####
     #########################################
@@ -270,8 +269,8 @@ if __name__ == "__main__":
                 plt.annotate(Transect_Name[0], ((coord_transect[0][0]-12)/1000, (coord_transect[1][0]+2)/1000), size=17, weight='bold')
                 plt.annotate(Transect_Name[1:], ((coord_transect[0][-1]+4)/1000, (coord_transect[1][-1]+2)/1000), size=17, weight='bold')
         ###Plot cavity contour
-        # plt.plot(xy_sorted[:, 0]/1000,xy_sorted[:, 1]/1000,color='dimgrey',linestyle='-',linewidth=1.5)
-        plt.scatter(Df_GL['X'].values/1000,Df_GL['Y'].values/1000,color='dimgrey',marker='.',linewidths=0.4)
+        plt.plot(cavity_contour[:, 0]/1000,cavity_contour[:, 1]/1000,color='dimgrey',linestyle='-',linewidth=2.3)
+        # plt.scatter(Df_GL['X'].values/1000,Df_GL['Y'].values/1000,color='dimgrey',marker='.',linewidths=0.4)
         ###Plot crevasses on map
         plt.scatter(Df_Crevasses['X']/1000,Df_Crevasses['Y']/1000,color=Col_Crevasses,marker='P',linewidths=0.2)
         ###Show map
