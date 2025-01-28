@@ -136,12 +136,15 @@ if __name__ == "__main__":
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     ### General parameter regarding dates of interest
     RefStartDate = date(int(2011), 7, 1) ##Every days are numbered relative to 1st July 2011 (day 1)
-    StartDate_str = '14092010'  ###start date for displacement computation
-    FinishDate_str = '06102010' ###finish date for displacement computation
-    Sequence = 'Pumping2010' ###To which sequence corresponds the chosen dates ? Required to set proper legend parameters
+    # StartDate_str = '14092010'  ###start date for displacement computation
+    # FinishDate_str = '06102010' ###finish date for displacement computation
+    # Sequence = 'Pumping2010' ###To which sequence corresponds the chosen dates ? Required to set proper legend parameters
     # StartDate_str = '09092011'  ###start date for displacement computation
     # FinishDate_str = '28092011' ###finish date for displacement computation
     # Sequence = 'Refill20102011'
+    StartDate_str = '28092011'  ###start date for displacement computation
+    FinishDate_str = '21102011' ###finish date for displacement computation
+    Sequence = 'Pumping2011'
     ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     ### Parameter for the plot
     # shading
@@ -177,26 +180,60 @@ if __name__ == "__main__":
         norm_dz_obs = TwoSlopeNorm(vmin=dz_min_obs, vcenter=0.0, vmax=dz_max_obs)
     ################################################################
     elif Sequence == 'Refill20102011':
-        dx_min_el = -0.06
-        dx_max_el = 0.061
-        lev_ticks_range_dx_el = 0.03 ##one tick every ?
+        dx_min_el = -0.05
+        dx_max_el = 0.051
+        lev_ticks_range_dx_el = 0.025 ##one tick every ?
+        norm_dx_el = norm
         dx_min_obs = -6.0
         dx_max_obs = 0.1
         lev_ticks_range_dx_obs = 1.5 ##one tick every ?
+        norm_dx_obs = TwoSlopeNorm(vmin=dx_min_obs, vcenter=0.0, vmax=dx_max_obs)
         #####
         dy_min_el = -0.04
-        dy_max_el = 0.04
+        dy_max_el = 0.041
         lev_ticks_range_dy_el = 0.02 ##one tick every ?
-        dy_min_obs =-1.0
-        dy_max_obs =1.1
-        lev_ticks_range_dy_obs = 0.5 ##one tick every ?
+        norm_dy_el = norm
+        dy_min_obs =-2.0
+        dy_max_obs =2.1
+        lev_ticks_range_dy_obs = 1 ##one tick every ?
+        norm_dy_obs = norm
         #####
         dz_min_el =0.000
         dz_max_el =0.11
-        lev_ticks_range_dz_el = 0.025 ##one tick every ?
-        dz_min_obs =-6.0
-        dz_max_obs =6.1
-        lev_ticks_range_dz_obs = 3 ##one tick every ?
+        lev_ticks_range_dz_el = 0.025*2 ##one tick every ?
+        norm_dz_el = TwoSlopeNorm(vmin=dz_min_el-0.00001, vcenter=0.0, vmax=dz_max_el)
+        dz_min_obs =-5
+        dz_max_obs =5.1
+        lev_ticks_range_dz_obs = 2.5 ##one tick every ?
+        norm_dz_obs = norm
+    ##############################################################################
+    elif Sequence == 'Pumping2011':
+        dx_min_el = -0.30
+        dx_max_el = 0.31
+        lev_ticks_range_dx_el = 0.15 ##one tick every ?
+        norm_dx_el = norm
+        dx_min_obs = -10.0
+        dx_max_obs = 10.1
+        lev_ticks_range_dx_obs = 5 ##one tick every ?
+        norm_dx_obs = norm
+        #####
+        dy_min_el = -0.25
+        dy_max_el = 0.26
+        lev_ticks_range_dy_el = 0.125 ##one tick every ?
+        norm_dy_el = norm
+        dy_min_obs =-8.0
+        dy_max_obs =8.1
+        lev_ticks_range_dy_obs = 4 ##one tick every ?
+        norm_dy_obs = norm
+        #####
+        dz_min_el =-0.6
+        dz_max_el =0.001
+        lev_ticks_range_dz_el = 0.2 ##one tick every ?
+        norm_dz_el = TwoSlopeNorm(vmin=dz_min_el, vcenter=0.0, vmax=dz_max_el)
+        dz_min_obs =-20.0
+        dz_max_obs =0.1
+        lev_ticks_range_dz_obs = 5 ##one tick every ?
+        norm_dz_obs = TwoSlopeNorm(vmin=dz_min_obs, vcenter=0.0, vmax=dz_max_obs)
 
 
     ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
@@ -318,7 +355,7 @@ if __name__ == "__main__":
         StartSimuDayNumber_ViscousSimu_start = -255 ###That's the day number corresponding to the beginning of simu refill 20102011
         filename_viscous_start = './ScalarOutput/SurfaceOutput_Prono_NoD_PCav_Refill20102011_tsp5d_Out30d_.dat'
         df_Viscous_start = pd.read_csv(Pathroot.joinpath(filename_viscous_start), names=Col_Names_Viscous, delim_whitespace=True)
-        df_Viscous_start['TimestepSize'] = 5 ##This simu as a timestep of one day
+        df_Viscous_start['TimestepSize'] = 5 ##This simu as a timestep of 5 days
         df_Viscous_start['DayofSimu'] = df_Viscous_start['TimestepSize'] * (df_Viscous_start['Timestep'] - 1) + StartSimuDayNumber_ViscousSimu_start
         StartSimuDayNumber_ViscousSimu_finish = 85 ###That's the day number corresponding to the beginning of simu pumping 2011
         filename_viscous_finish = './ScalarOutput/SurfaceOutput_Prono_NoD_PCav_P2011_tsp1d_Out5d_.dat'
@@ -332,6 +369,18 @@ if __name__ == "__main__":
         df_Viscous = pd.read_csv(Pathroot.joinpath(filename_viscous), names=Col_Names_Viscous, delim_whitespace=True)
         df_Viscous['TimestepSize'] = 1##This simu as a timestep of one day
         df_Viscous['DayofSimu'] = df_Viscous['TimestepSize']* (df_Viscous['Timestep']-1 )+StartSimuDayNumber_ViscousSimu
+    elif 85 < StartDayNumber < 105  and 105 < FinishDayNumber < 450: ##Startday is in simu Pumping2011, Finish day is in simu Refill20112012
+        StartSimuDayNumber_ViscousSimu_start = 85 ###That's the day number corresponding to the beginning of simu Pumping 011
+        filename_viscous_start = './ScalarOutput/SurfaceOutput_Prono_NoD_PCav_P2011_tsp1d_Out5d_.dat'
+        df_Viscous_start = pd.read_csv(Pathroot.joinpath(filename_viscous_start), names=Col_Names_Viscous, delim_whitespace=True)
+        df_Viscous_start['TimestepSize'] = 1 ##This simu as a timestep of one day
+        df_Viscous_start['DayofSimu'] = df_Viscous_start['TimestepSize'] * (df_Viscous_start['Timestep'] - 1) + StartSimuDayNumber_ViscousSimu_start
+        StartSimuDayNumber_ViscousSimu_finish = 105 ###That's the day number corresponding to the beginning of simu refill20112012
+        filename_viscous_finish = './ScalarOutput/SurfaceOutput_Prono_NoD_PCav_Refill20112012_tsp5d_Out30d_.dat'
+        df_Viscous_finish = pd.read_csv(Pathroot.joinpath(filename_viscous_finish), names=Col_Names_Viscous, delim_whitespace=True)
+        df_Viscous_finish['TimestepSize'] = 5 ##This simu as a timestep of 5 days
+        df_Viscous_finish['DayofSimu'] = df_Viscous_finish['TimestepSize'] * (df_Viscous_finish['Timestep'] - 1) + StartSimuDayNumber_ViscousSimu_finish
+        df_Viscous = pd.concat([df_Viscous_start, df_Viscous_finish], ignore_index=True)
     else:
         raise ValueError("The chosen starting and/or finishing dates are not treated in this code. More developments required")
     ###To be safe we re-initialize the indexes of df_Viscous
