@@ -136,15 +136,18 @@ if __name__ == "__main__":
     StepOut_List = [5, 30]  # , 5, 30, 5, 30] ##Output interval (in days) corresponding to simulation step (Step_List)
     ## Where pressure applies: cavity only: 'PCavityOnly', restricted to a conduit: 'PRestricted', everywhere above cold/temperate transition: 'PNotRestric'
     Case = 'PRest'
-    Col_Crevasses = 'mediumseagreen' ###Color for representation of crevasses
-
+    Col_Crevasses_Circ = '#FF0000' ###'#800080' ###Color for representation of circular crevasses
+    Col_Crevasses_Other = '#800080' ###Color for representation of non circular crevasses
+    Col_Cavity = '#00FFFF'###color for representation of cavity
+    Col_Transect = 'lightgrey'###color for representation of transect
+    Colormap_for_stressmap = 'cividis' ###Colorm map to choose for map of stress
     ################################################################
     ####  OPEN DATA CORRESPONDING TO CREVASSES AND GROUNDEDMASK ####
     ################################################################
     Pathroot_Obs = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/Data/.')
-    Filename_Crevasses = 'crevasses_xyz.dat'
+    Filename_Crevasses = 'crevasses_xyz_numbered.dat'
     ###load file as dataframe
-    Df_Crevasses = pd.read_csv(Pathroot_Obs.joinpath(Filename_Crevasses), names=['X', 'Y', 'Z'], delim_whitespace=True)
+    Df_Crevasses = pd.read_csv(Pathroot_Obs.joinpath(Filename_Crevasses), names=['X', 'Y', 'Z', 'Crevasse Number', 'IsCircular'], delim_whitespace=True)
     ###Also load glacier contour
     Filename_GlacierContour = 'Contour_TeteRousse2012.dat'
     Df_GlacierContour = pd.read_csv(Pathroot_Obs.joinpath(Filename_GlacierContour), names=['X', 'Y'], delim_whitespace=True)
@@ -231,14 +234,12 @@ if __name__ == "__main__":
         X, Y = np.meshgrid(x, y)
         SigmaEq = Interpolate_field(Df_LastDayPump2010,Criterion,X,Y)
         #shading
-        clevs=np.arange(0.0,0.16,0.01) ## cbar for shading
-        cmap='coolwarm'
-        ##contour
-        levels= np.arange(-0.04,0.2,0.04)# contour internal
+        clevs=np.arange(0.0,161,10) ## cbar for shading
+        cmap=Colormap_for_stressmap
         #colorbar
-        levs_ticks=np.arange(0.0,0.18,0.02)
+        levs_ticks=np.arange(0.0,161,20)
         ###Fills up the map with colors for SigmaEq
-        CS1 = plt.contourf(X/1000, Y/1000, SigmaEq, clevs, cmap=cmap,extend='both')
+        CS1 = plt.contourf(X/1000, Y/1000, SigmaEq*1000, clevs, cmap=cmap,extend='both')
         plt.plot(xc / 1000, yc / 1000, color='k', linewidth=2)
         ###Show colorbar
         cbar = plt.colorbar(CS1, ticks=levs_ticks, orientation='vertical', label=r'$\sigma_I$ [MPa]')
@@ -257,22 +258,30 @@ if __name__ == "__main__":
             ###Use functions to return coords of transect
             coord_transect = Coord_transect(Coord_pt1, Coord_pt2)
             ###Plot transect on map
-            plt.plot(coord_transect[0]/1000,coord_transect[1]/1000,color='k',linestyle='-',linewidth=4)
+            plt.plot(coord_transect[0]/1000,coord_transect[1]/1000,color=Col_Transect,linestyle='-',linewidth=4)
             ###Annotate transect name
             if Transect_Name == "AA'":
-                plt.annotate(Transect_Name[0], ((coord_transect[0][0]-10)/1000, (coord_transect[1][0]-8)/1000), size=17, weight='bold')
-                plt.annotate(Transect_Name[1:], ((coord_transect[0][-1]+3)/1000, (coord_transect[1][-1]-4)/1000), size=17, weight='bold')
+                plt.annotate(Transect_Name[0], ((coord_transect[0][0]-10)/1000, (coord_transect[1][0]-8)/1000), size=17, weight='bold',color=Col_Transect)
+                plt.annotate(Transect_Name[1:], ((coord_transect[0][-1]+3)/1000, (coord_transect[1][-1]-4)/1000), size=17, weight='bold',color=Col_Transect)
             elif Transect_Name == "BB'":
-                plt.annotate(Transect_Name[0], ((coord_transect[0][0]-12)/1000, (coord_transect[1][0]+2)/1000), size=17, weight='bold')
-                plt.annotate(Transect_Name[1:], ((coord_transect[0][-1]+3)/1000, (coord_transect[1][-1]-9)/1000), size=17, weight='bold')
+                plt.annotate(Transect_Name[0], ((coord_transect[0][0]-12)/1000, (coord_transect[1][0]+2)/1000), size=17, weight='bold',color=Col_Transect)
+                plt.annotate(Transect_Name[1:], ((coord_transect[0][-1]+3)/1000, (coord_transect[1][-1]-9)/1000), size=17, weight='bold',color=Col_Transect)
             elif Transect_Name == "CC'":
-                plt.annotate(Transect_Name[0], ((coord_transect[0][0]-12)/1000, (coord_transect[1][0]+2)/1000), size=17, weight='bold')
-                plt.annotate(Transect_Name[1:], ((coord_transect[0][-1]+4)/1000, (coord_transect[1][-1]+2)/1000), size=17, weight='bold')
+                plt.annotate(Transect_Name[0], ((coord_transect[0][0]-12)/1000, (coord_transect[1][0]+2)/1000), size=17, weight='bold',color=Col_Transect)
+                plt.annotate(Transect_Name[1:], ((coord_transect[0][-1]+4)/1000, (coord_transect[1][-1]+2)/1000), size=17, weight='bold',color=Col_Transect)
         ###Plot cavity contour
-        plt.plot(cavity_contour[:, 0]/1000,cavity_contour[:, 1]/1000,color='dimgrey',linestyle='-',linewidth=2.3)
-        # plt.scatter(Df_GL['X'].values/1000,Df_GL['Y'].values/1000,color='dimgrey',marker='.',linewidths=0.4)
+        plt.plot(cavity_contour[:, 0]/1000,cavity_contour[:, 1]/1000,color=Col_Cavity,linestyle='-',linewidth=2.3)
         ###Plot crevasses on map
-        plt.scatter(Df_Crevasses['X']/1000,Df_Crevasses['Y']/1000,color=Col_Crevasses,marker='P',linewidths=0.2)
+        # plt.scatter(Df_Crevasses['X']/1000,Df_Crevasses['Y']/1000,color=Col_Crevasses,marker='P',linewidths=0.2)
+        ###plot crevasses as continuous line
+        for crev_num in np.arange(Df_Crevasses['Crevasse Number'].min(), Df_Crevasses['Crevasse Number'].max() + 1):
+            ###get proper points
+            Df_plot = Df_Crevasses[Df_Crevasses['Crevasse Number'] == crev_num]
+            if Df_plot['IsCircular'].all():  ##different colors for circular crevasses and other crevasses
+                col = Col_Crevasses_Circ
+            else:
+                col = Col_Crevasses_Other
+            plt.plot(Df_plot['X'].values/1000, Df_plot['Y'].values/1000, color=col, linestyle='-', linewidth=1.5)
         ###Show map
         plt.show()
         ###Save map
@@ -296,7 +305,7 @@ if __name__ == "__main__":
         ax00.tick_params(labelsize=18)  # fontsize of the tick labels
         # ax.set_ylim([-9.0, 2.0])
         ax00.grid(True)
-        ax00.set_ylabel(r'$\sigma_I$ [MPa]', fontsize=21)
+        ax00.set_ylabel(r'$\sigma_I$ [kPa]', fontsize=21)
         ax00.yaxis.set_major_formatter(formatter)
         ###plot one horizontal line for Stress=0
         ax00.axhline(y=0.0, color='k', linestyle =':', linewidth=1)
@@ -325,7 +334,7 @@ if __name__ == "__main__":
         # ax.set_ylim([-9.0, 2.0])
         ax10.grid(True)
         ax10.set_xlabel(r'Distance [m]', fontsize=21)
-        ax10.set_ylabel(r'$\sigma_I$ [MPa]', fontsize=21)
+        ax10.set_ylabel(r'$\sigma_I$ [kPa]', fontsize=21)
         ax10.yaxis.set_major_formatter(formatter)
         ###plot one horizontal line for Stress=0
         ax10.axhline(y=0.0, color='k', linestyle =':', linewidth=1)
@@ -482,7 +491,7 @@ if __name__ == "__main__":
                     ###Interpolate the SigmaEq of the day on the considered transect
                     SigmaEq = Interpolate_field(Data_Simu_NoD_Today, Criterion, coord_transect[0], coord_transect[1])
                     ###Plot interpolated sigmaI as a function of distance along transect
-                    ax.plot(dist_along_transect, SigmaEq, color=scalarMap.to_rgba(day), linestyle='-', linewidth=2)
+                    ax.plot(dist_along_transect, SigmaEq*1000, color=scalarMap.to_rgba(day), linestyle='-', linewidth=2)
                     ax.set_xlim([-1, np.max(dist_along_transect)+0.5])
                 ###plot vertical line corresponding to crevasses
                 for l in range(len(DistOfCrevasses_along_transect)):
@@ -490,7 +499,7 @@ if __name__ == "__main__":
                     ###In that case, we do not plot it
                     if DistOfCrevasses_along_transect.values[l] < 0 or DistOfCrevasses_along_transect.values[l]>np.max(dist_along_transect):
                         continue
-                    ax.axvline(x=DistOfCrevasses_along_transect.values[l], color=Col_Crevasses, linestyle='-', linewidth=3)
+                    ax.axvline(x=DistOfCrevasses_along_transect.values[l], color='k', linestyle='-', linewidth=3)
                 ###Shade area corresponding to cavity based on initial grounded mask
                 ax.axvspan(np.min(DistOfGL_along_transect),np.max(DistOfGL_along_transect), alpha=0.3, color='grey')
                 if Step == 'P2010' and i == 2:
