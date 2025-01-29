@@ -80,7 +80,7 @@ if __name__ == "__main__":
     #### PROCESSING TO NUMBER THE CREVASSES BASE ON INDEX OF GPS POINTS IN Df_Crevasses ###
     #######################################################################################
     ### Initialise new columns to NaN
-    Df_Crevasses['Crevasse Number'] = np.nan
+    Df_Crevasses['Crevasse Number'] = 0
     Df_Crevasses['IsCircular'] = False
     ###List indexes of Df_Crevasses on a crevasse per crevasse basis
     Df_Crevasses.loc[np.arange(415,423), 'Crevasse Number'] = 1
@@ -93,8 +93,8 @@ if __name__ == "__main__":
     Df_Crevasses.loc[np.arange(344,359), 'IsCircular'] = True
     Df_Crevasses.loc[np.arange(318,327), 'Crevasse Number'] = 5
     Df_Crevasses.loc[np.arange(318,327), 'IsCircular'] = True
-    Df_Crevasses.loc[np.arange(327,332), 'Crevasse Number'] = 6
-    Df_Crevasses.loc[np.arange(327,332), 'IsCircular'] = True
+    Df_Crevasses.loc[np.arange(327,333), 'Crevasse Number'] = 6
+    Df_Crevasses.loc[np.arange(327,333), 'IsCircular'] = True
     Df_Crevasses.loc[np.arange(333,344), 'Crevasse Number'] = 7
     Df_Crevasses.loc[np.arange(333,344), 'IsCircular'] = True
     Df_Crevasses.loc[np.arange(295,318), 'Crevasse Number'] = 8
@@ -119,11 +119,15 @@ if __name__ == "__main__":
     Df_Crevasses.loc[np.arange(193,207), 'IsCircular'] = True
     Df_Crevasses.loc[np.arange(183,193), 'Crevasse Number'] = 18
     Df_Crevasses.loc[np.arange(183,193), 'IsCircular'] = True
-    Df_Crevasses.loc[np.arange(223,236), 'Crevasse Number'] = 19
-    Df_Crevasses.loc[np.arange(236,246), 'Crevasse Number'] = 20
-    Df_Crevasses.loc[np.arange(246,256), 'Crevasse Number'] = 21
-    Df_Crevasses.loc[np.arange(256,261), 'Crevasse Number'] = 22
-    Df_Crevasses.loc[np.arange(261,277), 'Crevasse Number'] = 23
+    Df_Crevasses.loc[np.arange(207,224), 'Crevasse Number'] = 19
+    Df_Crevasses.loc[np.arange(224,236), 'Crevasse Number'] = 20
+    Df_Crevasses.loc[np.arange(236,246), 'Crevasse Number'] = 21
+    Df_Crevasses.loc[np.arange(246,256), 'Crevasse Number'] = 22
+    Df_Crevasses.loc[np.arange(256,261), 'Crevasse Number'] = 23
+    Df_Crevasses.loc[np.arange(261,277), 'Crevasse Number'] = 24
+    ###Remove all lines containing 0 as crevasse number (means that the gps point was not associated to any crevasse)
+    Df_Crevasses = Df_Crevasses.loc[Df_Crevasses['Crevasse Number'] != 0]
+
     ####Save this dataframe for using it elsewhere
     Filename_CrevassesNumbered= 'crevasses_xyz_numbered.dat'
     Df_Crevasses.to_csv(Pathroot_Obs.joinpath(Filename_CrevassesNumbered), sep='\t', index=False, header=False)
@@ -151,6 +155,16 @@ if __name__ == "__main__":
     plt.plot(cavity_contour[:, 0], cavity_contour[:, 1], color='k', linestyle='-', linewidth=1)
     ax.set_aspect('equal', adjustable='box')# plt.plot(xy_sorted[:, 0]/1000,xy_sorted[:, 1]/1000,color='dimgrey',linestyle='-',linewidth=1.5)
     plt.scatter(Df_Crevasses['X'].values,Df_Crevasses['Y'].values,color='g',marker='+',linewidths=0.4)
+    # Add labels to each scatter point
+    for i, label in enumerate(Df_Crevasses.index):  # Iterate through each point and label    plt.plot(xy_sorted[:, 0],xy_sorted[:, 1],color='k',linestyle='-',linewidth=1)
+        plt.text(
+            Df_Crevasses['X'].iloc[i],
+            Df_Crevasses['Y'].iloc[i],
+            label,
+            fontsize=9,  # Adjust label font size
+            ha='right',  # Horizontal alignment (aligns text to the right of the point)
+            va='bottom'
+        )
     ###plot crevasses as continuous line
     for crev_num in np.arange(Df_Crevasses['Crevasse Number'].min(),Df_Crevasses['Crevasse Number'].max()+1):
         ###get proper points
@@ -160,8 +174,8 @@ if __name__ == "__main__":
         else:
             col = 'r'
         plt.plot(Df_plot['X'].values, Df_plot['Y'].values, color=col, linestyle='-', linewidth=1.5)
-        # Add labels corresponding to crevasse number
-        label = int(Df_plot['Crevasse Number'].iloc[0])
-        plt.text(Df_plot['X'].iloc[0],Df_plot['Y'].iloc[0],label,fontsize=9,ha='right', va='bottom')
+        # # Add labels corresponding to crevasse number
+        # label = int(Df_plot['Crevasse Number'].iloc[0])
+        # plt.text(Df_plot['X'].iloc[0],Df_plot['Y'].iloc[0],label,fontsize=9,ha='right', va='bottom')
 
     plt.show()
