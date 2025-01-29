@@ -168,8 +168,7 @@ if __name__ == "__main__":
     MinW_NoD = []
     MaxW_NoD = []
     ### We want to produce a list corresponding to all simulation days at which we have an output
-    SimuDays = Data_Simu_NoD['DayOfSimu']
-    SimuDays.drop_duplicates(inplace=True)
+    SimuDays = Data_Simu_NoD['DayOfSimu'].drop_duplicates().reset_index(drop=True)
     for k in range(len(SimuDays)):
         day = int(SimuDays.iloc[k])
         ###Convert timestep in terms of date
@@ -198,15 +197,14 @@ if __name__ == "__main__":
     ###Add a column of boolean to dataset depending on wether node is above cavity or not
     Data_Simu_NoD_Temperate['IsAboveCavity'] = IsAboveCavity(Data_Simu_NoD_Temperate['X'], Data_Simu_NoD_Temperate['Y'])
     ###Store Node above cavity in a separated dataframe
-    Data_Simu_NoD_AboveCavity_Temperate = Data_Simu_NoD[Data_Simu_NoD_Temperate['IsAboveCavity']]
+    Data_Simu_NoD_AboveCavity_Temperate = Data_Simu_NoD_Temperate[Data_Simu_NoD_Temperate['IsAboveCavity']]
     ###For each timestep calculate mean, min, max of vertical velocity above cavity
     Date = []
     MeanW_NoD_Temperate = []
     MinW_NoD_Temperate = []
     MaxW_NoD_Temperate = []
     ### We want to produce a list corresponding to all simulation days at which we have an output
-    SimuDays = Data_Simu_NoD_Temperate['DayOfSimu']
-    SimuDays.drop_duplicates(inplace=True)
+    SimuDays = Data_Simu_NoD_Temperate['DayOfSimu'].drop_duplicates().reset_index(drop=True)
     for k in range(len(SimuDays)):
         day = int(SimuDays.iloc[k])
         ###Convert timestep in terms of date
@@ -256,8 +254,7 @@ if __name__ == "__main__":
             MinW_D = []
             MaxW_D = []
             ### We want to product a list corresponding to all simulation days at which we have an output
-            SimuDays = Data_Simu_D['DayOfSimu']
-            SimuDays.drop_duplicates(inplace=True)
+            SimuDays = Data_Simu_D['DayOfSimu'].drop_duplicates().reset_index(drop=True)
             for m in range(len(SimuDays)):
                 day = int(SimuDays.iloc[m])
                 ###Convert timestep in terms of date
@@ -304,7 +301,7 @@ if __name__ == "__main__":
     StakeNotAboveCavity_2011_pieubois = [81, 82, 83, 87, 92, 93, 99] ###Stakes 80 also out but close
     StakeNotAboveCavity_2012 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 16, 17, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44] ##Stake 18 also out but close
     ###NAMES COLUMS of obs data (same order as in dat.names file)
-    Col_Names_ObsData = ['Stake', 'X', 'Y', 'Z']  ##obs data file contains stake number, coords x, y and z (m for 2010/2011 and mm for 2012)
+    Col_Names_ObsData = ['Stake', 'X', 'Y', 'Z']  ##obs data file contains stake number, coords x, y and z
     ### PRESCRIBE THE DISPLACEMENTS THAT WE WANT TO CALCULATE FROM AVAILABLE OBS DATA
     Displacement_List = ['disp14092010-19092010', 'disp19092010-23092010', 'disp23092010-29092010', 'disp29092010-06102010',
                          'disp25052011-15062011', 'disp15062011-01072011', 'disp01072011-15072011', 'disp15072011-10082011',
@@ -383,7 +380,7 @@ if __name__ == "__main__":
             # Append to Disp_df
             Disp_df = pd.concat([Disp_df, pd.DataFrame({'Stake': [stake], 'Uz': [finish_z - start_z]}),], ignore_index=True,)
         ###Calculate and store mean, min and max W over the period
-        print('Displacement date:', Disp_Name)
+        print('Displacement period:', Disp_Name, 'Retained displacement date:', MeanDay)
         MeanW = np.mean(Disp_df['Uz'])*1000 / NumberOfDays
         Obs_MeanW.append(MeanW)
         MinW = np.min(Disp_df['Uz'])*1000 / NumberOfDays
