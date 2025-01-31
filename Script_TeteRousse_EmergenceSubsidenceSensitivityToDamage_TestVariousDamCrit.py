@@ -216,7 +216,51 @@ if __name__ == "__main__":
             np.min(Data_Simu_NoD_AboveCavity_Temperate[Data_Simu_NoD_AboveCavity_Temperate['DayOfSimu'] == day]['W']) * (1000 / 365.25))
         MaxW_NoD_Temperate.append(
             np.max(Data_Simu_NoD_AboveCavity_Temperate[Data_Simu_NoD_AboveCavity_Temperate['DayOfSimu'] == day]['W']) * (1000 / 365.25))
-
+    ###~~~~~~~~~~~~~SAME FOR SIMULATION CONSIDERING ICE AT T=-2°C~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ###We create a single dataframe for all steps
+    Data_Simu_NoD_Tminus2 = pd.DataFrame()  ##Initialize an empty dataframe
+    for i, (Step, StepTsp, StepOut) in enumerate(zip(Step_List, StepTsp_List, StepOut_List)):
+        filename = 'SurfaceOutput_Prono_NoD_{}_{}_tsp{}d_Out{}d_Tminus2_.dat'.format(case, Step, str(StepTsp),
+                                                                                       str(StepOut))
+        print('Opening file:', filename)
+        Data_Simu_NoD_tmp_Tminus2 = pd.read_csv(Pathroot_SimuOutput.joinpath(filename), names=Col_Names_NoD,
+                                                  delim_whitespace=True)
+        ###Drop duplicate lines (bug of SaveLine solver)
+        Data_Simu_NoD_tmp_Tminus2.drop_duplicates(inplace=True)
+        ###Set Day of Simu counting from begining of simu corresponding to step Pump2010 (Step 1)
+        if i == 0:
+            Data_Simu_NoD_tmp_Tminus2['DayOfSimu'] = Data_Simu_NoD_tmp_Tminus2['DayOfSimu'] * StepTsp
+        else:
+            Data_Simu_NoD_tmp_Tminus2['DayOfSimu'] = np.max(Data_Simu_NoD_Tminus2['DayOfSimu']) + \
+                                                       Data_Simu_NoD_tmp_Tminus2['DayOfSimu'] * StepTsp
+        data_Tminus2 = [Data_Simu_NoD_Tminus2, Data_Simu_NoD_tmp_Tminus2]
+        Data_Simu_NoD_Tminus2 = pd.concat(data_Tminus2, ignore_index=True)
+    ###Add a column of boolean to dataset depending on wether node is above cavity or not
+    Data_Simu_NoD_Tminus2['IsAboveCavity'] = IsAboveCavity(Data_Simu_NoD_Tminus2['X'],
+                                                             Data_Simu_NoD_Tminus2['Y'])
+    ###Store Node above cavity in a separated dataframe
+    Data_Simu_NoD_AboveCavity_Tminus2 = Data_Simu_NoD_Tminus2[Data_Simu_NoD_Tminus2['IsAboveCavity']]
+    ###For each timestep calculate mean, min, max of vertical velocity above cavity
+    Date = []
+    MeanW_NoD_Tminus2 = []
+    MinW_NoD_Tminus2 = []
+    MaxW_NoD_Tminus2 = []
+    ### We want to produce a list corresponding to all simulation days at which we have an output
+    SimuDays = Data_Simu_NoD_Tminus2['DayOfSimu'].drop_duplicates().reset_index(drop=True)
+    for k in range(len(SimuDays)):
+        day = int(SimuDays.iloc[k])
+        ###Convert timestep in terms of date
+        Date.append(StartDate_Pumping2010 + timedelta(days=day - 1))
+        ###Calculate mean/min/max in mm/days
+        MeanW_NoD_Tminus2.append(
+            np.mean(Data_Simu_NoD_AboveCavity_Tminus2[Data_Simu_NoD_AboveCavity_Tminus2['DayOfSimu'] == day][
+                        'W']) * (1000 / 365.25))
+        MinW_NoD_Tminus2.append(
+            np.min(Data_Simu_NoD_AboveCavity_Tminus2[Data_Simu_NoD_AboveCavity_Tminus2['DayOfSimu'] == day][
+                       'W']) * (1000 / 365.25))
+        MaxW_NoD_Tminus2.append(
+            np.max(Data_Simu_NoD_AboveCavity_Tminus2[Data_Simu_NoD_AboveCavity_Tminus2['DayOfSimu'] == day][
+                       'W']) * (1000 / 365.25))
 
     ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
     ### NOW START LOOP over each damage parameters combination (one subplot per combination)
@@ -268,13 +312,16 @@ if __name__ == "__main__":
             ax.plot_date(Date, MeanW_D, color= Color, linestyle = '-', linewidth=1.8, marker='None', xdate=True)
         ###Plot MeanW for the case with no damage with temperate ice on every subplot
         ax.plot_date(Date, MeanW_NoD_Temperate, color= 'k', linestyle = ':', linewidth=1.7, marker='None', xdate=True)
+        ###Plot MeanW for the case with no damage with ice at T=-2°C on every subplot
+        ax.plot_date(Date, MeanW_NoD_Tminus2, color= 'k', linestyle = '--', linewidth=1.7, marker='None', xdate=True)
         ###Plot MeanW for the case with no damage (ref case) on every subplot
         ax.plot_date(Date, MeanW_NoD, color= 'k', linestyle = '-', linewidth=2, marker='None', xdate=True)
 
     #### DUMMY plot for legend
     ax=axes[0,0]
-    ax.plot(np.NaN, np.NaN, label=r'No Damage', color='k', linewidth=3, linestyle='-')
-    ax.plot(np.NaN, np.NaN, label=r'No Damage, Temperate ice', color='k', linewidth=3, linestyle=':')
+    ax.plot(np.NaN, np.NaN, label=r'No Damage, T=-1°C', color='k', linewidth=3, linestyle='-')
+    ax.plot(np.NaN, np.NaN, label=r'No Damage, T=0°C', color='k', linewidth=3, linestyle=':')
+    ax.plot(np.NaN, np.NaN, label=r'No Damage, T=-2°C', color='k', linewidth=3, linestyle='--')
     for i,(Crit,Crit_Name) in enumerate(zip(Crit_List,Crit_Names)):
         ax.plot(np.NaN, np.NaN, label=r'{}'.format(Crit_Name), color=ColorBlindFriendly_List[i], linewidth=3, linestyle='-')
     fig.legend(loc='lower center', bbox_to_anchor=(0.5, 0.005), fancybox=True, shadow=True, fontsize=16, ncol=3)
