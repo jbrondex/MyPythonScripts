@@ -58,46 +58,6 @@ def Interpolate_field(df, field_name, x, y): ###Returned field interpolated from
     result = griddata((xi, yi), field, (x, y), rescale=True)
     return result
 
-def Coord_transect(pt1, pt2): ###return list of coordinates corresponding to line passing by pt1 and pt2
-    x1, y1 = pt1 ##pt1 defining transect
-    x2, y2 = pt2 ##pt2 defining transect
-    xmin=min(x1, x2)
-    xmax=max(x1, x2)
-    x = np.linspace(xmin, xmax, 1000)
-    y = ((y2-y1)/(x2-x1))*(x-x1)+y1
-    coord = [x,y]
-    return coord
-
-def Distance_along_transect(pt1, pt2, pt3): ###return distance of pt3 along transect (pt1,pt2)
-    x1, y1 = pt1 ##pt1 defining transect
-    x2, y2 =pt2 ##pt2 defining transect
-    x, y = pt3
-    x0=min(x1, x2)
-    if x0 == x1:
-        y0 = y1
-    elif x0 == x2:
-        y0 = y2
-    dist_along_line = np.sqrt((x-x0)**2+(y-y0)**2)
-    return dist_along_line
-
-def Distance_to_line(pt1, pt2, pt3): ###return distance of pt3 to line define by points (pt1, pt2)
-    x1, y1 = pt1 ##pt1 defining transect
-    x2, y2 = pt2 ##pt2 defining transect
-    x3, y3 = pt3 ##pt3 out of transect. How far is it from transect ?
-
-    det = (x2-x1)*(y3-y1)-(y2-y1)*(x3-x1) ##This is det(AB;AC) with A and B the two extremities of transect and C is pt3
-    distance = det/np.sqrt((x2-x1)**2 + (y2-y1)**2) ##det(AB;AC)/||AB|| = ||AC||*sin(AB,AC) = ||CD||
-    return distance
-
-def Proj_on_line(pt1, pt2, pt3):##Return coords of pt3 projected on line defined by (pt1,pt2)
-    x1, y1 = pt1
-    x2, y2 = pt2
-    x3, y3 = pt3
-    dx, dy = x2-x1, y2-y1
-    scalarprod = dy*(y3-y1)+dx*(x3-x1) ##AB.AC=||AB||*||AC||*cos(AB,AC)=||AB||*||AD||
-    a = scalarprod/(dx*dx + dy*dy) ## a = ||AB||*||AD|| / ||AB||**2  = ||AD|| / ||AB||
-    return x1+a*dx, y1+a*dy
-
 ##Function below is used to sort point of contour clockwise
 def sort_clockwise(list_of_xy_coords):
     cx, cy = list_of_xy_coords.mean(0)
@@ -121,18 +81,10 @@ if __name__ == "__main__":
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     ####~~~~~~~~~~~   LOAD ALL DATA AND PLOT DIRECTLY IN THIS PART OF THE CODE   ~~~~~~~~~~~~~####
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
-    ###Provide coordinate of points defining lines corresponding to transect on which we want to plot SigmaI: one couple of point per transect
-    List_Transect=["AA'","BB'", "CC'"]
-    List_Coord_pt1=[[947954.6,2105001.5], [947976.1, 2105120.6], [947943.3, 2105052.1]]
-    List_Coord_pt2=[[948027.9,2105114.9], [948024.0,2104971.5], [948112.8,2105049.4]]
-    ### Step in the full process from 2010 to 2014
-    Step_List = ['P2010', 'Refill20102011']  # , 'P2011', 'Refill20112012', 'P2012', 'Refill20122013']
-
     Col_Crevasses_Circ = '#FF0000' ###'#800080' ###Color for representation of circular crevasses
     Col_Crevasses_Other = '#800080' ###Color for representation of non circular crevasses
     Col_Cavity = '#00FFFF'###color for representation of cavity
     Col_Transect = 'lightgrey'###color for representation of transect
-
 
     Colormap_for_stressmap = 'viridis' ###Colorm map to choose for map of stress
     cmap = cmx.get_cmap(Colormap_for_stressmap )
