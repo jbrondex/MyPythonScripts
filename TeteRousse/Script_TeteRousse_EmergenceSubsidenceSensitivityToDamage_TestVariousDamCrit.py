@@ -137,7 +137,8 @@ if __name__ == "__main__":
     case = 'PCav' #, 'PRest', 'PNotRest'
     ###NAMES OF OUTPUT DATA (same order as in dat.names file)
     Col_Names = ['Timestep', 'DayOfSimu', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'U', 'V', 'W', 'SigmaI', 'Damage', 'Chi']
-    Col_Names_NoD = ['Timestep', 'DayOfSimu', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'U', 'V', 'W','Pressure','SigmaIII','SigmaII', 'SigmaI']  ##For the no damage (ref) case
+    Col_Names_NoD_Tmap = ['Timestep', 'DayOfSimu', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'U', 'V', 'W', 'Pressure', 'SigmaIII','SigmaII', 'SigmaI', 'Temperature', 'Sxx', 'Syy', 'Szz', 'Sxy', 'Sxz', 'Syz' ]  ##For the no damage (ref) case
+    Col_Names_NoD_Tfix = ['Timestep', 'DayOfSimu', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'U', 'V', 'W', 'Pressure', 'SigmaIII','SigmaII', 'SigmaI']
 
     ###################################
     #### START TREATMENT OF DATA:  ####
@@ -146,9 +147,9 @@ if __name__ == "__main__":
     ###We create a single dataframe for all steps
     Data_Simu_NoD = pd.DataFrame()  ##Initialize an empty dataframe
     for i, (Step, StepTsp, StepOut) in enumerate(zip(Step_List, StepTsp_List, StepOut_List)):
-        filename = 'SurfaceOutput_Prono_NoD_{}_{}_tsp{}d_Out{}d_.dat'.format(case, Step, str(StepTsp), str(StepOut))
+        filename = 'SurfaceOutput_Prono_NoD_{}_{}_tsp{}d_Out{}d_Tmap_.dat'.format(case, Step, str(StepTsp), str(StepOut))
         print('Opening file:', filename)
-        Data_Simu_NoD_tmp = pd.read_csv(Pathroot_SimuOutput.joinpath(filename), names=Col_Names_NoD, delim_whitespace=True)
+        Data_Simu_NoD_tmp = pd.read_csv(Pathroot_SimuOutput.joinpath(filename), names=Col_Names_NoD_Tmap, delim_whitespace=True)
         ###Drop duplicate lines (bug of SaveLine solver)
         Data_Simu_NoD_tmp.drop_duplicates(inplace=True)
         ###Set Day of Simu counting from begining of simu corresponding to step Pump2010 (Step 1)
@@ -184,7 +185,7 @@ if __name__ == "__main__":
     for i, (Step, StepTsp, StepOut) in enumerate(zip(Step_List, StepTsp_List, StepOut_List)):
         filename = 'SurfaceOutput_Prono_NoD_{}_{}_tsp{}d_Out{}d_Temperate_.dat'.format(case, Step, str(StepTsp), str(StepOut))
         print('Opening file:', filename)
-        Data_Simu_NoD_tmp_Temperate = pd.read_csv(Pathroot_SimuOutput.joinpath(filename), names=Col_Names_NoD,delim_whitespace=True)
+        Data_Simu_NoD_tmp_Temperate = pd.read_csv(Pathroot_SimuOutput.joinpath(filename), names=Col_Names_NoD_Tfix,delim_whitespace=True)
         ###Drop duplicate lines (bug of SaveLine solver)
         Data_Simu_NoD_tmp_Temperate.drop_duplicates(inplace=True)
         ###Set Day of Simu counting from begining of simu corresponding to step Pump2010 (Step 1)
@@ -199,16 +200,16 @@ if __name__ == "__main__":
     ###Store Node above cavity in a separated dataframe
     Data_Simu_NoD_AboveCavity_Temperate = Data_Simu_NoD_Temperate[Data_Simu_NoD_Temperate['IsAboveCavity']]
     ###For each timestep calculate mean, min, max of vertical velocity above cavity
-    Date = []
+   # Date = []
     MeanW_NoD_Temperate = []
     MinW_NoD_Temperate = []
     MaxW_NoD_Temperate = []
     ### We want to produce a list corresponding to all simulation days at which we have an output
-    SimuDays = Data_Simu_NoD_Temperate['DayOfSimu'].drop_duplicates().reset_index(drop=True)
+#    SimuDays = Data_Simu_NoD_Temperate['DayOfSimu'].drop_duplicates().reset_index(drop=True)
     for k in range(len(SimuDays)):
         day = int(SimuDays.iloc[k])
         ###Convert timestep in terms of date
-        Date.append(StartDate_Pumping2010 + timedelta(days=day - 1))
+       # Date.append(StartDate_Pumping2010 + timedelta(days=day - 1))
         ###Calculate mean/min/max in mm/days
         MeanW_NoD_Temperate.append(
             np.mean(Data_Simu_NoD_AboveCavity_Temperate[Data_Simu_NoD_AboveCavity_Temperate['DayOfSimu'] == day]['W']) * (1000 / 365.25))
@@ -223,7 +224,7 @@ if __name__ == "__main__":
         filename = 'SurfaceOutput_Prono_NoD_{}_{}_tsp{}d_Out{}d_Tminus2_.dat'.format(case, Step, str(StepTsp),
                                                                                        str(StepOut))
         print('Opening file:', filename)
-        Data_Simu_NoD_tmp_Tminus2 = pd.read_csv(Pathroot_SimuOutput.joinpath(filename), names=Col_Names_NoD,
+        Data_Simu_NoD_tmp_Tminus2 = pd.read_csv(Pathroot_SimuOutput.joinpath(filename), names=Col_Names_NoD_Tfix,
                                                   delim_whitespace=True)
         ###Drop duplicate lines (bug of SaveLine solver)
         Data_Simu_NoD_tmp_Tminus2.drop_duplicates(inplace=True)
@@ -241,16 +242,16 @@ if __name__ == "__main__":
     ###Store Node above cavity in a separated dataframe
     Data_Simu_NoD_AboveCavity_Tminus2 = Data_Simu_NoD_Tminus2[Data_Simu_NoD_Tminus2['IsAboveCavity']]
     ###For each timestep calculate mean, min, max of vertical velocity above cavity
-    Date = []
+    #Date = []
     MeanW_NoD_Tminus2 = []
     MinW_NoD_Tminus2 = []
     MaxW_NoD_Tminus2 = []
     ### We want to produce a list corresponding to all simulation days at which we have an output
-    SimuDays = Data_Simu_NoD_Tminus2['DayOfSimu'].drop_duplicates().reset_index(drop=True)
+   # SimuDays = Data_Simu_NoD_Tminus2['DayOfSimu'].drop_duplicates().reset_index(drop=True)
     for k in range(len(SimuDays)):
         day = int(SimuDays.iloc[k])
         ###Convert timestep in terms of date
-        Date.append(StartDate_Pumping2010 + timedelta(days=day - 1))
+      #  Date.append(StartDate_Pumping2010 + timedelta(days=day - 1))
         ###Calculate mean/min/max in mm/days
         MeanW_NoD_Tminus2.append(
             np.mean(Data_Simu_NoD_AboveCavity_Tminus2[Data_Simu_NoD_AboveCavity_Tminus2['DayOfSimu'] == day][
@@ -262,8 +263,8 @@ if __name__ == "__main__":
             np.max(Data_Simu_NoD_AboveCavity_Tminus2[Data_Simu_NoD_AboveCavity_Tminus2['DayOfSimu'] == day][
                        'W']) * (1000 / 365.25))
 
-    ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
-    ### NOW START LOOP over each damage parameters combination (one subplot per combination)
+    # ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
+    # ### NOW START LOOP over each damage parameters combination (one subplot per combination)
     for k in range((Data_ParamSet['Lambdah']==0.0).sum()):
         ### Get the corresponding subplot
         i = k % nrows
@@ -276,7 +277,7 @@ if __name__ == "__main__":
             ###We create a single dataframe for all steps
             Data_Simu_D = pd.DataFrame()  ##Initialize an empty dataframe
             for i, (Step, StepTsp, StepOut) in enumerate(zip(Step_List, StepTsp_List, StepOut_List)):
-                filename = 'SurfaceOutput_Prono_B{}_Sth{}_Lh{}_{}_{}_tsp{}d_Out{}d_Crit{}_.dat'.format(Data_ParamSet['B_name'][k], Data_ParamSet['Sigmath_name'][k], Data_ParamSet['Lambdah_name'][k], case, Step, str(StepTsp), str(StepOut), Crit)
+                filename = 'SurfaceOutput_Prono_B{}_Sth{}_Lh{}_{}_{}_tsp{}d_Out{}d_Crit{}_Tmap_.dat'.format(Data_ParamSet['B_name'][k], Data_ParamSet['Sigmath_name'][k], Data_ParamSet['Lambdah_name'][k], case, Step, str(StepTsp), str(StepOut), Crit)
                 print('Opening file:', filename)
                 Data_Simu_D_tmp = pd.read_csv(Pathroot_SimuOutput.joinpath(filename), names=Col_Names, delim_whitespace=True)
                 ###Drop duplicate lines (bug of SaveLine solver
@@ -319,7 +320,7 @@ if __name__ == "__main__":
 
     #### DUMMY plot for legend
     ax=axes[0,0]
-    ax.plot(np.NaN, np.NaN, label=r'No Damage, T=-1°C', color='k', linewidth=3, linestyle='-')
+    ax.plot(np.NaN, np.NaN, label=r'No Damage, T map', color='k', linewidth=3, linestyle='-')
     ax.plot(np.NaN, np.NaN, label=r'No Damage, T=0°C', color='k', linewidth=3, linestyle=':')
     ax.plot(np.NaN, np.NaN, label=r'No Damage, T=-2°C', color='k', linewidth=3, linestyle='--')
     for i,(Crit,Crit_Name) in enumerate(zip(Crit_List,Crit_Names)):

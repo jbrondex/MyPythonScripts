@@ -4,7 +4,7 @@
 Description:
 ------------
 This file aims at building a 3D Temperature field of TeteRousse from borehole measurement performed the 11 September 2010
-First we interpolate T field from borehole measurements, and where required we extrapolate using insights from Fig 5
+First we interpolate T field from borehole measurements, and where required we extrapolate using insights from
 of Gilbert 2012
 """
 
@@ -64,6 +64,25 @@ def truncate_colormap(cmap, min_val=0.0, max_val=1.0, n_colors=256):
     )
     return new_cmap
 
+###Function to replace NaN of a griddata field obtained by interpolation by value of closest neighbour
+def fill_nan_with_nearest(T, X, Z):
+    # Get valid (non-NaN) points
+    valid_mask = ~np.isnan(T)
+    valid_points = np.column_stack([X[valid_mask], Z[valid_mask]])
+    valid_values = T[valid_mask]
+
+    # Get NaN points
+    nan_mask = np.isnan(T)
+    nan_points = np.column_stack([X[nan_mask], Z[nan_mask]])
+
+    # Build KDTree and query nearest neighbor
+    tree = cKDTree(valid_points)
+    _, nearest_idx = tree.query(nan_points)
+
+    # Replace NaNs with nearest neighbor values
+    T[nan_mask] = valid_values[nearest_idx]
+
+    return T
 
 ################################################################################
 # prepare plots #####
@@ -186,10 +205,10 @@ if __name__ == "__main__":
         # Update the 'T' value of the second highest row
         df_AllBoreholes_Extrapolated.loc[(df_AllBoreholes_Extrapolated['Borehole_ID']==18) & (df_AllBoreholes_Extrapolated['Depth']==depth_sensor), 'T'] = mean_T
     ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    ### Second, add a virtual borhehole in the upper part of the glacier (e.g 80 m higher than upper borehole) where we know the base is temperate
-    x_virtualborehole1 = df_AllBoreholes_Extrapolated['X'].max() + 80
+    ### Second, add a virtual borhehole in the upper part of the glacier (e.g 70 m higher than upper borehole) where we know the base is temperate
+    x_virtualborehole1 = df_AllBoreholes_Extrapolated['X'].max() + 70
     y_virtualborehole1 = df_AllBoreholes_Extrapolated[df_AllBoreholes_Extrapolated['X'] == df_AllBoreholes_Extrapolated['X'].max()]['Y'].iloc[0]
-    zs_virtualborehole1 = 3244
+    zs_virtualborehole1 = 3250
     zb_virtualborehole1 = 3222
     Sensor_Altitude_virtualborehole1 = np.arange(zb_virtualborehole1, zs_virtualborehole1, 5)
     Depth_virtualborehole1 = - (zs_virtualborehole1 - Sensor_Altitude_virtualborehole1)
@@ -206,7 +225,7 @@ if __name__ == "__main__":
     ### Similarly, add a virtual borhehole in the lower part of the glacier (e.g 35 m lower than lower borehole) where we know ice is cold
     x_virtualborehole2 = df_AllBoreholes_Extrapolated['X'].min() - 35
     y_virtualborehole2 = df_AllBoreholes_Extrapolated[df_AllBoreholes_Extrapolated['X'] == df_AllBoreholes_Extrapolated['X'].min()]['Y'].iloc[0]
-    zs_virtualborehole2 = 3135
+    zs_virtualborehole2 = 3145
     zb_virtualborehole2 = 3118
     Sensor_Altitude_virtualborehole2 = np.arange(zb_virtualborehole2, zs_virtualborehole2, 5)
     Depth_virtualborehole2 = - (zs_virtualborehole2 - Sensor_Altitude_virtualborehole2)
@@ -228,12 +247,14 @@ if __name__ == "__main__":
         ### Tsurf is deduced from T closest to surface to which we remove 0.4°C to
         Tsurf = df_Borehole.loc[df_Borehole['Depth'].idxmax(),'T'] - 0.4
         new_row = pd.DataFrame({'Borehole_ID': [Borehole], 'X': [df_Borehole['X'].iloc[0]], 'Y': [df_Borehole['Y'].iloc[0]],
-                             'Zs': [df_Borehole['Zs'].iloc[0]], 'Depth': [0], 'T': [Tsurf], 'Sensor_Altitude': [df_Borehole['Zs'].iloc[0]+2]})
+                             'Zs': [df_Borehole['Zs'].iloc[0]], 'Depth': [0], 'T': [Tsurf], 'Sensor_Altitude': [df_Borehole['Zs'].iloc[0]+4]})
         # Find the index of the last occurrence of the current Borehole
         last_index = df_AllBoreholes_Extrapolated[df_AllBoreholes_Extrapolated['Borehole_ID'] == Borehole].index[-1]
         # Split the DataFrame and insert the new row after last occurrence
         df_AllBoreholes_Extrapolated = pd.concat([df_AllBoreholes_Extrapolated.iloc[:last_index+1], new_row, df_AllBoreholes_Extrapolated.iloc[last_index+1:]], ignore_index=True)
 
+    ### Replace all values above -0.25°C by 0°C to have temperate ice around cavity
+    df_AllBoreholes_Extrapolated.loc[df_AllBoreholes_Extrapolated['T'] > -0.25, 'T'] = 0
     ###INTERPOLATE T ON GRID FROM MEASUREMENTS + VIRTUAL BOREHOLES + VIRTUAL SURFACE T
     Extrapolated_T = Interpolate_field(df_AllBoreholes_Extrapolated, 'T', X, Z)
     ###Above the upper virtual borehole we force T to 0°C
@@ -241,12 +262,27 @@ if __name__ == "__main__":
     mask1 = (X > x_virtualborehole1) & (Z < zs_virtualborehole1+20) & np.isnan(Extrapolated_T)
     # Replace NaNs with 0 in those locations
     Extrapolated_T[mask1] = 0
-    ###Similarly, below the lower virtual borehole we force T to -2.9°C
+    ###Similarly, below the lower virtual borehole we force T to -2.6°C
     # Find NaN values where X < xmin and Z < zmin
     mask2 = (X < x_virtualborehole2) & (Z < zs_virtualborehole2) & np.isnan(Extrapolated_T)
-    # Replace NaNs with -2.5 in those locations
-    Extrapolated_T[mask2] = -2.5
+    # Replace NaNs with -2.6 in those locations
+    Extrapolated_T[mask2] = -2.6
 
+    # ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
+    # ####  Produce final file and save it for interpolation through Elmer Solver  #####
+    # ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
+    # #### Replace all remaining Nan by -9999 for Elmer Solver
+    # Extrapolated_T = np.nan_to_num(Extrapolated_T, nan=-9999)
+    # # Flatten the grids to 1D arrays
+    # X_flat = X.ravel()  # Convert 2D grid to 1D array
+    # Z_flat = Z.ravel()
+    # T_flat = Extrapolated_T.ravel()
+    # # Stack the arrays column-wise
+    # T_data = np.column_stack((X_flat, Z_flat, T_flat))
+    # # Save to .dat file
+    # Filename_Tmap= 'VerticallyExtrapolated_2D_Temperature.dat'
+    # Pathroot_Tdata = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/Data/.')
+    # np.savetxt(Pathroot_Tdata.joinpath(Filename_Tmap), T_data, fmt="%.6f", delimiter=" ", comments="")
 
     ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##########
     ###Extract a 2D vertical slice from the surf and bottom DEM -> For visualization only ###
@@ -364,21 +400,19 @@ if __name__ == "__main__":
     clevs_contour = np.arange(Tmin, Tmax, lev_ticks_range/2)
     clevs_contour = np.sort(clevs_contour)  # Ensure proper ordering
     CS = plt.contour(X/ 1000, Z, Interpolated_T,clevs_contour, colors='black', linestyles='-', linewidths=0.6) ## lines (f(x) contour)
-    plt.clabel(CS, CS.levels[::2], inline=True, fontsize=5) ## numbers in contours
+    plt.clabel(CS, CS.levels[::2], inline=True, fontsize=8) ## numbers in contours
     ###Fills up the map with colors for T
     CS1 = plt.contourf(X / 1000, Z, Interpolated_T, clevs_contour, colors=Colors_Gilbert2012)
     ###Show colorbar
     levs_ticks = np.arange(Tmin, Tmax, lev_ticks_range)
     cbar = plt.colorbar(CS1, ticks=levs_ticks, orientation='vertical', label=r'T [°C]')
-    ###Plot contour between NaN and no NaN
-    #plt.contour(X / 1000, Z, nan_mask, levels=[0.5], colors='grey', linewidths=1.2)
     ###plot thermistance positions for each borehole
     for i, Borehole in enumerate(Borehole_List):
         plt.scatter(df_AllBoreholes[df_AllBoreholes['Borehole_ID'] == Borehole]['X'].values/1000,
                     df_AllBoreholes[df_AllBoreholes['Borehole_ID'] == Borehole]['Zs'].values+df_AllBoreholes[df_AllBoreholes['Borehole_ID'] == Borehole]['Depth'],
-                    color='c', edgecolor='black', marker='.', s=40)
+                    color='lime', edgecolor='black', marker='.', s=60, zorder=10)
     ###plot contour of chosen slice
-    plt.plot(df_contour_glacier['X'].values/1000, df_contour_glacier['Z'].values, color='k', linestyle='-', linewidth=1.5)
+    plt.plot(df_contour_glacier['X'].values/1000, df_contour_glacier['Z'].values, color='k', linestyle='-', linewidth=1.7)
 
     ###Fig 3: VERTICAL SLICE WITH EXTRAPOLATED T MAP
     fig3 = plt.figure(3, figsize=(40, 20))
@@ -390,27 +424,26 @@ if __name__ == "__main__":
     ###Set xaxis and y axis to same scale, but knowing that x is in km
     ax = plt.gca()
     ax.set_aspect(1/1000)  # Ensures equal unit length on both axes
+    ###plot contour of chosen slice
+    plt.plot(df_contour_glacier['X'].values/1000, df_contour_glacier['Z'].values, color='k', linestyle='-', linewidth=1.7)
+    # plt.plot(df_zs_interp_filtered['X'].values/1000, df_zs_interp_filtered['Z'].values-10, color='k', linestyle='--', linewidth=2)
     ##contour of T every 0.25°C
-    clevs_contour = np.arange(Tmin, Tmax, lev_ticks_range/2)
+    clevs_contour = np.arange(Tmin, Tmax, lev_ticks_range / 2)
     clevs_contour = np.sort(clevs_contour)  # Ensure proper ordering
-    CS = plt.contour(X/ 1000, Z, Extrapolated_T,clevs_contour, colors='black', linestyles='-', linewidths=0.6) ## lines (f(x) contour)
-    plt.clabel(CS, CS.levels[::2], inline=True, fontsize=8) ## numbers in contours
     ###Fills up the map with colors for T
-    CS1 = plt.contourf(X / 1000, Z, Extrapolated_T, clevs_contour, colors=Colors_Gilbert2012)
+    CS1 = plt.contourf(X / 1000, Z, Extrapolated_T, clevs_contour, colors=Colors_Gilbert2012, extend = 'min')
+    ###Plot contour lines
+    CS = plt.contour(X / 1000, Z, Extrapolated_T, clevs_contour, colors='black', linestyles='-',
+                     linewidths=0.6)  ## lines (f(x) contour)
+    # # Select label positions manually
+    label_positions = [(947.881, 3141.5), (947.9055, 3132), (947.9475, 3134.0), (948.0326, 3161.3), (948.1157, 3176.7), (948.0773, 3146.6)]  # Adjust these positions as needed
+    plt.clabel(CS, CS.levels[::2], inline=True, fontsize=8, manual=label_positions)  ## numbers in contours
+
     ###Show colorbar
     levs_ticks = np.arange(Tmin, Tmax, lev_ticks_range)
     cbar = plt.colorbar(CS1, ticks=levs_ticks, orientation='vertical', label=r'T [°C]')
     ###Plot contour between NaN and no NaN to show where data are interpolated
-    CS2 = plt.contour(X / 1000, Z, nan_mask, levels=[0.5], colors='lightgrey', linewidths=1.5)
-    ###plot thermistance positions for each borehole (True Borehole)
-    for i, Borehole in enumerate(Borehole_List):
-        plt.scatter(df_AllBoreholes[df_AllBoreholes['Borehole_ID'] == Borehole]['X'].values / 1000,
-                    df_AllBoreholes[df_AllBoreholes['Borehole_ID'] == Borehole]['Zs'].values +
-                    df_AllBoreholes[df_AllBoreholes['Borehole_ID'] == Borehole]['Depth'],
-                    color='c', edgecolor='black', marker='.', s=40)
-    ###plot contour of chosen slice
-    plt.plot(df_contour_glacier['X'].values/1000, df_contour_glacier['Z'].values, color='k', linestyle='-', linewidth=1.5)
-    plt.plot(df_zs_interp_filtered['X'].values/1000, df_zs_interp_filtered['Z'].values-10, color='k', linestyle='--', linewidth=2)
+    CS2 = plt.contour(X / 1000, Z, nan_mask, levels=[0.5], colors='whitesmoke', linestyles='-', linewidths=2)
     ###Remove what is out of glacier contour
     ###Below we remove colors that are outside of glacier contour
     if IsClip:
@@ -424,7 +457,14 @@ if __name__ == "__main__":
             c.set_clip_path(patch)
         for c in CS2.collections:
             c.set_clip_path(patch)
-
+    ###plot thermistance positions for each borehole (True Borehole)
+    for i, Borehole in enumerate(Borehole_List):
+        plt.scatter(df_AllBoreholes[df_AllBoreholes['Borehole_ID'] == Borehole]['X'].values / 1000,
+                    df_AllBoreholes[df_AllBoreholes['Borehole_ID'] == Borehole]['Zs'].values +
+                    df_AllBoreholes[df_AllBoreholes['Borehole_ID'] == Borehole]['Depth'],
+                    color='lime', edgecolor='black', marker='.', s=60, zorder=10)
+    ### If you want to show the interpolation grid, uncomment following:
+    # plt.scatter(X_flat/1000,Z_flat,color='k', marker='.', s=5, zorder=10)
     plt.show()
 
 

@@ -53,6 +53,6 @@ name_path = '/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/.'
 path_output_file = Path(name_path).joinpath(name_output_file)
 
 dataset = pd.DataFrame({'Column1': X, 'Column2': Y, 'Column3': Z})
-dataset.to_csv(path_output_file, sep ='\t', header = False, index = False)
+# dataset.to_csv(path_output_file, sep ='\t', header = False, index = False)
 
 plt.show()

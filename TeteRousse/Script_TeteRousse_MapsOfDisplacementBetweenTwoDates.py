@@ -136,15 +136,15 @@ if __name__ == "__main__":
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     ### General parameter regarding dates of interest
     RefStartDate = date(int(2011), 7, 1) ##Every days are numbered relative to 1st July 2011 (day 1)
-    # StartDate_str = '14092010'  ###start date for displacement computation
-    # FinishDate_str = '06102010' ###finish date for displacement computation
-    # Sequence = 'Pumping2010' ###To which sequence corresponds the chosen dates ? Required to set proper legend parameters
+    StartDate_str = '14092010'  ###start date for displacement computation
+    FinishDate_str = '06102010' ###finish date for displacement computation
+    Sequence = 'Pumping2010' ###To which sequence corresponds the chosen dates ? Required to set proper legend parameters
     # StartDate_str = '09092011'  ###start date for displacement computation
     # FinishDate_str = '28092011' ###finish date for displacement computation
     # Sequence = 'Refill20102011'
-    StartDate_str = '28092011'  ###start date for displacement computation
-    FinishDate_str = '21102011' ###finish date for displacement computation
-    Sequence = 'Pumping2011'
+    # StartDate_str = '28092011'  ###start date for displacement computation
+    # FinishDate_str = '21102011' ###finish date for displacement computation
+    # Sequence = 'Pumping2011'
     ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     ### Parameter for the plot
     # shading
@@ -242,7 +242,7 @@ if __name__ == "__main__":
     ###Path to folder where to find data of interest
     Pathroot = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/.')
     ###Name of columns of output files
-    Col_Names_Viscous = ['Timestep', 'Timestep2', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'U', 'V', 'W', 'Pressure', 'SigmaIII','SigmaII', 'SigmaI']
+    Col_Names_Viscous = ['Timestep', 'Timestep2', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'U', 'V', 'W', 'Pressure', 'SigmaIII','SigmaII', 'SigmaI', 'Temperature', 'Sxx', 'Syy', 'Szz', 'Sxy', 'Sxz', 'Syz' ]
     Col_Names_Elastic = ['Timestep', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'DispX', 'DispY', 'DispZ', 'VonMises', 'SigmaI','SigmaII', 'SigmaIII']
     Col_Names_ObsData = ['Stake', 'X', 'Y', 'Z']
     ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
@@ -341,42 +341,42 @@ if __name__ == "__main__":
     ####Open file
     if FinishDayNumber < -255: ###This is simu called Pumping 2010
         StartSimuDayNumber_ViscousSimu = -315  ###That's the day number corresponding to the beginning of simu pumping 2010
-        filename_viscous = './ScalarOutput/SurfaceOutput_Prono_NoD_PCav_P2010_tsp1d_Out5d_.dat'
+        filename_viscous = './ScalarOutput/SurfaceOutput_Prono_NoD_PCav_P2010_tsp1d_Out5d_Tmap_.dat'
         df_Viscous = pd.read_csv(Pathroot.joinpath(filename_viscous), names=Col_Names_Viscous, delim_whitespace=True)
         df_Viscous['TimestepSize'] = 1 ##This simu as a timestep of one day
         df_Viscous['DayofSimu'] = df_Viscous['TimestepSize']* (df_Viscous['Timestep']-1 )+StartSimuDayNumber_ViscousSimu
     elif -255 < StartDayNumber < 85 and FinishDayNumber < 85: ###This is simu called Refill20102011
         StartSimuDayNumber_ViscousSimu = -255  ###That's the day number corresponding to the beginning of simu refill 20102011
-        filename_viscous = './ScalarOutput/SurfaceOutput_Prono_NoD_PCav_Refill20102011_tsp5d_Out30d_.dat'
+        filename_viscous = './ScalarOutput/SurfaceOutput_Prono_NoD_PCav_Refill20102011_tsp5d_Out30d_Tmap_.dat'
         df_Viscous = pd.read_csv(Pathroot.joinpath(filename_viscous), names=Col_Names_Viscous, delim_whitespace=True)
         df_Viscous['TimestepSize'] = 5 ##This simu as a timestep of 5 days
         df_Viscous['DayofSimu'] = df_Viscous['TimestepSize'] * (df_Viscous['Timestep'] - 1) + StartSimuDayNumber_ViscousSimu
     elif StartDayNumber < 85 and 85 < FinishDayNumber < 105: ##Startday is in simu Refill20102011, Finish day is in simu Pumping2011
         StartSimuDayNumber_ViscousSimu_start = -255 ###That's the day number corresponding to the beginning of simu refill 20102011
-        filename_viscous_start = './ScalarOutput/SurfaceOutput_Prono_NoD_PCav_Refill20102011_tsp5d_Out30d_.dat'
+        filename_viscous_start = './ScalarOutput/SurfaceOutput_Prono_NoD_PCav_Refill20102011_tsp5d_Out30d_Tmap_.dat'
         df_Viscous_start = pd.read_csv(Pathroot.joinpath(filename_viscous_start), names=Col_Names_Viscous, delim_whitespace=True)
         df_Viscous_start['TimestepSize'] = 5 ##This simu as a timestep of 5 days
         df_Viscous_start['DayofSimu'] = df_Viscous_start['TimestepSize'] * (df_Viscous_start['Timestep'] - 1) + StartSimuDayNumber_ViscousSimu_start
         StartSimuDayNumber_ViscousSimu_finish = 85 ###That's the day number corresponding to the beginning of simu pumping 2011
-        filename_viscous_finish = './ScalarOutput/SurfaceOutput_Prono_NoD_PCav_P2011_tsp1d_Out5d_.dat'
+        filename_viscous_finish = './ScalarOutput/SurfaceOutput_Prono_NoD_PCav_P2011_tsp1d_Out5d_Tmap_.dat'
         df_Viscous_finish = pd.read_csv(Pathroot.joinpath(filename_viscous_finish), names=Col_Names_Viscous, delim_whitespace=True)
         df_Viscous_finish['TimestepSize'] = 1 ##This simu as a timestep of one day
         df_Viscous_finish['DayofSimu'] = df_Viscous_finish['TimestepSize'] * (df_Viscous_finish['Timestep'] - 1) + StartSimuDayNumber_ViscousSimu_finish
         df_Viscous = pd.concat([df_Viscous_start, df_Viscous_finish], ignore_index=True)
     elif 85 <StartDayNumber < 105 and 85 < FinishDayNumber < 105:###This is simu called Pumping2011
         StartSimuDayNumber_ViscousSimu = 85###That's the day number corresponding to the beginning of simu pumping 2011
-        filename_viscous = './ScalarOutput/SurfaceOutput_Prono_NoD_PCav_P2011_tsp1d_Out5d_.dat'
+        filename_viscous = './ScalarOutput/SurfaceOutput_Prono_NoD_PCav_P2011_tsp1d_Out5d_Tmap_.dat'
         df_Viscous = pd.read_csv(Pathroot.joinpath(filename_viscous), names=Col_Names_Viscous, delim_whitespace=True)
         df_Viscous['TimestepSize'] = 1##This simu as a timestep of one day
         df_Viscous['DayofSimu'] = df_Viscous['TimestepSize']* (df_Viscous['Timestep']-1 )+StartSimuDayNumber_ViscousSimu
     elif 85 < StartDayNumber < 105  and 105 < FinishDayNumber < 450: ##Startday is in simu Pumping2011, Finish day is in simu Refill20112012
         StartSimuDayNumber_ViscousSimu_start = 85 ###That's the day number corresponding to the beginning of simu Pumping 011
-        filename_viscous_start = './ScalarOutput/SurfaceOutput_Prono_NoD_PCav_P2011_tsp1d_Out5d_.dat'
+        filename_viscous_start = './ScalarOutput/SurfaceOutput_Prono_NoD_PCav_P2011_tsp1d_Out5d_Tmap_.dat'
         df_Viscous_start = pd.read_csv(Pathroot.joinpath(filename_viscous_start), names=Col_Names_Viscous, delim_whitespace=True)
         df_Viscous_start['TimestepSize'] = 1 ##This simu as a timestep of one day
         df_Viscous_start['DayofSimu'] = df_Viscous_start['TimestepSize'] * (df_Viscous_start['Timestep'] - 1) + StartSimuDayNumber_ViscousSimu_start
         StartSimuDayNumber_ViscousSimu_finish = 105 ###That's the day number corresponding to the beginning of simu refill20112012
-        filename_viscous_finish = './ScalarOutput/SurfaceOutput_Prono_NoD_PCav_Refill20112012_tsp5d_Out30d_.dat'
+        filename_viscous_finish = './ScalarOutput/SurfaceOutput_Prono_NoD_PCav_Refill20112012_tsp5d_Out30d_Tmap_.dat'
         df_Viscous_finish = pd.read_csv(Pathroot.joinpath(filename_viscous_finish), names=Col_Names_Viscous, delim_whitespace=True)
         df_Viscous_finish['TimestepSize'] = 5 ##This simu as a timestep of 5 days
         df_Viscous_finish['DayofSimu'] = df_Viscous_finish['TimestepSize'] * (df_Viscous_finish['Timestep'] - 1) + StartSimuDayNumber_ViscousSimu_finish

@@ -32,7 +32,7 @@ spline = True ###It seems to be working all the time here so True by default
 Transect_Names = ['Transect1','Transect2','Transect3','Transect4','Transect5','Transect6']
 Floor_altitudes=[2803.5,2803,2802.5,2802,2801.5,2801.12]
 #BottomTunnel_altitudes=[2792.2,2791.7,2791.2,2790.7,2790.2,2789.82] ### The elevation of tunnel bottom if Tunnel_After_Incision = True
-BottomTunnel_altitudes=[2785.5,2785,2784.5,2784,2783.5,2783.12] ###case with incision to ~few cm above bed at transect 1 and then 1% slope
+BottomTunnel_altitudes=[2785,2785,2784.5,2784,2783.5,2783.12] ###case with incision to ~few cm above bed at transect 1 and then 1% slope
 #### Possible shapes of the tunnel : Ovoid only for this case
 Shape = 'Ovoide'
 #### Do we want the half tunnel case or the half channel case ?

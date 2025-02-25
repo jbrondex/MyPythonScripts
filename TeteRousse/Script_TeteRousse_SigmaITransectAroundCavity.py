@@ -135,7 +135,7 @@ if __name__ == "__main__":
     StepTsp_List = [1, 5]  # , 1, 5, 1, 5] ##Timestep size (in days) corresponding to simulation step (Step_List)
     StepOut_List = [5, 30]  # , 5, 30, 5, 30] ##Output interval (in days) corresponding to simulation step (Step_List)
     ## Where pressure applies: cavity only: 'PCavityOnly', restricted to a conduit: 'PRestricted', everywhere above cold/temperate transition: 'PNotRestric'
-    Case = 'PRest'
+    Case = 'PCav'
     Col_Crevasses_Circ = '#FF0000' ###'#800080' ###Color for representation of circular crevasses
     Col_Crevasses_Other = '#800080' ###Color for representation of non circular crevasses
     Col_Cavity = '#00FFFF'###color for representation of cavity
@@ -174,12 +174,12 @@ if __name__ == "__main__":
     Pathroot_SimuOutput = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/ScalarOutput/.')
     ###NAMES OF OUTPUT DATA (same order as in dat.names file)
     ###BE WARE: I use the convention SigmaI>SigmaII>SigmaIII which is not the convention of the EigenStress solver in Elmer
-    Col_Names_NoD = ['Timestep', 'DayOfSimu', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'U', 'V', 'W', 'Pressure', 'SigmaIII','SigmaII','SigmaI']
+    Col_Names_NoD = ['Timestep', 'DayOfSimu', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'U', 'V', 'W', 'Pressure', 'SigmaIII','SigmaII','SigmaI', 'temperature', 'Sxx', 'Syy', 'Szz', 'Sxy', 'Sxz', 'Syz']
     # Col_Names_NoD = ['Timestep', 'DayOfSimu', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'U', 'V', 'W','SigmaI', 'D','Chi']
     ###We create a single dataframe for all considered steps of the simu
     Data_Simu_NoD = pd.DataFrame()  ##Initialize an empty dataframe
     for i, (Step, StepTsp, StepOut) in enumerate(zip(Step_List, StepTsp_List, StepOut_List)):
-        filename = 'SurfaceOutput_Prono_NoD_{}_{}_tsp{}d_Out{}d_.dat'.format(Case, Step, str(StepTsp), str(StepOut))
+        filename = 'SurfaceOutput_Prono_NoD_{}_{}_tsp{}d_Out{}d_Tmap_.dat'.format(Case, Step, str(StepTsp), str(StepOut))
         # filename = 'SurfaceOutput_Prono_B097_Sth006_Lh00_{}_{}_tsp{}d_Out{}d_CritMPS_.dat'.format(Case, Step, str(StepTsp), str(StepOut))
         print('Opening file:', filename)
         Data_Simu_NoD_tmp = pd.read_csv(Pathroot_SimuOutput.joinpath(filename), names=Col_Names_NoD, delim_whitespace=True)
@@ -234,15 +234,15 @@ if __name__ == "__main__":
         X, Y = np.meshgrid(x, y)
         SigmaEq = Interpolate_field(Df_LastDayPump2010,Criterion,X,Y)
         #shading
-        clevs=np.arange(0.0,161,10) ## cbar for shading
+        clevs=np.arange(0.0,151,10) ## cbar for shading
         cmap=Colormap_for_stressmap
         #colorbar
-        levs_ticks=np.arange(0.0,161,20)
+        levs_ticks=np.arange(0.0,151,20)
         ###Fills up the map with colors for SigmaEq
         CS1 = plt.contourf(X/1000, Y/1000, SigmaEq*1000, clevs, cmap=cmap,extend='both')
         plt.plot(xc / 1000, yc / 1000, color='k', linewidth=2)
         ###Show colorbar
-        cbar = plt.colorbar(CS1, ticks=levs_ticks, orientation='vertical', label=r'$\sigma_I$ [MPa]')
+        cbar = plt.colorbar(CS1, ticks=levs_ticks, orientation='vertical', label=r'$\sigma_I$ [kPa]')
         ##contour at SigmaEq=0.12 MPa(proposed threshold)
         # CS = plt.contour(X, Y, SigmaEq,[0.0], colors='yellow') ## lines (f(x) contour)
         # plt.clabel(CS, inline=True, fontsize=10) ## numbers in contours
