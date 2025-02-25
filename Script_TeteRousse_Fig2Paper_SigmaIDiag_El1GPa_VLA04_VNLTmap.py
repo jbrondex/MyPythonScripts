@@ -229,10 +229,10 @@ if __name__ == "__main__":
         ax.set_xlabel(r'X [km]', fontsize=22)
         ax.set_ylabel(r'Y [km]', fontsize=22)
         ax.tick_params(labelsize=18)  # fontsize of the tick labels
-        # ax.set_xlabel("")
-        # ax.set_ylabel("")
-        # ax.set_xticklabels([])  # Remove x labels
-        # ax.set_yticklabels([])  # Remove y labels
+        ax.set_xlabel("")
+        ax.set_ylabel("")
+        ax.set_xticklabels([])  # Remove x labels
+        ax.set_yticklabels([])  # Remove y labels
         ax.grid(True)
         ax.grid(alpha=0.5)
         ax.set_title(Title, fontsize=21, weight='bold')
