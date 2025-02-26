@@ -302,8 +302,8 @@ if __name__ == "__main__":
     ###########################################################################
     ###load and process data for elastic simulations (two diag simulations)####
     ###########################################################################
-    filename_StartDay = './ScalarOutput/SurfaceOutput_DiagElastic_Poisson03_E1GPa_CavityPressure_{}_.dat'.format(StartDate_str)
-    filename_FinishDay = './ScalarOutput/SurfaceOutput_DiagElastic_Poisson03_E1GPa_CavityPressure_{}_.dat'.format(FinishDate_str)
+    filename_StartDay = './ScalarOutput/SurfaceOutput_DiagElastic_Poisson03_E1GPa_CavityPressure_{}_NoDispLat_.dat'.format(StartDate_str)
+    filename_FinishDay = './ScalarOutput/SurfaceOutput_DiagElastic_Poisson03_E1GPa_CavityPressure_{}_NoDispLat_.dat'.format(FinishDate_str)
     df_Elastic_StartDay = pd.read_csv(Pathroot.joinpath(filename_StartDay), names=Col_Names_Elastic, delim_whitespace=True)
     df_Elastic_FinishDay = pd.read_csv(Pathroot.joinpath(filename_FinishDay), names=Col_Names_Elastic, delim_whitespace=True)
     # Verify the first 3 columns are identical ['DayOfSimu', 'BC', 'NodeNumber'] (slight differences are seen for coordinates
