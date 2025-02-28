@@ -218,91 +218,91 @@ if __name__ == "__main__":
         Data_Simu_NoD['SigmaC'] = 0.5 * (Data_Simu_NoD['SigmaI']-Data_Simu_NoD['SigmaIII']) - 0.5*mu*(Data_Simu_NoD['SigmaI']+Data_Simu_NoD['SigmaIII'])
     ### Get the last day of the step pumping 2010
     Df_LastDayPump2010=Data_Simu_NoD[Data_Simu_NoD['DayOfSimu']==np.max(Data_Simu_NoD[Data_Simu_NoD['Step']=='P2010']['DayOfSimu'])].copy()
-    #
-    # ###################################################################################################
-    # ###     PLOT MAP OF EQUIVALENT STRESS AT THE SURFACE AT THE END OF PUMPING FOR EACH CRITERION   ###
-    # ###################################################################################################
-    #
-    # ###~~~~~~~Prepare the figure 1 : subplot with the surface eq stress for the four criterion tested
-    # ###Prepare the subplot
-    # nrows = 2  ###Sigma_I, Uz
-    # ncols = 2  ###1GPa, 9GPa, Diff
-    # fig1, axes = plt.subplots(nrows, ncols, figsize=(15, 12), sharex=True, sharey=True) #, constrained_layout=True)  # , gridspec_kw={'hspace': -0.15})
-    # plt.subplots_adjust(bottom=0.2,wspace=0.1)
-    # ### Start loop on the various criterion considered
-    # for idx,(Criterion,Title) in enumerate(zip(['SigmaI', 'SigmaVM', 'SigmaHa', 'SigmaC'], ['Max. principal stress', 'von Mises', 'Hayurst', 'Coulomb'])):
-    #     ### Get proper ax
-    #     row, col = divmod(idx, ncols)  # Get row, col index from the idx
-    #     ax = axes[row, col]  # Select the axis in the grid
-    #     if row == 1:
-    #         ax.set_xlabel(r'X [km]', fontsize=22)
-    #     if col == 0:
-    #         ax.set_ylabel(r'Y [km]', fontsize=22)
-    #     ax.tick_params(labelsize=18)  # fontsize of the tick labels
-    #     # ax.set_xlabel("")
-    #     # ax.set_ylabel("")
-    #     # ax.set_xticklabels([])  # Remove x labels
-    #     # ax.set_yticklabels([])  # Remove y labels
-    #     ax.grid(True)
-    #     ax.grid(alpha=0.5)
-    #     ###Force x and y axis to same scale
-    #     ax.set_aspect('equal', adjustable='box')
-    #     ax.set_title(Title, fontsize=21, weight='bold')
-    #     # plt.xlim([(np.floor(np.min(Df_LastDayPump2010['X']))-10)/1000, (np.floor(np.max(Df_LastDayPump2010['X']))+10)/1000])
-    #     # plt.ylim([(np.floor(np.min(Df_LastDayPump2010['Y']))-10)/1000, (np.floor(np.max(Df_LastDayPump2010['Y']))+10)/1000])
-    #     ###Create refined regular grid and interpolate field over grid
-    #     x = np.arange(np.floor(np.min(Df_LastDayPump2010['X']))-10,np.floor(np.max(Df_LastDayPump2010['X']))+10,0.1)
-    #     y = np.arange(np.floor(np.min(Df_LastDayPump2010['Y']))-10,np.floor(np.max(Df_LastDayPump2010['Y']))+10,0.1)
-    #     X, Y = np.meshgrid(x, y)
-    #     SigmaEq = Interpolate_field(Df_LastDayPump2010,Criterion,X,Y)
-    #     #shading
-    #     clevs=np.arange(0.0,151,10) ## cbar for shading
-    #     cmap=Colormap_for_stressmap
-    #     #colorbar
-    #     levs_ticks=np.arange(0.0,151,20)
-    #     ###Fills up the map with colors for SigmaEq
-    #     CS1 = ax.contourf(X/1000, Y/1000, SigmaEq*1000, clevs, cmap=cmap,extend='both')
-    #     ax.plot(xc / 1000, yc / 1000, color='k', linewidth=2)
-    #     ###Show colorbar
-    #     # cbar = ax.colorbar(CS1, ticks=levs_ticks, orientation='vertical', label=r'$\sigma_\mathrm{eq}$ [kPa]')
-    #     ###Below we remove colors that are outside of glacier contour
-    #     clippath = mpltPath(np.c_[xc/1000, yc/1000])
-    #     patch = PathPatch(clippath, facecolor='none')
-    #     ax.add_patch(patch)
-    #     for c in CS1.collections:
-    #         c.set_clip_path(patch)
-    #     ####Plot transects over which SigmaEq will be plot on map
-    #     for i,(Transect_Name, Coord_pt1, Coord_pt2) in enumerate(zip(List_Transect, List_Coord_pt1,List_Coord_pt2)):
-    #         ###Use functions to return coords of transect
-    #         coord_transect = Coord_transect(Coord_pt1, Coord_pt2)
-    #         ###Plot transect on map
-    #         ax.plot(coord_transect[0]/1000,coord_transect[1]/1000,color=Col_Transect,linestyle='-',linewidth=4)
-    #         ###Annotate transect name : easier to do in inkscape
-    #         # if Transect_Name == "AA'":
-    #         #     ax.annotate(Transect_Name[0], ((coord_transect[0][0]-10)/1000, (coord_transect[1][0]-8)/1000), size=17, weight='bold',color=Col_Transect)
-    #         #     ax.annotate(Transect_Name[1:], ((coord_transect[0][-1]+3)/1000, (coord_transect[1][-1]-4)/1000), size=17, weight='bold',color=Col_Transect)
-    #         # elif Transect_Name == "BB'":
-    #         #     ax.annotate(Transect_Name[0], ((coord_transect[0][0]-12)/1000, (coord_transect[1][0]+2)/1000), size=17, weight='bold',color=Col_Transect)
-    #         #     ax.annotate(Transect_Name[1:], ((coord_transect[0][-1]+3)/1000, (coord_transect[1][-1]-9)/1000), size=17, weight='bold',color=Col_Transect)
-    #         # elif Transect_Name == "CC'":
-    #         #     ax.annotate(Transect_Name[0], ((coord_transect[0][0]-12)/1000, (coord_transect[1][0]+2)/1000), size=17, weight='bold',color=Col_Transect)
-    #         #     ax.annotate(Transect_Name[1:], ((coord_transect[0][-1]+4)/1000, (coord_transect[1][-1]+2)/1000), size=17, weight='bold',color=Col_Transect)
-    #     ###Plot cavity contour
-    #     ax.plot(cavity_contour[:, 0]/1000,cavity_contour[:, 1]/1000,color=Col_Cavity,linestyle='-',linewidth=2.6)
-    #     ###plot crevasses as continuous line
-    #     for crev_num in np.arange(Df_Crevasses['Crevasse Number'].min(), Df_Crevasses['Crevasse Number'].max() + 1):
-    #         ###get proper points
-    #         Df_plot = Df_Crevasses[Df_Crevasses['Crevasse Number'] == crev_num]
-    #         if Df_plot['IsCircular'].all():  ##different colors for circular crevasses and other crevasses
-    #             col = Col_Crevasses_Circ
-    #         else:
-    #             col = Col_Crevasses_Other
-    #         ax.plot(Df_plot['X'].values/1000, Df_plot['Y'].values/1000, color=col, linestyle='-', linewidth=2)
-    # # Add a common colorbar to all subplots below the figure
-    # cbar_ax = fig1.add_axes([0.15, 0.082, 0.7, 0.027])  # [left, bottom, width, height]
-    # fig1.colorbar(CS1, ticks=levs_ticks, cax=cbar_ax, orientation='horizontal', label=r'$\sigma_\mathrm{eq}$ [kPa]')
-    # ###Show map
-    # plt.show()
+
+    ###################################################################################################
+    ###     PLOT MAP OF EQUIVALENT STRESS AT THE SURFACE AT THE END OF PUMPING FOR EACH CRITERION   ###
+    ###################################################################################################
+
+    ###~~~~~~~Prepare the figure 1 : subplot with the surface eq stress for the four criterion tested
+    ###Prepare the subplot
+    nrows = 2  ###Sigma_I, Uz
+    ncols = 2  ###1GPa, 9GPa, Diff
+    fig1, axes = plt.subplots(nrows, ncols, figsize=(15, 12), sharex=True, sharey=True) #, constrained_layout=True)  # , gridspec_kw={'hspace': -0.15})
+    plt.subplots_adjust(bottom=0.2,wspace=0.1)
+    ### Start loop on the various criterion considered
+    for idx,(Criterion,Title) in enumerate(zip(['SigmaI', 'SigmaVM', 'SigmaHa', 'SigmaC'], ['Max. principal stress', 'von Mises', 'Hayurst', 'Coulomb'])):
+        ### Get proper ax
+        row, col = divmod(idx, ncols)  # Get row, col index from the idx
+        ax = axes[row, col]  # Select the axis in the grid
+        if row == 1:
+            ax.set_xlabel(r'X [km]', fontsize=22)
+        if col == 0:
+            ax.set_ylabel(r'Y [km]', fontsize=22)
+        ax.tick_params(labelsize=18)  # fontsize of the tick labels
+        # ax.set_xlabel("")
+        # ax.set_ylabel("")
+        # ax.set_xticklabels([])  # Remove x labels
+        # ax.set_yticklabels([])  # Remove y labels
+        ax.grid(True)
+        ax.grid(alpha=0.5)
+        ###Force x and y axis to same scale
+        ax.set_aspect('equal', adjustable='box')
+        ax.set_title(Title, fontsize=21, weight='bold')
+        # plt.xlim([(np.floor(np.min(Df_LastDayPump2010['X']))-10)/1000, (np.floor(np.max(Df_LastDayPump2010['X']))+10)/1000])
+        # plt.ylim([(np.floor(np.min(Df_LastDayPump2010['Y']))-10)/1000, (np.floor(np.max(Df_LastDayPump2010['Y']))+10)/1000])
+        ###Create refined regular grid and interpolate field over grid
+        x = np.arange(np.floor(np.min(Df_LastDayPump2010['X']))-10,np.floor(np.max(Df_LastDayPump2010['X']))+10,0.1)
+        y = np.arange(np.floor(np.min(Df_LastDayPump2010['Y']))-10,np.floor(np.max(Df_LastDayPump2010['Y']))+10,0.1)
+        X, Y = np.meshgrid(x, y)
+        SigmaEq = Interpolate_field(Df_LastDayPump2010,Criterion,X,Y)
+        #shading
+        clevs=np.arange(0.0,151,10) ## cbar for shading
+        cmap=Colormap_for_stressmap
+        #colorbar
+        levs_ticks=np.arange(0.0,151,20)
+        ###Fills up the map with colors for SigmaEq
+        CS1 = ax.contourf(X/1000, Y/1000, SigmaEq*1000, clevs, cmap=cmap,extend='both')
+        ax.plot(xc / 1000, yc / 1000, color='k', linewidth=2)
+        ###Show colorbar
+        # cbar = ax.colorbar(CS1, ticks=levs_ticks, orientation='vertical', label=r'$\sigma_\mathrm{eq}$ [kPa]')
+        ###Below we remove colors that are outside of glacier contour
+        clippath = mpltPath(np.c_[xc/1000, yc/1000])
+        patch = PathPatch(clippath, facecolor='none')
+        ax.add_patch(patch)
+        for c in CS1.collections:
+            c.set_clip_path(patch)
+        ####Plot transects over which SigmaEq will be plot on map
+        for i,(Transect_Name, Coord_pt1, Coord_pt2) in enumerate(zip(List_Transect, List_Coord_pt1,List_Coord_pt2)):
+            ###Use functions to return coords of transect
+            coord_transect = Coord_transect(Coord_pt1, Coord_pt2)
+            ###Plot transect on map
+            ax.plot(coord_transect[0]/1000,coord_transect[1]/1000,color=Col_Transect,linestyle='-',linewidth=4)
+            ###Annotate transect name : easier to do in inkscape
+            # if Transect_Name == "AA'":
+            #     ax.annotate(Transect_Name[0], ((coord_transect[0][0]-10)/1000, (coord_transect[1][0]-8)/1000), size=17, weight='bold',color=Col_Transect)
+            #     ax.annotate(Transect_Name[1:], ((coord_transect[0][-1]+3)/1000, (coord_transect[1][-1]-4)/1000), size=17, weight='bold',color=Col_Transect)
+            # elif Transect_Name == "BB'":
+            #     ax.annotate(Transect_Name[0], ((coord_transect[0][0]-12)/1000, (coord_transect[1][0]+2)/1000), size=17, weight='bold',color=Col_Transect)
+            #     ax.annotate(Transect_Name[1:], ((coord_transect[0][-1]+3)/1000, (coord_transect[1][-1]-9)/1000), size=17, weight='bold',color=Col_Transect)
+            # elif Transect_Name == "CC'":
+            #     ax.annotate(Transect_Name[0], ((coord_transect[0][0]-12)/1000, (coord_transect[1][0]+2)/1000), size=17, weight='bold',color=Col_Transect)
+            #     ax.annotate(Transect_Name[1:], ((coord_transect[0][-1]+4)/1000, (coord_transect[1][-1]+2)/1000), size=17, weight='bold',color=Col_Transect)
+        ###Plot cavity contour
+        ax.plot(cavity_contour[:, 0]/1000,cavity_contour[:, 1]/1000,color=Col_Cavity,linestyle='-',linewidth=2.6)
+        ###plot crevasses as continuous line
+        for crev_num in np.arange(Df_Crevasses['Crevasse Number'].min(), Df_Crevasses['Crevasse Number'].max() + 1):
+            ###get proper points
+            Df_plot = Df_Crevasses[Df_Crevasses['Crevasse Number'] == crev_num]
+            if Df_plot['IsCircular'].all():  ##different colors for circular crevasses and other crevasses
+                col = Col_Crevasses_Circ
+            else:
+                col = Col_Crevasses_Other
+            ax.plot(Df_plot['X'].values/1000, Df_plot['Y'].values/1000, color=col, linestyle='-', linewidth=2)
+    # Add a common colorbar to all subplots below the figure
+    cbar_ax = fig1.add_axes([0.15, 0.082, 0.7, 0.027])  # [left, bottom, width, height]
+    fig1.colorbar(CS1, ticks=levs_ticks, cax=cbar_ax, orientation='horizontal', label=r'$\sigma_\mathrm{eq}$ [kPa]')
+    ###Show map
+    plt.show()
 
     ###########################################################################
     ###     PLOT SIGMA EQUIVALENT OVER CHOSEN TRANSECTS FOR VARIOUS TIME    ###
