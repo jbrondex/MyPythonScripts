@@ -270,7 +270,7 @@ if __name__ == "__main__":
         i = k % nrows
         j = k // nrows
         ax = axes[i,j]
-        ax.set_title('Combi {}'.format(k+1), fontsize=20, weight='bold')
+        # ax.set_title('Combi {}'.format(k+1), fontsize=20, weight='bold') ###Easier to add afterwards on inkscape
         ###NOW DO THE LOOP ON EACH DAMAGE CRITERION
         for l,(Crit,Crit_Name) in enumerate(zip(Crit_List,Crit_Names)):##range(len(Data_ParamSet)):
             print('Considering Combi',k+1,'and criterion ',Crit_Name)
@@ -308,7 +308,7 @@ if __name__ == "__main__":
                 MeanW_D.append(np.mean(Data_Simu_D_AboveCavity[Data_Simu_D_AboveCavity['DayOfSimu']==day]['W']) * (1000/365.25))
                 MinW_D.append(np.min(Data_Simu_D_AboveCavity[Data_Simu_D_AboveCavity['DayOfSimu']==day]['W']) * (1000/365.25))
                 MaxW_D.append(np.max(Data_Simu_D_AboveCavity[Data_Simu_D_AboveCavity['DayOfSimu']==day]['W']) * (1000/365.25))
-            ###Plot MeanW for the case with no damage (ref case) on corresponding subplot
+            ##Plot MeanW for the case with damage on corresponding subplot
             Color = ColorBlindFriendly_List[l]
             ax.plot_date(Date, MeanW_D, color= Color, linestyle = '-', linewidth=1.8, marker='None', xdate=True)
         ###Plot MeanW for the case with no damage with temperate ice on every subplot
@@ -320,12 +320,12 @@ if __name__ == "__main__":
 
     #### DUMMY plot for legend
     ax=axes[0,0]
-    ax.plot(np.NaN, np.NaN, label=r'No Damage, T map', color='k', linewidth=3, linestyle='-')
-    ax.plot(np.NaN, np.NaN, label=r'No Damage, T=0°C', color='k', linewidth=3, linestyle=':')
-    ax.plot(np.NaN, np.NaN, label=r'No Damage, T=-2°C', color='k', linewidth=3, linestyle='--')
+    ax.plot(np.NaN, np.NaN, label=r'No Damage, T = f(x,z)', color='k', linewidth=3, linestyle='-')
+    ax.plot(np.NaN, np.NaN, label=r'No Damage, T = 0°C', color='k', linewidth=3, linestyle=':')
+    ax.plot(np.NaN, np.NaN, label=r'No Damage, T = -2°C', color='k', linewidth=3, linestyle='--')
     for i,(Crit,Crit_Name) in enumerate(zip(Crit_List,Crit_Names)):
         ax.plot(np.NaN, np.NaN, label=r'{}'.format(Crit_Name), color=ColorBlindFriendly_List[i], linewidth=3, linestyle='-')
-    fig.legend(loc='lower center', bbox_to_anchor=(0.5, 0.005), fancybox=True, shadow=True, fontsize=16, ncol=3)
+    fig.legend(loc='lower center', bbox_to_anchor=(0.5, 0.005), fancybox=True, shadow=True, fontsize=16, ncol=4)
     # Adjust layout to make room for the legend
     plt.tight_layout(rect=[0.05, 0.17, 0.96, 0.96],h_pad=6.0, w_pad=5.0)
 
