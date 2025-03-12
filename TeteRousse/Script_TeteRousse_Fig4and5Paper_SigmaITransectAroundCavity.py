@@ -327,8 +327,8 @@ if __name__ == "__main__":
                 ax.axhline(y=0.0, color='k', linestyle =':', linewidth=1)
                 if i ==0:
                     ax.set_ylabel(r'$\sigma_\mathrm{eq}$ [kPa]', fontsize=22)
-                if Criterion == 'SigmaC': ###To facilitate subplot reconstruction through Inkscape
-                    ax.set_xlabel(r'Distance [m]', fontsize=22)
+                # if Criterion == 'SigmaC': ###To facilitate subplot reconstruction through Inkscape
+                #     ax.set_xlabel(r'Distance [m]', fontsize=22)
                 ###Use functions to return coords of transect
                 coord_transect = Coord_transect(Coord_pt1, Coord_pt2)
                 ###Convert coords of transect in terms of distance along transect
@@ -410,6 +410,9 @@ if __name__ == "__main__":
                     Data_Simu_NoD_Today = Data_Simu_NoD[Data_Simu_NoD['DayOfSimu'] == day].copy()
                     ###Interpolate the SigmaEq of the day on the considered transect
                     SigmaEq = Interpolate_field(Data_Simu_NoD_Today, Criterion, coord_transect[0], coord_transect[1])
+                    ###If criterion is MPS remove negative values
+                    # if Criterion == 'SigmaI':
+                    #     SigmaEq[ SigmaEq<0 ]=0
                     ###Plot interpolated sigmaI as a function of distance along transect
                     ax.plot(dist_along_transect, SigmaEq*1000, color=scalarMap.to_rgba(day), linestyle='-', linewidth=2)
                     ax.set_xlim([-1, np.max(dist_along_transect)+0.5])
