@@ -6,8 +6,8 @@ Description:
 This file aims at plotting:
  1/ four subplots corresponding to the maps of equivalent stress at the surface of the glacier
  at the end of 2010 pumping for the failure criterion Max Princip. Stress, Hayurst, von Mises Coulomb
- 2/ four subplots corresponding to the maps of equivalent stress at the surface of the glacier
- at the end of 2010 pumping for the failure criterion Max Princip. Stress, Hayurst, von Mises Coulomb
+ 2/ subplots corresponding to profile of eq. stress along 3 transects over the course of the 2010 pumping and
+ 2010/2011 refill for the four criterion
 
 """
 
@@ -215,7 +215,7 @@ if __name__ == "__main__":
         Data_Simu_NoD['SigmaHa'] = alphaH*Data_Simu_NoD['SigmaI']+betaH*Data_Simu_NoD['SigmaVM']+(1-alphaH-betaH)*(-3*Data_Simu_NoD['Pressure'])
         ##Coulomb:
         mu = 0.1
-        Data_Simu_NoD['SigmaC'] = 0.5 * (Data_Simu_NoD['SigmaI']-Data_Simu_NoD['SigmaIII']) - 0.5*mu*(Data_Simu_NoD['SigmaI']+Data_Simu_NoD['SigmaIII'])
+        Data_Simu_NoD['SigmaC'] = 0.5 * (Data_Simu_NoD['SigmaI']-Data_Simu_NoD['SigmaIII']) + 0.5*mu*(Data_Simu_NoD['SigmaI']+Data_Simu_NoD['SigmaIII'])
     ### Get the last day of the step pumping 2010
     Df_LastDayPump2010=Data_Simu_NoD[Data_Simu_NoD['DayOfSimu']==np.max(Data_Simu_NoD[Data_Simu_NoD['Step']=='P2010']['DayOfSimu'])].copy()
 
@@ -327,8 +327,8 @@ if __name__ == "__main__":
                 ax.axhline(y=0.0, color='k', linestyle =':', linewidth=1)
                 if i ==0:
                     ax.set_ylabel(r'$\sigma_\mathrm{eq}$ [kPa]', fontsize=22)
-                # if Criterion == 'SigmaC': ###To facilitate subplot reconstruction through Inkscape
-                #     ax.set_xlabel(r'Distance [m]', fontsize=22)
+                if Criterion == 'SigmaC': ###To facilitate subplot reconstruction through Inkscape
+                    ax.set_xlabel(r'Distance [m]', fontsize=22)
                 ###Use functions to return coords of transect
                 coord_transect = Coord_transect(Coord_pt1, Coord_pt2)
                 ###Convert coords of transect in terms of distance along transect
@@ -426,18 +426,18 @@ if __name__ == "__main__":
                     ax.axvline(x=DistOfCrevasses_along_transect.values[l], color='r', linestyle='-', linewidth=2.6)
                 ###Shade area corresponding to cavity based on initial grounded mask
                 ax.axvspan(np.min(DistOfGL_along_transect),np.max(DistOfGL_along_transect), alpha=0.3, color='grey')
-            # Add colorbar
-            cbar = fig2.colorbar(scalarMap, ax=axes, orientation='horizontal', pad=0.1, shrink=0.5)
-            # cbar.set_label('Simulation Days', fontsize=22)  # Label for the colorbar
-            cbar.set_ticks(levs_ticks_days)  # Optional: set ticks to the specific days
-            cbar.ax.tick_params(labelsize=14)  # Adjust font size of ticks
-            # Update the ticks to show formatted dates
-            cbar.set_ticklabels([date.strftime('%Y-%m-%d') for date in dates])
-            # Rotate tick labels by 45 degrees
-            cbar.ax.tick_params(labelrotation=45)  # Rotate tick labels at 45° angle
-            # Shift the tick labels slightly to the left
-            for label in cbar.ax.get_xticklabels():
-                label.set_horizontalalignment('right')
+            # # Add colorbar
+            # cbar = fig2.colorbar(scalarMap, ax=axes, orientation='horizontal', pad=0.1, shrink=0.5)
+            # # cbar.set_label('Simulation Days', fontsize=22)  # Label for the colorbar
+            # cbar.set_ticks(levs_ticks_days)  # Optional: set ticks to the specific days
+            # cbar.ax.tick_params(labelsize=14)  # Adjust font size of ticks
+            # # Update the ticks to show formatted dates
+            # cbar.set_ticklabels([date.strftime('%Y-%m-%d') for date in dates])
+            # # Rotate tick labels by 45 degrees
+            # cbar.ax.tick_params(labelrotation=45)  # Rotate tick labels at 45° angle
+            # # Shift the tick labels slightly to the left
+            # for label in cbar.ax.get_xticklabels():
+            #     label.set_horizontalalignment('right')
         plt.show()
 
 
