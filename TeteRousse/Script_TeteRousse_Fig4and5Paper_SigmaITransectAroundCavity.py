@@ -269,7 +269,7 @@ if __name__ == "__main__":
         clippath = mpltPath(np.c_[xc/1000, yc/1000])
         patch = PathPatch(clippath, facecolor='none')
         ax.add_patch(patch)
-        for c in CS1.collections:
+        for c in [CS1]:
             c.set_clip_path(patch)
         ####Plot transects over which SigmaEq will be plot on map
         for i,(Transect_Name, Coord_pt1, Coord_pt2) in enumerate(zip(List_Transect, List_Coord_pt1,List_Coord_pt2)):
