@@ -223,7 +223,7 @@ if __name__ == "__main__":
     clippath = mpltPath(np.c_[xc/1000, yc/1000])
     patch = PathPatch(clippath, facecolor='none')
     ax.add_patch(patch)
-    for c in CS1.collections:
+    for c in [CS1]:
         c.set_clip_path(patch)
     ###Plot cavity contour
     ax.plot(cavity_contour[:, 0]/1000,cavity_contour[:, 1]/1000,color=Col_Cavity,linestyle='-',linewidth=2.6)
@@ -338,7 +338,7 @@ if __name__ == "__main__":
     clippath = mpltPath(np.c_[df_contour_slice['X'].values/1000, df_contour_slice['Z'].values])
     patch = PathPatch(clippath, facecolor='none')
     ax.add_patch(patch)
-    for c in CS2.collections:
+    for c in [CS2]:
         c.set_clip_path(patch)
     ### Add marks for crevasses crossed by transect
     ###circular crevasses (coordinates are found manually)
