@@ -205,7 +205,7 @@ if __name__ == "__main__":
         patch = PathPatch(clippath, facecolor='none')
         # ax = plt.gca()
         ax.add_patch(patch)
-        for c in CS1.collections:
+        for c in [CS1]:
             c.set_clip_path(patch)
         ##plot crevasses as continuous line
         for crev_num in np.arange(Df_Crevasses['Crevasse Number'].min(), Df_Crevasses['Crevasse Number'].max() + 1):
