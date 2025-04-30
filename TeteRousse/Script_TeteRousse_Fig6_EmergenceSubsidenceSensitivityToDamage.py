@@ -263,8 +263,8 @@ if __name__ == "__main__":
             np.max(Data_Simu_NoD_AboveCavity_Tminus2[Data_Simu_NoD_AboveCavity_Tminus2['DayOfSimu'] == day][
                        'W']) * (1000 / 365.25))
 
-    # ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
-    # ### NOW START LOOP over each damage parameters combination (one subplot per combination)
+    # # ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
+    # # ### NOW START LOOP over each damage parameters combination (one subplot per combination)
     for k in range((Data_ParamSet['Lambdah']==0.0).sum()):
         ### Get the corresponding subplot
         i = k % nrows
@@ -320,11 +320,11 @@ if __name__ == "__main__":
 
     #### DUMMY plot for legend
     ax=axes[0,0]
-    ax.plot(np.NaN, np.NaN, label=r'No Damage, T = f(x,z)', color='k', linewidth=3, linestyle='-')
-    ax.plot(np.NaN, np.NaN, label=r'No Damage, T = 0°C', color='k', linewidth=3, linestyle=':')
-    ax.plot(np.NaN, np.NaN, label=r'No Damage, T = -2°C', color='k', linewidth=3, linestyle='--')
+    ax.plot(np.nan, np.nan, label=r'No Damage, T = f(x,z)', color='k', linewidth=3, linestyle='-')
+    ax.plot(np.nan, np.nan, label=r'No Damage, T = 0°C', color='k', linewidth=3, linestyle=':')
+    ax.plot(np.nan, np.nan, label=r'No Damage, T = -2°C', color='k', linewidth=3, linestyle='--')
     for i,(Crit,Crit_Name) in enumerate(zip(Crit_List,Crit_Names)):
-        ax.plot(np.NaN, np.NaN, label=r'{}'.format(Crit_Name), color=ColorBlindFriendly_List[i], linewidth=3, linestyle='-')
+        ax.plot(np.nan, np.nan, label=r'{}'.format(Crit_Name), color=ColorBlindFriendly_List[i], linewidth=3, linestyle='-')
     fig.legend(loc='lower center', bbox_to_anchor=(0.5, 0.005), fancybox=True, shadow=True, fontsize=16, ncol=4)
     # Adjust layout to make room for the legend
     plt.tight_layout(rect=[0.05, 0.17, 0.96, 0.96],h_pad=6.0, w_pad=5.0)
@@ -440,13 +440,5 @@ if __name__ == "__main__":
     for ax in axes.reshape(-1):
         ax.errorbar(Obs_Date, Obs_MeanW,yerr=[abs(np.subtract(Obs_MeanW, Obs_MinW)), abs(np.subtract(Obs_MeanW, Obs_MaxW))], fmt='o',
                     markerfacecolor='w', capsize=3)
-
-    ################################################################################
-    # SAVE THE FIGURES #####
-    ################################################################################
-    # name_output_fig = 'RelDensProfile_Forage{}_{}_DInitHL_'.format(ForageNumber,  Case)
-    # name_path = '/home/brondexj/BETTIK/MyTaconnaz/MyTaco_Porous_DensSemiLagVSModifHeatSolv/Figures/Case_FullSimu_TestNbIntTsp/'
-    # path_output_fig = Path(name_path)
-    # fig.savefig(path_output_fig.joinpath(name_output_fig))
 
     plt.show()
