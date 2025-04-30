@@ -435,9 +435,9 @@ if __name__ == "__main__":
     ###Plot contour lines
     CS = plt.contour(X / 1000, Z, Extrapolated_T, clevs_contour, colors='black', linestyles='-',
                      linewidths=0.6)  ## lines (f(x) contour)
-    # # Select label positions manually
-    label_positions = [(947.881, 3141.5), (947.9055, 3132), (947.9475, 3134.0), (948.0326, 3161.3), (948.1157, 3176.7), (948.0773, 3146.6)]  # Adjust these positions as needed
-    plt.clabel(CS, CS.levels[::2], inline=True, fontsize=8, manual=label_positions)  ## numbers in contours
+    # # Select label positions manually (problem with last version of matplotlib)
+  ##  label_positions = [(947.881, 3141.5), (947.9055, 3132), (947.9466, 3134.0), (948.0326, 3162), (948.1157, 3177), (948.0773, 3147.5)]  # Adjust these positions as needed
+    plt.clabel(CS, CS.levels[::2], inline=True, fontsize=8) #, manual=valid_positions)  ## numbers in contours
 
     ###Show colorbar
     levs_ticks = np.arange(Tmin, Tmax, lev_ticks_range)
@@ -451,11 +451,11 @@ if __name__ == "__main__":
         patch = PathPatch(clippath, facecolor='none')
         ax = plt.gca()
         ax.add_patch(patch)
-        for c in CS.collections:
+        for c in [CS]:
             c.set_clip_path(patch)
-        for c in CS1.collections:
+        for c in [CS1]:
             c.set_clip_path(patch)
-        for c in CS2.collections:
+        for c in [CS2]:
             c.set_clip_path(patch)
     ###plot thermistance positions for each borehole (True Borehole)
     for i, Borehole in enumerate(Borehole_List):
