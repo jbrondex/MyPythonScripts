@@ -1,0 +1,187 @@
+"""
+@author: jbrondex
+
+Description:
+------------
+This file aims at plotting the effective strain rate in the diagnostic Stokes simualtion on the empty cavity"""
+
+################################################################################
+# import #####
+################################################################################
+import matplotlib.pyplot as plt
+import matplotlib.colors as colors
+import matplotlib.cm as cmx
+from matplotlib.path import Path as mpltPath
+from matplotlib.patches import PathPatch
+
+from pathlib import Path
+from datetime import datetime, date, timedelta ###To handle dates
+from matplotlib.dates import MonthLocator, DayLocator, HourLocator, DateFormatter, drange
+import numpy as np
+from scipy.interpolate import griddata
+from matplotlib.ticker import FormatStrFormatter
+from matplotlib.dates import date2num
+import matplotlib.gridspec as gridspec
+
+import pandas as pd  ###To treat the csv files
+
+from matplotlib import ticker
+
+formatter = ticker.ScalarFormatter(useMathText=True)
+formatter.set_scientific(True)
+formatter.set_powerlimits((-3, 3))
+
+###Defined Colors optimized for color-blind people:
+Orange = [230 / 255, 159 / 255, 0 / 255]
+SkyBlue = [86 / 255, 180 / 255, 233 / 255]
+BluishGreen = [0 / 255, 158 / 255, 115 / 255]
+Yellow = [240 / 255, 228 / 255, 66 / 255]
+Blue = [0 / 255, 114 / 255, 178 / 255]
+Vermillion = [213 / 255, 94 / 255, 0 / 255]
+ReddishPurple = [204 / 255, 121 / 255, 167 / 255]
+####//////////////////////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\####
+####///~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\\####
+####///~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ MAIN PART OF THE CODE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\\####
+####///~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\\####
+####//////////////////////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\####
+#####################################################################################
+# Define function to interpolate field defined on mesh nodes to the line profile ####
+#####################################################################################
+def Interpolate_field(df, field_name, x, y): ###Returned field interpolated from mesh grid to point (x,y) of transect
+    # x, y, and z coordinates of the dataframe
+    xi = df['X'].values
+    yi = df['Y'].values
+    field = df[field_name].values
+    # Interpolate the value of field
+    result = griddata((xi, yi), field, (x, y), rescale=True)
+    return result
+
+##Function below is used to sort point of contour clockwise
+def sort_clockwise(list_of_xy_coords):
+    cx, cy = list_of_xy_coords.mean(0)
+    x, y = list_of_xy_coords.T
+    angles = np.arctan2(x-cx, y-cy)
+    indices = np.argsort(angles)
+    return list_of_xy_coords[indices]
+
+################################################################################
+# prepare plots #####
+################################################################################
+# global figure pimping
+# plt.rc('text', usetex=True)
+plt.rc('xtick', labelsize=22)
+plt.rc('ytick', labelsize=22)
+plt.rc('axes', labelsize=22)
+plt.rc('legend', fontsize=26)
+
+
+if __name__ == "__main__":
+    ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
+    ####~~~~~~~~~~~   LOAD ALL DATA AND PLOT DIRECTLY IN THIS PART OF THE CODE   ~~~~~~~~~~~~~####
+    ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
+    Col_Crevasses_Circ = '#FF0000' ###'#800080' ###Color for representation of circular crevasses
+    Col_Crevasses_Other = '#800080' ###Color for representation of non circular crevasses
+    Col_Cavity = '#00FFFF'###color for representation of cavity
+    Col_Transect = 'lightgrey'###color for representation of transect
+
+    Colormap_for_stressmap = 'YlGnBu' ###Colorm map to choose for map of stress
+    cmap = cmx.get_cmap(Colormap_for_stressmap )
+    ################################################################
+    ####  OPEN DATA CORRESPONDING TO CREVASSES AND GROUNDEDMASK ####
+    ################################################################
+    Pathroot_Obs = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/Data/.')
+    Filename_Crevasses = 'crevasses_xyz_numbered.dat'
+    ###load file as dataframe
+    Df_Crevasses = pd.read_csv(Pathroot_Obs.joinpath(Filename_Crevasses), names=['X', 'Y', 'Z', 'Crevasse Number', 'IsCircular'], delim_whitespace=True)
+    ###Also load glacier contour
+    Filename_GlacierContour = 'Contour_TeteRousse2012.dat'
+    Df_GlacierContour = pd.read_csv(Pathroot_Obs.joinpath(Filename_GlacierContour), names=['X', 'Y'], delim_whitespace=True)
+    xc = Df_GlacierContour['X'].values
+    xc=np.append(xc,xc[0]) ##step required to close the contour
+    yc = Df_GlacierContour['Y'].values
+    yc = np.append(yc, yc[0])  ##step required to close the contour
+    ###Open Data corresponding to grounded mask
+    Pathroot_GM = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/ScalarOutput/.')
+    Filename_GM = 'GroundedLine_CLEANED.dat'
+    Col_Names_GM = ['Timestep', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'GM']
+    ###load file as dataframe
+    Df_GL = pd.read_csv(Pathroot_GM.joinpath(Filename_GM), names=Col_Names_GM, delim_whitespace=True)
+    ###Sort coordinates of cavity contour clockwise
+    xy_cavity = np.array([Df_GL['X'].values, Df_GL['Y'].values])
+    xy_cavity = np.transpose(xy_cavity)
+    xy_cavity_sorted = sort_clockwise(xy_cavity)
+    ##close contour
+    cavity_contour = np.vstack([xy_cavity_sorted, xy_cavity_sorted[0]])
+    #########################################
+    ####  OPEN OUTPUT OF THE SIMULATIONS:####
+    #########################################
+    ### Load files containing surface output of the simulations:
+    Pathroot_SimuOutput = Path('/home/brondexj/BETTIK/TeteRousse/MyTeterousse_GeoGag/ScalarOutput/.')
+    ###NAMES OF OUTPUT DATA (same order as in dat.names file)
+    ###BE WARE: I use the convention SigmaI>SigmaII>SigmaIII which is not the convention of the EigenStress solver in Elmer viscous stress
+    Col_Names_Viscous = ['Timestep', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'U', 'V', 'W', 'Pressure', 'SigmaIII','SigmaII','SigmaI', 'temperature', 'Sxx', 'Syy', 'Szz', 'Sxy', 'Sxz', 'Syz',
+                         'SR1', 'SR2', 'SR3', 'SR4', 'SR5', 'SR6', 'SRI', 'SRII', 'SRIII']
+    ###We create a single dataframe for each constitutive law : one for elastic, one for viscous line, one for viscous non line
+    Data_Simu_VNL = pd.DataFrame()
+    filename_vnl = 'SurfaceOutput_DiagStokes_NonLine_EmptyCavity_Tmap_NoSliding_NoDispLat_WithSR_v97773a1f2.dat'
+
+
+    print('Opening file:', filename_vnl)
+    Data_Simu_VNL= pd.read_csv(Pathroot_SimuOutput.joinpath(filename_vnl), names=Col_Names_Viscous, delim_whitespace=True)
+    ### Calculate effective strain rate at nodes
+    Data_Simu_VNL['EffectiveSR'] = np.sqrt(0.5*(Data_Simu_VNL['SR1']**2+Data_Simu_VNL['SR2']**2+Data_Simu_VNL['SR3']**2+2*Data_Simu_VNL['SR4']**2+2*Data_Simu_VNL['SR5']**2+2*Data_Simu_VNL['SR6']**2))
+    # #####################################################################
+    # ###     PLOT MAP OF FIRST MAXI PRINCIPAL STRESS AT THE SURFACE    ###
+    # #####################################################################
+    ###Create refined regular grid on which all SigmaI for all cases will be interpolated
+    x = np.arange(np.floor(np.min(Data_Simu_VNL['X'])) - 10,np.floor(np.max(Data_Simu_VNL['X'])) + 10, 0.1)
+    y = np.arange(np.floor(np.min(Data_Simu_VNL['Y'])) - 10, np.floor(np.max(Data_Simu_VNL['Y'])) + 10, 0.1)
+    X, Y = np.meshgrid(x, y)
+    ###interpolate effective SR on regular grid
+    EffSR = Interpolate_field(Data_Simu_VNL, 'EffectiveSR', X, Y)
+    # Create a single figure and axis
+    fig, ax = plt.subplots(figsize=(6, 6), constrained_layout=True)
+    ax.set_xlabel(r'X [km]', fontsize=22)
+    ax.set_ylabel(r'Y [km]', fontsize=22)
+    ax.tick_params(labelsize=18)  # fontsize of the tick labels
+    ax.grid(True)
+    ax.grid(alpha=0.5)
+  #  Title = 'Effective Strain Rate Glen\'s law Empty cavity'
+   # ax.set_title(Title, fontsize=21, weight='bold')
+    ###Force x and y axis to same scale
+    ax.set_aspect('equal', adjustable='box')
+    ###shading
+    clevs=np.arange(-0.0001,0.150001,0.01) ## cbar for shading
+    #colorbar
+    levs_ticks=np.arange(0.0,0.150001,0.05)
+    ###Fills up the map with colors for SigmaEq
+    CS1 = ax.contourf(X/1000, Y/1000, EffSR, clevs, cmap=cmap,extend='both')
+    ax.plot(xc / 1000, yc / 1000, color='k', linewidth=2)
+    ###Below we remove colors that are outside of glacier contour
+    clippath = mpltPath(np.c_[xc/1000, yc/1000])
+    patch = PathPatch(clippath, facecolor='none')
+    # ax = plt.gca()
+    ax.add_patch(patch)
+    for c in [CS1]:
+        c.set_clip_path(patch)
+    ##plot crevasses as continuous line
+    for crev_num in np.arange(Df_Crevasses['Crevasse Number'].min(), Df_Crevasses['Crevasse Number'].max() + 1):
+        ###get proper points
+        Df_plot = Df_Crevasses[Df_Crevasses['Crevasse Number'] == crev_num]
+        if Df_plot['IsCircular'].all():  ##different colors for circular crevasses and other crevasses
+            col = Col_Crevasses_Circ
+        else:
+            continue
+        ax.plot(Df_plot['X'].values/1000, Df_plot['Y'].values/1000, color=col, linestyle='-', linewidth=2)
+    ###Plot cavity contour
+    ax.plot(cavity_contour[:, 0]/1000,cavity_contour[:, 1]/1000,color=Col_Cavity,linestyle='-',linewidth=2.5)
+    # Horizontal colorbar
+    cbar = fig.colorbar(CS1, ax=ax, ticks=levs_ticks, orientation='horizontal', fraction=0.046, pad=0.05)
+    cbar.set_label(r'$\dot{\epsilon}_\mathrm{eff}$ [$\mathrm{yr}^{-1}$]', fontsize=20)
+    cbar.ax.tick_params(labelsize=18)
+
+
+
+    ###Show map
+    plt.show()
+
