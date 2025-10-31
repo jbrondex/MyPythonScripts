@@ -296,7 +296,7 @@ if __name__ == "__main__":
             if Df_plot['IsCircular'].all():  ##different colors for circular crevasses and other crevasses
                 col = Col_Crevasses_Circ
             else:
-                col = Col_Crevasses_Other
+                continue #col = Col_Crevasses_Other
             ax.plot(Df_plot['X'].values/1000, Df_plot['Y'].values/1000, color=col, linestyle='-', linewidth=2)
     # Add a common colorbar to all subplots below the figure
     cbar_ax = fig1.add_axes([0.15, 0.082, 0.7, 0.027])  # [left, bottom, width, height]
