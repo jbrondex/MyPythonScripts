@@ -90,8 +90,8 @@ if __name__ == "__main__":
     Colormap_for_stressmap = 'RdBu_r' ###Colorm map to choose for map of stress
     cmap = cmx.get_cmap(Colormap_for_stressmap )
     # cmap = colors.LinearSegmentedColormap.from_list("viridis_darker", cmap(np.linspace(0.2, 1, 256)))
-    clevwide = np.arange(-60.01, 60.01, 15) ##np.arange(-120.01, 120.01, 10)
-    levs_tickwide = np.round(np.arange(-60.01, 60.01, 15))###np.round(np.arange(-120.01, 120.01, 40))
+    clevwide = np.arange(-120.01, 120.01, 10)
+    levs_tickwide = np.round(np.arange(-120.01, 120.01, 40))
     ################################################################
     ####  OPEN DATA CORRESPONDING TO CREVASSES AND GROUNDEDMASK ####
     ################################################################
