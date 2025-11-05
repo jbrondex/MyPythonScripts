@@ -90,8 +90,8 @@ if __name__ == "__main__":
     Colormap_for_stressmap = 'RdBu_r' ###Colorm map to choose for map of stress
     cmap = cmx.get_cmap(Colormap_for_stressmap )
     # cmap = colors.LinearSegmentedColormap.from_list("viridis_darker", cmap(np.linspace(0.2, 1, 256)))
-    clevwide = np.arange(-120.01, 120.01, 10)
-    levs_tickwide = np.round(np.arange(-120.01, 120.01, 40))
+    clevwide = np.arange(-60.01, 60.01, 15) ##np.arange(-120.01, 120.01, 10)
+    levs_tickwide = np.round(np.arange(-60.01, 60.01, 15))###np.round(np.arange(-120.01, 120.01, 40))
     ################################################################
     ####  OPEN DATA CORRESPONDING TO CREVASSES AND GROUNDEDMASK ####
     ################################################################
@@ -194,6 +194,10 @@ if __name__ == "__main__":
         ax.set_title(Title, fontsize=21, weight='bold')
         ###Force x and y axis to same scale
         ax.set_aspect('equal', adjustable='box')
+        ###SigmaI is max principal stress and at the surface always one of the principal stress is zero
+        ### Therefore SigmaI is either positive or zero. Negative values of SigmaI are numerical artefacts
+        df_nocav.loc[df_nocav["SigmaI"] < 0, "SigmaI"] = 0
+        df_cav.loc[df_cav["SigmaI"] < 0, "SigmaI"] = 0
         ###Poject SigmaI on interpolation grid
         SigmaI_NoCav = Interpolate_field(df_nocav, 'SigmaI', X, Y)
         SigmaI_Cav = Interpolate_field(df_cav, 'SigmaI', X, Y)
@@ -227,7 +231,7 @@ if __name__ == "__main__":
         cbar_ax = fig.add_axes([0.2, 0.08, 0.6, 0.03])  # [left, bottom, width, height]
         # Create a single colorbar for all subplots
         cbar = plt.colorbar(CS1, cax=cbar_ax, ticks=levs_ticks, orientation='horizontal')
-        cbar.set_label(r'$\sigma_\mathrm{I}$ [kPa]', fontsize=20)
+        cbar.set_label(r'$\Delta \sigma_\mathrm{I}$ [kPa]', fontsize=20)
         cbar.ax.tick_params(labelsize=18)  # Adjust tick label size
 
 
