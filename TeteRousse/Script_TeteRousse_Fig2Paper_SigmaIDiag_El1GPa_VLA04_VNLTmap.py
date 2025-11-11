@@ -178,7 +178,7 @@ if __name__ == "__main__":
         elif law=='VNL':
             df_nocav =  Data_Simu_VNL[Data_Simu_VNL['Case']=='NoCavity']
             df_cav = Data_Simu_VNL[Data_Simu_VNL['Case']=='EmptyCavity']
-            Title = 'Glen\'s law'
+            Title = 'Glen-Nye law'
         ##get proper ax
         ax = axes[k]
         ax.set_xlabel(r'X [km]', fontsize=22)
