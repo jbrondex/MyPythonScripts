@@ -2,9 +2,9 @@ import rasterio
 import csv
 
 # Chemin vers votre TIFF découpé
-input_tif = "/home/brondexj/Documents/Expertises/Blatten/DEMs/pre-event-fromAdrien-smooth-cropped.tif"   ###"chemin/vers/votre_fichier_decoupe.tif"
+input_tif = "/home/brondexj/Documents/Expertises/Blatten/DEMs/slave_coregistered_dem_xdem.tif"   ###"chemin/vers/votre_fichier_decoupe.tif"
 # Chemin vers le fichier texte de sortie
-output_txt = "/home/brondexj/Documents/Expertises/Blatten/DEMs/DEM_surf_2025_Reconstructed_FromAdrien_MJacquemart_Smoothed.dat"   ###"chemin/vers/sortie.txt"
+output_txt = "/home/brondexj/Documents/Expertises/Blatten/DEMs/DEM_surf_2024.dat"   ###"chemin/vers/sortie.txt"
 
 with rasterio.open(input_tif) as src:
     data = src.read(1)  # Lit la première bande (pour un raster mono-bande)

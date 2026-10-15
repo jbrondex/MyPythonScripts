@@ -65,10 +65,10 @@ if __name__ == "__main__":
     colors = cmx.get_cmap('viridis_r', len(Cvalues))
     blues = [colors(i) for i in range(len(Cvalues))]
     ###Cases for which we want a figure:
-    Cases = ['1993', '2011', '2025']
-    LineStyles = [':','--','-']
-    # Cases = ['2025']
-    # LineStyles = ['-']
+    # Cases = ['1993', '2011', '2025']
+    # LineStyles = [':','--','-']
+    Cases = ['2025']
+    LineStyles = ['-']
     ###Col names
     Col_Name = ['Timestep', 'Count', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'H', 'N', 'theta_dagger', 'theta', 'taub','nodearea', 'fx', 'fy', 'fz', 'u', 'v', 'w', 'nx', 'ny', 'nz', 'Chi', 'GM']
     ###PREPARE THE PLOT

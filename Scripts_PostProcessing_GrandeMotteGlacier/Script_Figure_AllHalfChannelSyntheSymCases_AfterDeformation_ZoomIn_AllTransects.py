@@ -229,11 +229,11 @@ if __name__ == "__main__":
         ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
         ###~~~         SAVE THE PLOTS (ONE PER SHAPE/WIDTH)          ~~###
         ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
-        ###Save figure with full transect profile and initial tunnel shape
-        name_output_fig4 = 'DeformationAt1_4_9months_AllTransects_{0}_HalfChannelSyntheSym'.format(Case)
-        name_path_fig4 = '/home/brondexj/BETTIK/GrandeMotteTignes/RunTransient_Closure/Postprocessing/Figures/.'
-        path_output_fig4 = Path(name_path_fig4)
-        fig4.savefig(path_output_fig4.joinpath(name_output_fig4))
+        # ###Save figure with full transect profile and initial tunnel shape
+        # name_output_fig4 = 'DeformationAt1_4_9months_AllTransects_{0}_HalfChannelSyntheSym'.format(Case)
+        # name_path_fig4 = '/home/brondexj/BETTIK/GrandeMotteTignes/RunTransient_Closure/Postprocessing/Figures/.'
+        # path_output_fig4 = Path(name_path_fig4)
+        # fig4.savefig(path_output_fig4.joinpath(name_output_fig4))
 
 
 

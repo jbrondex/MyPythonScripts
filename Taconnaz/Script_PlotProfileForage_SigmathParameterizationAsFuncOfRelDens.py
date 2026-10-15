@@ -73,8 +73,12 @@ plt.grid(True)
 
 
 ###Fig 2 is profile of Sigmath as function of depth for each of the 11 forage
-rows=3
-col=4
+rows=5
+col=2#4
+### List of color for 2 parameterization  + simulated SigmaI
+### Param Line/My Param/SigmaI
+Col_List=[ 'darkblue','#FF5733','#9D33FF']
+
 # ###Parameters for save figure
 # fig2, axes = plt.subplots(rows, col, figsize=(80, 60), sharex=True, sharey=True)
 # fig2.text(0.5, 0.07, r'$\sigma_{th}$ (MPa)', fontsize=90, ha='center')
@@ -90,23 +94,27 @@ col=4
 #         ax.yaxis.set_major_formatter(formatter)
 
 ###Parameters if figure not saved
-fig2, axes = plt.subplots(rows, col, figsize=(40, 30), sharex=True, sharey=True)
-fig2.text(0.5, 0.05, r'$\sigma_\mathrm{th}$ (kPa)', fontsize=16, ha='center')
-fig2.text(0.08, 0.5, r'Depth (m)', fontsize=16, va='center', rotation='vertical')
-fig2.subplots_adjust(hspace=0.2,wspace=0.2)
-axes[-1, -1].axis('off') ##Because only 11 forage and not 12
+fig2, axes = plt.subplots(rows, col, figsize=(60, 20), sharex=True, sharey=True)
+# fig2.text(0.5, 0.05, r'$\sigma$ (kPa)', fontsize=20, ha='center')
+fig2.text(0.08, 0.5, r'Profondeur [m]', fontsize=18, va='center', rotation='vertical')
+fig2.subplots_adjust(hspace=0.2,wspace=0.15)
+# axes[-1, -1].axis('off') ##Because only 11 forage and not 12
 for i in range(0,rows):
     for j in range(0,col):
         ax = axes[i,j]
-        ax.set_xlim([0.0, 0.2*1000])
+        ax.set_xlim([0.0, 110])
+        ax.set_ylim([-130.0, 5.0])
         ax.tick_params(labelsize=12)  # fontsize of the tick labels
         ax.grid(True)
         ax.yaxis.set_major_formatter(formatter)
+        # Set y-axis ticks every 25 m
+        yticks = np.arange(-125, 6, 25)  # from -125 to 5
+        ax.set_yticks(yticks)
 
 ###Parameters if figure not saved (Zoom-In)
 fig3, axes3 = plt.subplots(rows, col, figsize=(40, 30), sharex=True, sharey=True)
 fig3.text(0.5, 0.05, r'$\sigma_\mathrm{th}$ (kPa)', fontsize=16, ha='center')
-fig3.text(0.08, 0.5, r'Depth (m)', fontsize=16, va='center', rotation='vertical')
+fig3.text(0.08, 0.5, r'Profondeur (m)', fontsize=16, va='center', rotation='vertical')
 fig3.subplots_adjust(hspace=0.2,wspace=0.2)
 axes3[-1, -1].axis('off') ##Because only 11 forage and not 12
 for i in range(0,rows):
@@ -156,10 +164,10 @@ def Sigrist2006_SigmaTh(RelDens):
 if __name__ == "__main__":
     ### Fig1: Simply SigmathPorous as a function of RelDens for param line and param rheo for different sigmath_ice
     n = 3 ###Glen Parameter
-    SigmathIce_List = [200, 100, 50] ###en KPa !!!!
-    LineStyle_List = ['-', '--', ':']
+    SigmathIce_List = [100] ###en KPa !!!!
+    LineStyle_List = ['-']
     # LineSize_List = [7, 7, 7] ##Parameters if figure saved
-    LineSize_List = [3, 3, 3]
+    LineSize_List = [2]
     RelDens_Dummy = np.linspace(0,1.1,100)
     for (SigmathIce, LineStyle, LineSize) in zip(SigmathIce_List, LineStyle_List, LineSize_List):
         Sigmath_Line=RelDens_Dummy*SigmathIce
@@ -209,12 +217,15 @@ if __name__ == "__main__":
     ### Do one subplot per forage
     for i in range(rows): ###Lines of subplot
         for j in range(col): ###col of subplot
-            if i==rows-1 and j==col-1:  ###skip last subplot as there are 11 forage, not 12
-                continue
-            Forage= 4*i+1+j ##Les forages sont numérotés en partant de 1
+            # if i==rows-1 and j==col-1:  ###skip last subplot as there are 11 forage, not 12
+            #     continue
+            Forage= 2*i+1+j ##Les forages sont numérotés en partant de 1
             ### Get proper axe of subplot
             ax = axes[i,j]
-            ax.set_title('Forage N°{}'.format(Forage), fontsize =14) ## if save figure then fontsize=60
+            if Forage in [1,9,10]:
+                ax.set_title('Forage N°{}'.format(Forage), fontsize =15,fontweight='bold')
+            else:
+                ax.set_title('Forage N°{}'.format(Forage), fontsize =14)
             ### Same for zoom-in
             ax3 = axes3[i,j]
             ax3.set_title('Forage N°{}'.format(Forage), fontsize =14) ## if save figure then fontsize=60
@@ -224,6 +235,20 @@ if __name__ == "__main__":
             DensRel = Data_Forage['DensRel'].values
             Depth= Data_Forage['Depth'].values
             SigmaI = Data_Forage['SigmaI'].values
+            ### Reinterpolate SigmaI to finer grid for nicer coloring of positive SigmaI
+            # 1- Reverse Depth and SigmaI to have Depth in a growing order
+            Depth_asc = Depth[::-1]  # 0 → 93
+            SigmaI_asc = SigmaI[::-1]
+            # 2-define interpolation grid and interpolate
+            y_refined = np.linspace(Depth_asc[0], Depth_asc[-1], 1000)  # 1000 points par exemple
+            Sigma_refined = np.interp(y_refined, Depth_asc, SigmaI_asc)
+            #### Find the depth at which ice begins (RelDens > 0.99)
+            # Select rows where DensRel > 0.99
+            mask = Data_Forage['DensRel'] > 0.99
+            # Get the Depth values corresponding to that
+            ice_depths = Data_Forage.loc[mask, 'Depth']
+            # Find the minimum Depth among them
+            ice_depth = ice_depths.min()
             for (SigmathIce, LineStyle, LineSize) in zip(SigmathIce_List, LineStyle_List, LineSize_List):
                 Sigmath_Line = DensRel * SigmathIce
                 Sigmath_Rheo = []
@@ -231,31 +256,43 @@ if __name__ == "__main__":
                     value = (FuncA(DensRel[k]) + FuncB(DensRel[k]) / 3) ** (-((n + 1) / (2 * n))) * SigmathIce
                     Sigmath_Rheo.append(value)
                 ax.axvline(x=SigmathIce, color='k', linestyle=LineStyle, linewidth =1.5) ##If figure saved linewidth=5
-                ax.plot(Sigmath_Line, -Depth, color='r', linestyle=LineStyle, linewidth=LineSize)
-                ax.plot(Sigmath_Rheo, -Depth, color='darkblue', linestyle=LineStyle, linewidth=LineSize)
-                ax.plot(SigmaI*1000, -Depth, color='forestgreen', linestyle=LineStyle, linewidth=LineSize)
+                ax.plot(Sigmath_Line, -Depth, color=Col_List[0], linestyle=LineStyle, linewidth=LineSize)
+                ax.plot(Sigmath_Rheo, -Depth, color=Col_List[1], linestyle=LineStyle, linewidth=LineSize)
+                ax.plot(SigmaI*1000, -Depth, color=Col_List[2], linestyle=LineStyle, linewidth=LineSize)
+                # if j==0:
+                #     ax.set_ylabel(r'Profondeur [m]', fontsize=18)
+                if i ==4:
+                    ax.set_xlabel(r'$\sigma_\mathrm{I}$ [kPa]', fontsize=18)
+                ####Color area of positive SigmaI
+                Sigma_clip = np.maximum(Sigma_refined * 1000, 0)
+                ax.fill_betweenx(-y_refined,0,Sigma_clip,color='forestgreen',alpha=0.2, linewidth=0)
+                ##### Shade the area from the top (-Depth.min()) to the bottom of the plot for bedrock
+                ax.axhspan(ymin=ax.get_ylim()[0],  ymax=-Depth.max(),  color='saddlebrown', alpha=0.2)              # transparency
+                ##### Shade the area from the top (-Depth.min()) to the bottom of the plot for ice
+                ax.axhspan(ymin=-Depth.max(),  ymax=-ice_depth,  color='#B3E5FC', alpha=0.3)
+
                 ###Same for zoom-in
                 ax3.axvline(x=SigmathIce, color='k', linestyle=LineStyle, linewidth =1.5) ##If figure saved linewidth=5
-                ax3.plot(Sigmath_Line, -Depth, color='r', linestyle=LineStyle, linewidth=LineSize)
-                ax3.plot(Sigmath_Rheo, -Depth, color='darkblue', linestyle=LineStyle, linewidth=LineSize)
-                ax3.plot(SigmaI*1000, -Depth, color='forestgreen', linestyle=LineStyle, linewidth=LineSize)
+                ax3.plot(Sigmath_Line, -Depth, color=Col_List[0], linestyle=LineStyle, linewidth=LineSize)
+                ax3.plot(Sigmath_Rheo, -Depth, color=Col_List[1], linestyle=LineStyle, linewidth=LineSize)
+                ax3.plot(SigmaI*1000, -Depth, color=Col_List[2], linestyle=LineStyle, linewidth=LineSize)
 
 
     #### DUMMY plot for legend
-    ax.plot(np.NaN, np.NaN, label=r'Modelled $\sigma_\mathrm{I}$', color='forestgreen', linewidth=3, linestyle='-')
-    ax.plot(np.NaN, np.NaN, label=r'$\sigma_\mathrm{th}$ Linear', color='r', linewidth=3, linestyle='-')
-    ax.plot(np.NaN, np.NaN, label=r'$\sigma_\mathrm{th}$ Non Linear', color='darkblue', linewidth=3, linestyle='-')
+    ax.plot(np.nan, np.nan, label=r'Modelled $\sigma_\mathrm{I}$', color='forestgreen', linewidth=3, linestyle='-')
+    ax.plot(np.nan, np.nan, label=r'$\sigma_\mathrm{th}$ Linear', color='r', linewidth=3, linestyle='-')
+    ax.plot(np.nan, np.nan, label=r'$\sigma_\mathrm{th}$ Non Linear', color='darkblue', linewidth=3, linestyle='-')
     for i in range(np.size(SigmathIce_List)):
         thice='{th,ice}'
-        ax.plot(np.NaN, np.NaN, label=r'$\sigma_\mathrm{}$  = {} kPa'.format(thice,str(round(SigmathIce_List[i]))), color='k', linewidth=3, linestyle=LineStyle_List[i])
-   ## fig2.legend(loc='lower left', bbox_to_anchor=(0.71,0.18), fancybox=True, shadow=True,  fontsize=58, ncol=2)
-    fig2.legend(loc='lower left', bbox_to_anchor=(0.73,0.10), fancybox=True, shadow=True,  fontsize=16, ncol=1)
-    ax3.plot(np.NaN, np.NaN, label=r'Modelled $\sigma_\mathrm{I}$', color='forestgreen', linewidth=3, linestyle='-')
-    ax3.plot(np.NaN, np.NaN, label=r'$\sigma_\mathrm{th}$ Linear', color='r', linewidth=3, linestyle='-')
-    ax3.plot(np.NaN, np.NaN, label=r'$\sigma_\mathrm{th}$ Non Linear', color='darkblue', linewidth=3, linestyle='-')
+        ax.plot(np.nan, np.nan, label=r'$\sigma_\mathrm{}$  = {} kPa'.format(thice,str(round(SigmathIce_List[i]))), color='k', linewidth=3, linestyle=LineStyle_List[i])
+    # fig2.legend(loc='lower left', bbox_to_anchor=(0.71,0.18), fancybox=True, shadow=True,  fontsize=58, ncol=2)
+    # fig2.legend(loc='lower left', bbox_to_anchor=(0.73,0.10), fancybox=True, shadow=True,  fontsize=16, ncol=1)
+    ax3.plot(np.nan, np.nan, label=r'Modelled $\sigma_\mathrm{I}$', color='forestgreen', linewidth=3, linestyle='-')
+    ax3.plot(np.nan, np.nan, label=r'$\sigma_\mathrm{th}$ Linear', color='r', linewidth=3, linestyle='-')
+    ax3.plot(np.nan, np.nan, label=r'$\sigma_\mathrm{th}$ Non Linear', color='darkblue', linewidth=3, linestyle='-')
     for i in range(np.size(SigmathIce_List)):
         thice='{th,ice}'
-        ax3.plot(np.NaN, np.NaN, label=r'$\sigma_\mathrm{}$  = {} kPa'.format(thice,str(round(SigmathIce_List[i]))), color='k', linewidth=3, linestyle=LineStyle_List[i])
+        ax3.plot(np.nan, np.nan, label=r'$\sigma_\mathrm{}$  = {} kPa'.format(thice,str(round(SigmathIce_List[i]))), color='k', linewidth=3, linestyle=LineStyle_List[i])
     fig3.legend(loc='lower left', bbox_to_anchor=(0.73,0.10), fancybox=True, shadow=True,  fontsize=16, ncol=1)
     ################################################################################
     # SAVE THE FIGURES #####

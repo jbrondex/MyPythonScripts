@@ -71,12 +71,12 @@ plt.rc('axes', labelsize=20)
 plt.rc('legend', fontsize=24)
 
 ###Fig 1 is subplots for right before and right after contact
-fig, axes = plt.subplots(1, 2, figsize=(25, 50), sharey=True)
-fig.tight_layout(pad=28.0, w_pad=-0.1)
+fig, axes = plt.subplots(1, 2, figsize=(50, 50), sharey=True, constrained_layout=True)
+# fig.tight_layout(pad=28.0, w_pad=0.5)
 # Adjust layout to make room for the legend
 for j in range(2):
     ax = axes[j]
-    ax.set_xlim([-1.0, 26])
+    ax.set_xlim([-26, 26])
     ax.set_ylim([2774, 2829.5])##en altitude
     # ax.locator_params(axis = 'y', nbins = 5)
     ####Plot vertical lines corresponding to roof middle and floor middle
@@ -123,10 +123,31 @@ if __name__ == "__main__":
         filename_map= 'RunTransient_Closure/RunTransient_{0}_{1}/ScalarOutput/Node_X_Y_Z_U_V_W_{2}_60tspPerY_tsp{3}.dat'.format(Transect, Shape, Case, tsp)
         #####Load the Elmer output file
         df_contour = pd.read_csv(pathroot_mycode.joinpath(filename_contour), names=Col_Names_Contour,delim_whitespace=True)
-        ### Close contour by copying first line and adding at the end of data frame
-        df_contour_closed = pd.concat([df_contour, df_contour.iloc[[0]]], ignore_index=True)
+        ####To create symetric contour, we need to remove all nodes that are on the symmetry axis
+        # Identifiez les lignes où X est zéro
+        zero_x_rows = df_contour[df_contour['X'] == 0]
+        # Trouvez l'indice de la ligne avec le minimum de Y parmi ces lignes
+        min_y_index = zero_x_rows['Y'].idxmin()
+        # Filtrez le DataFrame
+        df_filtered = df_contour[(df_contour['X'] != 0) | (df_contour.index == min_y_index)]
+        # Now create symmetic
+        df_filtered_sym = df_filtered.copy()
+        df_filtered_sym['X'] = - df_filtered_sym['X']
+        # Return the sym dataframe
+        df_filtered_sym_reversed = df_filtered_sym.iloc[::-1].reset_index(drop=True)
+        ### Combined both sides of the contour in a single one
+        df_contour_notclosed = pd.concat([df_filtered, df_filtered_sym_reversed], ignore_index=True)
+        ## Close the contour by copying first line and add it as last line:
+        # Copy the first row
+        first_row = df_contour_notclosed.iloc[0]
+        # Append it as the last row
+        df_contour_closed = pd.concat([df_contour_notclosed, pd.DataFrame([first_row])], ignore_index=True)
         ###NOW LOAD DATA OVER WHOLE DOMAIN FOR MAP
-        df_map = pd.read_csv(pathroot_mycode.joinpath(filename_map), names=Col_Names_Map,delim_whitespace=True)
+        df_map_tmp = pd.read_csv(pathroot_mycode.joinpath(filename_map), names=Col_Names_Map,delim_whitespace=True)
+        ### create symmetric
+        df_map_tmp_sym= df_map_tmp.copy()
+        df_map_tmp_sym['X'] = - df_map_tmp_sym['X']
+        df_map=pd.concat([df_map_tmp, df_map_tmp_sym], ignore_index=True)
         ###Create refined regular grid and interpolate field over grid
         x = np.arange(np.floor(np.min(df_map['X'])) - 1, np.floor(np.max(df_map['X'])) + 1, 0.1)
         y = np.arange(np.floor(np.min(df_map['Y'])) - 1, np.floor(np.max(df_map['Y'])) + 1, 0.1)

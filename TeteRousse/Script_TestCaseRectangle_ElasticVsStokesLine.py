@@ -93,6 +93,24 @@ for i in range(0,2):
             if j==0:
                 ax.set_ylabel(r'Distance [m]', fontsize=21)
 
+fig4, axes4 = plt.subplots(2, 3, figsize=(60, 60))
+fig4.subplots_adjust(hspace=0.2,wspace=0.35)
+for i in range(0,2):
+    for j in range(0,3):
+        ax = axes4[i,j]
+        ax.tick_params(labelsize=18)  # fontsize of the tick labels
+        ax.grid(True)
+        ax.yaxis.set_major_formatter(formatter)
+        if i==0: ##Top Line Horizontal profile
+            ax.set_xlim([0.0, 10.0])
+            ax.set_xlabel(r'Distance [m]', fontsize=21)
+            if j==0:
+                ax.set_ylabel(r'$\sigma$ [MPa]', fontsize=21)
+        elif i==1: ##Bottom Line Vertical profile
+            ax.set_ylim([0.0, 10.0])
+            ax.set_xlabel(r'$\sigma$ [MPa]', fontsize=21)
+            if j==0:
+                ax.set_ylabel(r'Distance [m]', fontsize=21)
 ################################################################################
 # Make the plots #####
 ################################################################################
@@ -103,7 +121,7 @@ if __name__ == "__main__":
 
     #### USER DEFINED PARAMETERS :####
     ### Where to find the output files:
-    pathroot_mycode = Path('/home/brondexj/Documents/TestCase_LinearElasticVSStokesLine/ScalarOutput/.')
+    pathroot_mycode = Path('/home/brondexj/Documents/TestsBenchmark_Elmer/TestCase_LinearElasticVSStokesLine/ScalarOutput/.')
     ##BE AWARE: the eigen stress are not in the same order for elastic and viscous (eigenstress 1 and 3 for the viscous are resp. min and max)
     Col_Names_Viscous = ['Tsp','Line','Node','X','Y','Z','SigmaMin','SigmaMiddle','SigmaMax']
     ### For the elastic case
@@ -181,68 +199,48 @@ if __name__ == "__main__":
     fig2.colorbar(cmx.ScalarMappable(norm=cNorm, cmap=cm), ax=axes[1,:], ticks=[0.3,0.35,0.4,0.45,0.5],orientation='vertical', label=r'Poisson Coeff')
     fig3.colorbar(cmx.ScalarMappable(norm=cNorm, cmap=cm), ax=axes2[0,:], ticks=[0.3,0.35,0.4,0.45,0.5],orientation='vertical', label=r'Poisson Coeff')
     fig3.colorbar(cmx.ScalarMappable(norm=cNorm, cmap=cm), ax=axes2[1,:], ticks=[0.3,0.35,0.4,0.45,0.5],orientation='vertical', label=r'Poisson Coeff')
+
+    #### FROM THERE FIGURE 4 : STRESS FIELD FOR STOKES LINE WITH FRICTION AND VARIOUS A  ####
+    ### Where to find the output files:
+    pathroot_mycode = Path('/home/brondexj/Documents/TestsBenchmark_Elmer/TestCase_StokesLineVariousA_WithFriction/ScalarOutput/.')
+    ###List of arrhenius factor tested
+    A_List = ['02', '04', '08', '12']
+    LineStyle_List = [':', '-.', '--', '-']
+    Col_List = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
+    SlipCoeff = 'Cw01' ##'NoSlid'##'Cw02'
+    ### Start the loop on the horizontal (Line 1) and Vertical (Line 2) profiles (= rows of subplot)
+    for (A, Sty, Col) in zip(A_List,LineStyle_List,Col_List):
+        ### Load the viscous case (reference !!)
+        file_name = 'Output_Test_StokesLine_{}_A{}.dat'.format(SlipCoeff,A)
+        df_Viscous = pd.read_csv(pathroot_mycode.joinpath(file_name), names=Col_Names_Viscous, delim_whitespace=True)
+        for i, Line in enumerate([1, 2]):
+            ### We select only outputs along the current line
+            df_Viscous_tmp = df_Viscous[df_Viscous['Line'] == Line]
+            ## Loop on the 3 principle stresses (columns of subplot)
+            for j, Stress in enumerate(['SigmaMax', 'SigmaMiddle', 'SigmaMin']):
+                ##Get proper ax
+                ax = axes4[i, j]
+                ##Add title to columns
+                if i == 0:
+                    if j == 0:
+                        ax.set_title(r'$\sigma_I$', fontsize=21, weight='bold')
+                    elif j == 1:
+                        ax.set_title(r'$\sigma_{II}$', fontsize=21, weight='bold')
+                    else:
+                        ax.set_title(r'$\sigma_{III}$', fontsize=21, weight='bold')
+                ##Plot the reference stress profile (i.e. viscous stress) on top
+                if i == 0:
+                    df_Viscous_tmp.sort_values(by=['X'], inplace=True)
+                    ax.plot(df_Viscous_tmp['X'].values, df_Viscous_tmp[Stress].values, color=Col, linewidth=2.2,linestyle=Sty)
+                else:
+                    df_Viscous_tmp.sort_values(by=['Y'], inplace=True)
+                    ax.plot(df_Viscous_tmp[Stress].values, df_Viscous_tmp['Y'].values, color=Col, linewidth=2.2,linestyle=Sty)
+
+
     plt.show()
 
 
 
 
 
-    # ### GO FOR IT:
-    # ### Give the name of Forage Number to the Figure
-    # Name_Fig = 'Forage N°{}, Case {}'.format(ForageNumber, Case)
-    # fig.suptitle(Name_Fig, fontsize=36, weight='bold')
-    # #### Load data for all combination in a DataFrame
-    # for (solver, dt, LineCol, LineSty) in zip(Solver_list, TspSize_list, Color_List, LineStyle_List):
-    #     Label = '{}_{}'.format(solver, dt)
-    #     Data=[]
-    #     ### Open file corresponding to each partition and then concatenate in single DataFrame
-    #     for part in range(Npartition):
-    #         if solver == 'DensSolv':
-    #             file_name='forage_MyTaco_Porous_DensSolv_{}_20a_Out1a_{}_NoSource_DInitHL_.dat.{}'.format(dt,  Case, part)
-    #         elif solver == 'SL':
-    #             file_name = 'forage_MyTaco_Porous_SL_{}_20a_Out1a_{}_BC5And8PartTgt_NoSource_DInitHL_.dat.{}'.format(dt, Case, part)
-    #         file = pd.read_csv(pathroot_mycode.joinpath(file_name), names=Col_Names, delim_whitespace=True)
-    #         Data.append(file)
-    #     Data=pd.concat(Data)
-    #     #### Keep only data for the forage of interest and in the ice body (DensRel > 0)
-    #     Data_Forage = Data[(Data['ForageNumber']==ForageNumber) & (Data['DensRel']>0)]
-    #     ###MESH: Plot horizontal lines corresponding to node position
-    #     for i in range(len(Data_Forage[Data_Forage['Year'] == 2]['Depth'].values)):
-    #         axes[0].axhline(y=-Data_Forage[Data_Forage['Year'] == 2]['Depth'].values[i], color='darkgray', linestyle='-',linewidth=0.8)
-    #         axes[1].axhline(y=-Data_Forage[Data_Forage['Year'] == 2]['Depth'].values[i], color='darkgray', linestyle='-',linewidth=0.8)
-    #         axes[2].axhline(y=-Data_Forage[Data_Forage['Year'] == 2]['Depth'].values[i], color='darkgray', linestyle='-', linewidth=0.8)
-    #     #### Plot current combination for each of the considered years
-    #     for k,year in enumerate(Year_List):
-    #         ax=axes[k]
-    #         ax.set_title('@{}a'.format(year), fontsize=34, weight='bold')
-    #         if Case == 'UniformVelo': ##In that case we have an analytic solution, show it on graph !
-    #             DepthAnalytique = np.linspace(0,150,1000)
-    #             DensityAnalytique = np.maximum(1.0-0.55*np.exp(-0.038*(DepthAnalytique- 3 * year)), 350/917) #Density(depth) at year = Density(depth - distance parcourue) at initial time
-    #             ax.plot(DensityAnalytique, - DepthAnalytique, color= 'k', linestyle = '-', linewidth=2)
-    #         if not dt == 'tsp1': ##Because first time Save Data solver is called is after one timetep not after one year
-    #             year = year + 1
-    #         if Data_Forage[Data_Forage['Year']==year]['DensRel'].empty:  ####If no results for the considered year (simulation still running) then go to next case
-    #             continue
-    #         print('Solver :', solver,', Time Step size = ', dt,'a', ', Time Step n° ',Data_Forage[Data_Forage['Year']==year]['Timestep'].values[0])
-    #         ax.plot(Data_Forage[Data_Forage['Year']==year]['DensRel'].values, - Data_Forage[Data_Forage['Year']==year]['Depth'].values, color= LineCol, linestyle = LineSty, linewidth=4.5)
-    #         ax.set_ylim([np.min(- Data_Forage[Data_Forage['Year']==year]['Depth']) - 5, 0])
-    #
-    # #### DUMMY plot for legend
-    # ax = axes[1]
-    # ax.plot(np.NaN, np.NaN, label='Dens Solv', color='limegreen', linewidth=4, linestyle='-')
-    # ax.plot(np.NaN, np.NaN, label='Semi Lag', color='darkred', linewidth=4, linestyle='-')
-    # ax.plot(np.NaN, np.NaN, label='$\Delta t =1~\mathrm{a}$', color='darkgrey', linewidth=4, linestyle='-')
-    # ax.plot(np.NaN, np.NaN, label='$\Delta t =0.1~\mathrm{a}$', color='darkgrey', linewidth=4, linestyle='--')
-    # ax.plot(np.NaN, np.NaN, label='$\Delta t =0.01~\mathrm{a}$', color='darkgrey', linewidth=4, linestyle=':')
-    # fig.subplots_adjust(bottom=0.15, wspace=0.25)
-    # fig.legend(loc='lower center', fancybox=True, shadow=True,  fontsize=30, ncol=4)
-    #
-    #
-    # ################################################################################
-    # # SAVE THE FIGURES #####
-    # ################################################################################
-    # name_output_fig = 'RelDensProfile_Forage{}_Case{}_DInitHL_'.format(ForageNumber,  Case)
-    # name_path = '/home/brondexj/BETTIK/MyTaconnaz/MyTaco_Porous_DensSemiLagVSModifHeatSolv/Figures/Case_{}_DInitHL/.'.format(Case)
-    # path_output_fig = Path(name_path)
-    # fig.savefig(path_output_fig.joinpath(name_output_fig))
 

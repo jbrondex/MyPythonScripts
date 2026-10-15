@@ -134,8 +134,10 @@ if __name__ == "__main__":
         ###~~~~~~~~         GET TUNNEL CONTOUR     ~~~~~~~~###
         ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
         ###Open the elmer output file
-        filename_output_slid = 'RunTransient_Closure/RunTransient_{0}_Ovoide/ScalarOutput/TunnelOutput_Soupirail_{0}_Ovo_Slid_60StepPerY_.dat'.format(Transect)
-        filename_output_noslid = 'RunTransient_Closure/RunTransient_{0}_Ovoide/ScalarOutput/TunnelOutput_Soupirail_{0}_Ovo_NoSlid_60StepPerY_.dat'.format(Transect)
+        # filename_output_slid = 'RunTransient_Closure/RunTransient_{0}_Ovoide/ScalarOutput/TunnelOutput_Soupirail_{0}_Ovo_Slid_60StepPerY_.dat'.format(Transect)
+        # filename_output_noslid = 'RunTransient_Closure/RunTransient_{0}_Ovoide/ScalarOutput/TunnelOutput_Soupirail_{0}_Ovo_NoSlid_60StepPerY_.dat'.format(Transect)
+        filename_output_slid = 'RunTransient_Closure/RunTransient_{0}_Circle/ScalarOutput/TunnelOutput_Soupirail_{0}_Circ_W200cm_Slid_60StepPerY_.dat'.format(Transect)
+        filename_output_noslid = 'RunTransient_Closure/RunTransient_{0}_Circle/ScalarOutput/TunnelOutput_Soupirail_{0}_Circ_W200cm_NoSlid_60StepPerY_.dat'.format(Transect)
         #####Load the Elmer output file
         df0_slid = pd.read_csv(pathroot_mycode.joinpath(filename_output_slid), names=Col_Names_Transient,delim_whitespace=True)
         df0_noslid = pd.read_csv(pathroot_mycode.joinpath(filename_output_noslid), names=Col_Names_Transient,delim_whitespace=True)
@@ -229,12 +231,12 @@ if __name__ == "__main__":
     ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
     ###~~~         SAVE THE PLOTS (ONE PER SHAPE/WIDTH)          ~~###
     ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
-    ##Save figure with full transect profile and initial tunnel shape
-    name_path_fig = '/home/brondexj/BETTIK/GrandeMotteTignes/RunTransient_Closure/Postprocessing/Figures/.'
-    path_output_fig = Path(name_path_fig)
-    for (fig, fig_name) in zip([fig1, fig2, fig3], ['Soupirail_SlidAndNoSlid', 'Soupirail_SlidOnly', 'Soupirail_NoSlidOnly']):
-        name_output_fig = 'DeformationAt6_9_12months_AllTransects_{0}_Ovoide'.format(fig_name)
-        fig.savefig(path_output_fig.joinpath(name_output_fig))
+    # ##Save figure with full transect profile and initial tunnel shape
+    # name_path_fig = '/home/brondexj/BETTIK/GrandeMotteTignes/RunTransient_Closure/Postprocessing/Figures/.'
+    # path_output_fig = Path(name_path_fig)
+    # for (fig, fig_name) in zip([fig1, fig2, fig3], ['Soupirail_SlidAndNoSlid', 'Soupirail_SlidOnly', 'Soupirail_NoSlidOnly']):
+    #     name_output_fig = 'DeformationAt6_9_12months_AllTransects_{0}_Ovoide'.format(fig_name)
+    #     fig.savefig(path_output_fig.joinpath(name_output_fig))
 
 
 

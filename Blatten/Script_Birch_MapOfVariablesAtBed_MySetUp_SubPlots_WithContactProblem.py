@@ -101,20 +101,20 @@ if __name__ == "__main__":
     ####~~~~~~~~~~~   LOAD ALL DATA AND PLOT DIRECTLY IN THIS PART OF THE CODE   ~~~~~~~~~~~~~####
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     ###Parameter of Simu
-    C = 0.4
+    C = 0.5
     str_Cvalue = f"{int(C * 10):02d}"
-    str_Year = '2011' ###year of interest
+    str_Year = '2025' ###year of interest
     ### velocity max for plot of ub (to adapt depending on C)
     velocitymax = 30 ##in m/d !
  #   Timestep_size = 0.01/365 ### In years !!
     Timestep_size = 0.01/365 ### In years !!
     OutputInterval = 10 ###Execution interval of the solver producing the simu output
-    OutputOfPlots = [1, 3, 7, 22] ##[0, 1, 3, 7]  ###At which output (count) do we want to make the plot (correspond to the day of simu)
+    OutputOfPlots = [1, 3, 7, 22] ##[0, 1.11, 3.11, 7] ##[0, 1, 3, 7]  ###At which output (count) do we want to make the plot (correspond to the day of simu)
     ###Coordinate of bed point at which we want to plot the variables vs time (this is done in the other python script)
     xplot = [2630580, 2630620.9, 2630653.6]
     yplot = [1139265, 1139221.7, 1139188.3]
     colplot = ['#00FF66','#8D5FD3','#FFD42A']
-    Stars = False ##False ## Do we want to plot stars ?
+    Stars = False ##True  ##False ## Do we want to plot stars ?
     ### Size of the stars on the plot
     Marker_Size = 18 ### Size of markers to show where vertical profiles of variables vs time are plotted
     ####Plot parameters###
@@ -354,11 +354,11 @@ if __name__ == "__main__":
         CS1_debriscontour = ax.contour(Xbed/1000, Ybed/1000, Hdebris_smoothed , levels= DebrisContour_Levels, colors=DebrisContour_Color, linewidths=DebrisContour_Thick, linestyles='-')
         ax.plot(xc/1000, yc/1000 , color='k', linewidth=2)
         #### For the steady state of cavitation (so only if day of output is greater than day at which steady state is reached), hatched places
-        #### where taub/N has reached the threshold C (with a margin of 5%)
+        #### where taub/N has reached the threshold C (with a margin of 1%)
         if j == len(OutputOfPlots)-1:
-            CS1_contour = ax.contour(Xbed / 1000, Ybed / 1000, taub_over_N, levels=[C-0.05*C], colors='black', linewidths=1.2, linestyles='-')
+            CS1_contour = ax.contour(Xbed / 1000, Ybed / 1000, taub_over_N, levels=[C-0.01*C], colors='black', linewidths=1.2, linestyles='-')
             # # Hatch the area where taub/N => C
-            CS1_hatch = ax.contourf(Xbed / 1000, Ybed / 1000, taub_over_N,levels=[C-0.05*C, np.max(taub_over_N)],colors='none', hatches=['////'], alpha=0)
+            CS1_hatch = ax.contourf(Xbed / 1000, Ybed / 1000, taub_over_N,levels=[C-0.01*C, np.max(taub_over_N)],colors='none', hatches=['////'], alpha=0)
         ### At floating areas (GM <0), make a contour
         CS1_GLcontour = ax.contour(Xbed / 1000, Ybed / 1000, GM, levels=[-0.1], colors='black',linewidths=1.2, linestyles='-')
         # ###Plot stars where we plot variable versus time
@@ -458,12 +458,12 @@ if __name__ == "__main__":
         # ax.clabel(CS1_debriscontour, DebrisContour_Levels, inline=True, inline_spacing=2, fmt="%d", manual=DebrisContour_LabelPositions, fontsize=7.5)
         ax.plot(xc / 1000, yc / 1000, color='k', linewidth=2)
         #### For the steady state of cavitation (so only if day of output is greater than day at which steady state is reached), hatched places
-        #### where taub/N has reached the threshold C (with a margin of 5%)
+        #### where taub/N has reached the threshold C (with a margin of 1%)
         if j == len(OutputOfPlots) - 1:
-            CS1_contour = ax.contour(Xbed / 1000, Ybed / 1000, taub_over_N, levels=[C - 0.05 * C], colors='black', linewidths=1.2, linestyles='-')
+            CS1_contour = ax.contour(Xbed / 1000, Ybed / 1000, taub_over_N, levels=[C - 0.01 * C], colors='black', linewidths=1.2, linestyles='-')
             # # Hatch the area where taub/N => C
             CS1_hatch = ax.contourf(Xbed / 1000, Ybed / 1000, taub_over_N,
-                                    levels=[C - 0.05 * C, np.max(taub_over_N)], colors='none', hatches=['////'], alpha=0)
+                                    levels=[C - 0.01 * C, np.max(taub_over_N)], colors='none', hatches=['////'], alpha=0)
         ### At floating areas (GM <0), make a contour
         CS1_GLcontour = ax.contour(Xbed / 1000, Ybed / 1000, GM, levels=[-0.1], colors='black',linewidths=1.2, linestyles='-')
         # ###Plot stars where we plot variable versus time
@@ -621,13 +621,13 @@ if __name__ == "__main__":
                                        colors=DebrisContour_Color, linewidths=DebrisContour_Thick, linestyles='-')
         ax.plot(xc / 1000, yc / 1000, color='k', linewidth=2)
         #### For the steady state of cavitation (so only if day of output is greater than day at which steady state is reached), hatched places
-        #### where taub/N has reached the threshold C (with a margin of 5%)
+        #### where taub/N has reached the threshold C (with a margin of 1%)
         if j == len(OutputOfPlots) - 1:
-            CS1_contour = ax.contour(Xbed / 1000, Ybed / 1000, taub_over_N, levels=[C - 0.05 * C], colors='black',
+            CS1_contour = ax.contour(Xbed / 1000, Ybed / 1000, taub_over_N, levels=[C - 0.01 * C], colors='black',
                                      linewidths=1.2, linestyles='-')
             # # Hatch the area where taub/N => C
             CS1_hatch = ax.contourf(Xbed / 1000, Ybed / 1000, taub_over_N,
-                                    levels=[C - 0.05 * C, np.max(taub_over_N)], colors='none', hatches=['////'],
+                                    levels=[C - 0.01 * C, np.max(taub_over_N)], colors='none', hatches=['////'],
                                     alpha=0)
         ### At floating areas (GM <0), make a contour
         CS1_GLcontour = ax.contour(Xbed / 1000, Ybed / 1000, GM, levels=[-0.1], colors='black', linewidths=1.2,

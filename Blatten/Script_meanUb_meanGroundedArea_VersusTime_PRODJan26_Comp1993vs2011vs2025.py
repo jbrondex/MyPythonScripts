@@ -74,7 +74,7 @@ if __name__ == "__main__":
     Alphas = ['10m1']#['10m1','10m2']
     LineSizes = [2.4]#[2.4, 1.1]
     ### Do we plant to plot extra cases for verification (i.e. cases with restart, comparison LUA vs USF_Overload) ?
-    VERIF = True
+    VERIF = False
     ###PREPARE THE PLOT
     ###~~~~~~~FIG 1 : mean ub~~~~~~~~~~~~~~~
     ###Prepare the subplot

@@ -17,33 +17,32 @@ import pandas as pd
 from pathlib import Path
 
 ### Where to find the DEM files and store the .geo file:
-pathroot_mycode = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup/1_Mesh/.')
+pathroot_mycode = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_LASTDVT_Dec2025/1_Mesh/.')
 
 ###################################################
 ######## Parameters of the various meshes #########
 ###################################################
 # edge size of the elements
-el_size = 10.0
+el_size = 7.5 ##10.0
 #el_sizec = 0.1
 # Spline or line
 spline = True ###It seems to be working all the time here so True by default
 #### Years for which we want a mesh and corresponding last node of side BC (following node correspond to front boundary)
-Years= ['1993','2011']
-LastNodeSide=[38,35]
+Years= ['1993','2011'] ##['2025']
+LastNodeSide=[38,34] ##[39]
 
 #########################################################
 ########## START LOOP ON YEARS ######################
 #########################################################
 for (Year, LastNode) in zip(Years,LastNodeSide):
     ###Get the domain contour
-    file_name_cont = './MESH{}/Contour_Birch_{}.dat'.format(Year,Year)
+    file_name_cont = './MESH{}/Contour_Birch_{}_Julien.dat'.format(Year,Year)
     # Load DEM of domain
     Col_Names = ['x', 'y']
     Contour = pd.read_csv(pathroot_mycode.joinpath(file_name_cont), names=Col_Names, sep=r'\s+')
     NptTot = len(Contour.index)
     ### Declare Name of Output
-    file_name_output = './MESH{}/Contour_Birch_{}.geo'.format(Year,Year)
-
+    file_name_output = './MESH{}/Contour_Birch_{}_Julien.geo'.format(Year,Year)
     #######################################
     ###NOW START WRITING THE .geo FILE ####
     #######################################

@@ -67,10 +67,10 @@ if __name__ == "__main__":
     Cvalue= 0.3
     str_Cvalue = f"{int(Cvalue * 10):02d}"
     Year = '2025'
-    # StartSimuDay = 16 ####Day of May 2025 corresponding to simulation start
-    # SimuDuration = 15 ###Simu duration in days
-    StartSimuDay = 19 ####Day of May 2025 corresponding to simulation start
-    SimuDuration = 12 ###Simu duration in days
+    StartSimuDay = 16 ####Day of May 2025 corresponding to simulation start
+    SimuDuration = 15 ###Simu duration in days
+    # StartSimuDay = 19 ####Day of May 2025 corresponding to simulation start
+    # SimuDuration = 12 ###Simu duration in days
     ###Do we want to keep only nodes that belongs to both bed and front boundaries ??? (For comparison to radar observations while using output made at bed only)
     KeepOnlyFrontNodes = True
     EndOfLoadingDays = [19,20,21,22,23]
@@ -116,13 +116,19 @@ if __name__ == "__main__":
     ###~~~~~~~FIG 1 : mean ub~~~~~~~~~~~~~~~
     ###Prepare the subplot
     fig1, ax = plt.subplots(figsize=(15, 12), constrained_layout=True)  # , gridspec_kw={'hspace': -0.15})
-    ax.set_ylabel(r'$\langle u_\mathrm{b} \rangle$ [m/day]', fontsize=30)
+    if KeepOnlyFrontNodes :
+        ax.set_ylabel(r'$\langle u_\mathrm{f} \rangle$ [m/day]', fontsize=30)
+    else:
+        ax.set_ylabel(r'$\langle u_\mathrm{b} \rangle$ [m/day]', fontsize=30)
     #ax.set_ylabel(r'$\langle u_\mathrm{b} \rangle$ [m/jour]', fontsize=30)
     ax.tick_params(labelsize=24)  # fontsize of the tick labels
     ax.grid(True)
     ax.grid(alpha=0.5)
     #ax.set_title('Vitesse basale moyenne [m/jour]', fontsize=30, weight='bold')
-    ax.set_title('Mean basal velocity [m/day]', fontsize=30, weight='bold')
+    # if KeepOnlyFrontNodes :
+    #     ax.set_title('Mean velocity at front [m/day]', fontsize=30, weight='bold')
+    # else:
+    #     ax.set_title('Mean basal velocity [m/day]', fontsize=30, weight='bold')
     ###~~~~~~~FIG 2 : grounded fraction  ~~~~~~~~~~~~~~~
     ###Prepare the subplot
     fig2, ax2 = plt.subplots(figsize=(15, 12), constrained_layout=True)  # , gridspec_kw={'hspace': -0.15})
@@ -169,10 +175,10 @@ if __name__ == "__main__":
 
         ####NOW LOAD DATA CORRESPONDING TO PRONOSTIC RUNS WITH OVERLOAD
         print('Dealing with simu with overload finished on :', EndDay, 'of May')
-        # Pathroot = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_Jan2026/5_PRONO_PROGRESSIVELOAD_FS_NoGMLat_MaxLoadFromDEMs/GlacierOut/.')
-        Pathroot = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_Jan2026/4_PRONO_PROGRESSIVELOAD_FS_NoGMLat/GlacierOut/.')
-        # Filename = 'MyBirch_RS_C{}_tsp001d_Start{}May_StopLoad{}May_Stop{}May__bed.dat'.format(str_Cvalue,StartSimuDay,EndDay,StartSimuDay+SimuDuration)
-        Filename = 'MyBirch_RS_C{}_BothFS_NoGMLat_tsp001d_StopLoad{}May__bed.dat'.format(str_Cvalue,EndDay)
+        Pathroot = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_Jan2026/5_PRONO_PROGRESSIVELOAD_FS_NoGMLat_MaxLoadFromDEMs/GlacierOut/.')
+#        Pathroot = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_Jan2026/4_PRONO_PROGRESSIVELOAD_FS_NoGMLat/GlacierOut/.')
+        Filename = 'MyBirch_RS_C{}_tsp001d_Start{}May_StopLoad{}May_Stop{}May__bed.dat'.format(str_Cvalue,StartSimuDay,EndDay,StartSimuDay+SimuDuration)
+        # Filename = 'MyBirch_RS_C{}_BothFS_NoGMLat_tsp001d_StopLoad{}May__bed.dat'.format(str_Cvalue,EndDay)
         ###Time step size for prono simu with overload:
         Timestep_size = 0.01 / 365  ### In years !!
         ###load file corresponding to first simu as dataframe
@@ -202,9 +208,9 @@ if __name__ == "__main__":
         else:
             ax.plot(mean_ub_by_time.index, mean_ub_by_time / 365, label='{} May'.format(EndDay), color=blue_col, linestyle='-', linewidth=LineSize)
         if i == 0:
-            ax.plot(mean_ub_by_time_CTRL.index, mean_ub_by_time_CTRL / 365, color='k', label= 'CTRL', linestyle='--', linewidth=LineSize)
-            ax.plot(Df_Radar['Date'], Df_Radar['mean_Fullfront'].abs()/1000, color='b', label= 'Radar', linestyle='-', linewidth=LineSize*2)
-            ax.plot(Df_Radar['Date'], Df_Radar['FullMean'].abs()/1000, color='b', linestyle='--', linewidth=LineSize*2)
+            # ax.plot(mean_ub_by_time_CTRL.index, mean_ub_by_time_CTRL / 365, color='k', label= 'CTRL', linestyle='--', linewidth=LineSize)
+            ax.plot(Df_Radar['Date'], Df_Radar['mean_Fullfront'].abs()/1000, color='b', label= 'Radar', linestyle='--', linewidth=LineSize*2)
+            # ax.plot(Df_Radar['Date'], Df_Radar['FullMean'].abs()/1000, color='b', linestyle='--', linewidth=LineSize*2)
             ###Add vertical line for collapse day and annotate
             ax.axvline(CollapseTime, linestyle='--', linewidth=2.7, color='r')
             ax.text(CollapseTime, 40,'Collapse', fontsize=26, color='r', rotation=90, va='top', ha='right')
@@ -279,9 +285,9 @@ if __name__ == "__main__":
     handles_ordered2 = handles_C + handles_BC + handles_other
     labels_ordered2 = labels_C + labels_BC + labels_other
 
-    legend1 = ax.legend(handles_ordered, labels_ordered, title="Last day of loading:", fontsize=22)
-    legend2 = ax2.legend(handles_ordered2, labels_ordered2, title="Last day of loading:", fontsize=22, loc='lower left')
-    legend1.get_title().set_fontsize(22)
-    legend2.get_title().set_fontsize(22)
+    # legend1 = ax.legend(handles_ordered, labels_ordered, title="Last day of loading:", fontsize=22)
+    # legend2 = ax2.legend(handles_ordered2, labels_ordered2, title="Last day of loading:", fontsize=22, loc='lower left')
+    # legend1.get_title().set_fontsize(22)
+    # legend2.get_title().set_fontsize(22)
 
     plt.show()

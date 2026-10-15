@@ -81,8 +81,8 @@ plt.tight_layout(rect=[0.04, 0.11, 0.96, 0.94], h_pad=22.0, w_pad=12.0)
 for i in range(0,2):
     for j in range(0,3):
         ax = axes2[i,j]
-        ax.set_xlim([-180, 180.0])
-        ax.set_ylim([-50, 50])##en kPa
+        ax.set_xlim([-180, 180])
+        ax.set_ylim([-160, 60])##en kPa
         ax.locator_params(axis = 'y', nbins = 5)
         ###For the x-axis, we put ticks at precise locations
         ticks = [-180, -90, 0, 90, 180]
@@ -91,9 +91,9 @@ for i in range(0,2):
         ax.set_xticklabels(labels)
         ####Plot vertical lines corresponding to roof middle and floor middle
         ax.axvline(x=-90.0, color='k', linestyle='--', linewidth=1)
-        ax.text(-90.0, 49, 'Floor center', rotation=90, ha='right', va='top')
+        ax.text(-90.0, 58, 'Floor center', rotation=90, ha='right', va='top')
         ax.axvline(x=90.0, color='k', linestyle='--', linewidth=1)
-        ax.text(90.0, 49, 'Roof center', rotation=90, ha='right', va='top')
+        ax.text(90.0, 58, 'Roof center', rotation=90, ha='right', va='top')
         ax.tick_params(labelsize=18)  # fontsize of the tick labels
         # ax.minorticks_on() ###to get subgrid
         ax.grid(True)
@@ -248,20 +248,29 @@ if __name__ == "__main__":
 
                 ############## NOW FIGURE WITH SIGMAI AROUND CAVITY#########
                 ###Only for width 200 for the circle and rectangle case
-                if Shape == 'Ovoide' or Width == 2:
+                # if Shape == 'Ovoide' or Width == 2:
+                #     ax2 = axes2[i, j]
+                #     if Shape == 'Ovoide':
+                #         ###Set title of subplot only once
+                #         ax2.set_title('Transect {}'.format(n + 1), fontsize=21, weight='bold')
+                #     ###print SigmaI as a funcition of angle
+                #     ax2.plot(angles, SigmaI, color=ColorBlindFriendly_List[l], linestyle='-', linewidth=2)
+                #     ##DUMMY plot for legend
+                #     if n==0 and Shape == 'Ovoide':
+                #         ax2.plot(np.NaN, np.NaN, color=ColorBlindFriendly_List[0], label=r'{}'.format(Shapes[0]), linestyle='-', linewidth=2)
+                #         ax2.plot(np.NaN, np.NaN, color=ColorBlindFriendly_List[1], label=r'{}'.format(Shapes[1]), linestyle='-', linewidth=2)
+                #         ax2.plot(np.NaN, np.NaN, color=ColorBlindFriendly_List[2], label=r'{}'.format(Shapes[2]), linestyle='-', linewidth=2)
+                #         fig2.legend(loc='lower center', bbox_to_anchor=(0.5, -0.01), fancybox=True, shadow=True, fontsize=16,ncol=3)
+                if not Shape == 'Ovoide' and Width == 1.5:
                     ax2 = axes2[i, j]
-                    if Shape == 'Ovoide':
-                        ###Set title of subplot only once
-                        ax2.set_title('Transect {}'.format(n + 1), fontsize=21, weight='bold')
+                    ax2.set_title('Transect {}'.format(n + 1), fontsize=21, weight='bold')
                     ###print SigmaI as a funcition of angle
                     ax2.plot(angles, SigmaI, color=ColorBlindFriendly_List[l], linestyle='-', linewidth=2)
                     ##DUMMY plot for legend
-                    if n==0 and Shape == 'Ovoide':
-                        ax2.plot(np.NaN, np.NaN, color=ColorBlindFriendly_List[0], label=r'{}'.format(Shapes[0]), linestyle='-', linewidth=2)
-                        ax2.plot(np.NaN, np.NaN, color=ColorBlindFriendly_List[1], label=r'{}'.format(Shapes[1]), linestyle='-', linewidth=2)
-                        ax2.plot(np.NaN, np.NaN, color=ColorBlindFriendly_List[2], label=r'{}'.format(Shapes[2]), linestyle='-', linewidth=2)
+                    if n==0 and Shape == 'Rectangle':
+                        ax2.plot(np.NaN, np.NaN, color=ColorBlindFriendly_List[0], label=r'{} L = 1.50 m'.format(Shapes[0]), linestyle='-', linewidth=2)
+                        ax2.plot(np.NaN, np.NaN, color=ColorBlindFriendly_List[1], label=r'{} L = 1.50 m'.format(Shapes[1]), linestyle='-', linewidth=2)
                         fig2.legend(loc='lower center', bbox_to_anchor=(0.5, -0.01), fancybox=True, shadow=True, fontsize=16,ncol=3)
-
 
 
             ###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###

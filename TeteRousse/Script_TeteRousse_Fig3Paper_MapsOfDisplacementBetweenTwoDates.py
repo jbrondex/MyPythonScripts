@@ -136,15 +136,15 @@ if __name__ == "__main__":
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     ### General parameter regarding dates of interest
     RefStartDate = date(int(2011), 7, 1) ##Every days are numbered relative to 1st July 2011 (day 1)
-    StartDate_str = '14092010'  ###start date for displacement computation
-    FinishDate_str = '06102010' ###finish date for displacement computation
-    Sequence = 'Pumping2010' ###To which sequence corresponds the chosen dates ? Required to set proper legend parameters
-    # StartDate_str = '09092011'  ###start date for displacement computation
-    # FinishDate_str = '28092011' ###finish date for displacement computation
-    # Sequence = 'Refill20102011'
-    # StartDate_str = '28092011'  ###start date for displacement computation
-    # FinishDate_str = '21102011' ###finish date for displacement computation
-    # Sequence = 'Pumping2011'
+ #   StartDate_str = '14092010'  ###start date for displacement computation
+ #   FinishDate_str = '06102010' ###finish date for displacement computation
+ #   Sequence = 'Pumping2010' ###To which sequence corresponds the chosen dates ? Required to set proper legend parameters
+ #   StartDate_str = '09092011'  ###start date for displacement computation
+ #   FinishDate_str = '28092011' ###finish date for displacement computation
+ #   Sequence = 'Refill20102011'
+    StartDate_str = '28092011'  ###start date for displacement computation
+    FinishDate_str = '21102011' ###finish date for displacement computation
+    Sequence = 'Pumping2011'
 
     ####The parameters of the consitutive law to consider : E for elastic, T for glen
     E = '1GPa' ###'1GPa' or '9GPa'
@@ -166,13 +166,13 @@ if __name__ == "__main__":
         lev_ticks_range_dx_obs = 7 ##one tick every ?
         norm_dx_obs = norm
         #####
-        dy_min_el = -0.10*10## in mm !
-        dy_max_el = 0.11*10## in mm !
-        lev_ticks_range_dy_el = 0.05*10 ##one tick every ?
+        dy_min_el = -0.16*10##-0.10*10## in mm !
+        dy_max_el = 0.161*10##0.11*10## in mm !
+        lev_ticks_range_dy_el = 0.08*10 ##0.05*10 ##one tick every ?
         norm_dy_el = norm
-        dy_min_obs =-10.0
-        dy_max_obs =10.1
-        lev_ticks_range_dy_obs = 5 ##one tick every ?
+        dy_min_obs =-14.0 ##-10.0
+        dy_max_obs =14.1 ##10.1
+        lev_ticks_range_dy_obs = 7 #5 ##one tick every ?
         norm_dy_obs = norm
         #####
         dz_min_el =-0.24*10## in mm !
@@ -185,22 +185,22 @@ if __name__ == "__main__":
         norm_dz_obs = TwoSlopeNorm(vmin=dz_min_obs, vcenter=0.0, vmax=dz_max_obs)
     ################################################################
     elif Sequence == 'Refill20102011':
-        dx_min_el = -0.05*10## in mm !
-        dx_max_el = 0.051*10## in mm !
+        dx_min_el = -0.0500*10## in mm !
+        dx_max_el = 0.05002*10## in mm !
         lev_ticks_range_dx_el = 0.025*10 ##one tick every ?
         norm_dx_el = norm
-        dx_min_obs = -6.0
-        dx_max_obs = 0.1
-        lev_ticks_range_dx_obs = 1.5 ##one tick every ?
+        dx_min_obs = -5.0 ##-6.0
+        dx_max_obs = 5.1 ##0.1
+        lev_ticks_range_dx_obs = 2.5 ##1.5 ##one tick every ?
         norm_dx_obs = TwoSlopeNorm(vmin=dx_min_obs, vcenter=0.0, vmax=dx_max_obs)
         #####
-        dy_min_el = -0.04*10## in mm !
-        dy_max_el = 0.041*10## in mm !
-        lev_ticks_range_dy_el = 0.02*10 ##one tick every ?
+        dy_min_el = -0.049999*10## -0.04*10## in mm !
+        dy_max_el = 0.05001*10##0.041*10## in mm !
+        lev_ticks_range_dy_el = 0.025*10 ##0.02*10 ##one tick every ?
         norm_dy_el = norm
-        dy_min_obs =-2.0
-        dy_max_obs =2.1
-        lev_ticks_range_dy_obs = 1 ##one tick every ?
+        dy_min_obs =-5.0 ##-2.0
+        dy_max_obs =5.1 ##2.1
+        lev_ticks_range_dy_obs = 2.5 ##1 ##one tick every ?
         norm_dy_obs = norm
         #####
         dz_min_el =0.000*10## in mm !
@@ -222,13 +222,13 @@ if __name__ == "__main__":
         lev_ticks_range_dx_obs = 5 ##one tick every ?
         norm_dx_obs = norm
         #####
-        dy_min_el = -0.25*10## in mm !
-        dy_max_el = 0.26*10## in mm !
-        lev_ticks_range_dy_el = 0.125*10 ##one tick every ?
+        dy_min_el = -0.30*10##-0.25*10## in mm !
+        dy_max_el = 0.31*10##0.26*10## in mm !
+        lev_ticks_range_dy_el = 0.15*10 ##0.125*10 ##one tick every ?
         norm_dy_el = norm
-        dy_min_obs =-8.0
-        dy_max_obs =8.1
-        lev_ticks_range_dy_obs = 4 ##one tick every ?
+        dy_min_obs =-10.0##-8.0
+        dy_max_obs =10.1##8.1
+        lev_ticks_range_dy_obs = 5##4 ##one tick every ?
         norm_dy_obs = norm
         #####
         dz_min_el =-0.6*10## in mm !
@@ -486,7 +486,7 @@ if __name__ == "__main__":
             if i==0 and j==0:
                 ax.set_title('Elastic E = 1 GPa', fontsize=21, weight='bold')
             elif i==0 and j==1:
-                ax.set_title('Glen\'s law, T=f(x,z)', fontsize=21, weight='bold')
+                ax.set_title('Glen-Nye law, T=f(x,z)', fontsize=21, weight='bold')
             elif i==0 and j==2:
                 ax.set_title('Stake measurements', fontsize=21, weight='bold')
 

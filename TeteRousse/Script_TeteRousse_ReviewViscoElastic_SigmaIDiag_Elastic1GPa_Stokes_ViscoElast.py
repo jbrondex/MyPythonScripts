@@ -92,17 +92,17 @@ if __name__ == "__main__":
         Colormap_for_stressmap = 'RdBu_r' ###Colorm map to choose for map of stress
         cmap = cmx.get_cmap(Colormap_for_stressmap )
         clevtight = np.arange(-60.01, 60.01, 5)
-        levs_ticktight= np.arange(-60.01, 60.01, 30)
+        levs_ticktight= np.round(np.arange(-60.01, 60.01, 30))
         clevwide = np.arange(-120.01, 120.01, 0.1)
-        levs_tickwide = np.arange(-120.01,120.01,40)
+        levs_tickwide = np.round(np.arange(-120.01,120.01,40))
     else:
         Colormap_for_stressmap = 'viridis' ###Colorm map to choose for map of stress
         cmap = cmx.get_cmap(Colormap_for_stressmap )
         cmap = colors.LinearSegmentedColormap.from_list("viridis_darker", cmap(np.linspace(0.2, 1, 256)))
         clevtight = np.arange(-0.01, 60.01, 5)
-        levs_ticktight= np.arange(0.0,60.01,10)
+        levs_ticktight= np.round(np.arange(0.0,60.01,10))
         clevwide = np.arange(0.0,121,10)
-        levs_tickwide = np.arange(0.0,121,20)
+        levs_tickwide = np.round(np.arange(0.0,121,20))
 
     Colormap_for_comp='BrBG'
     cmapdiff = cmx.get_cmap(Colormap_for_comp )
@@ -171,12 +171,12 @@ if __name__ == "__main__":
         filename_el_incomp = 'SurfaceOutput_DiagElastic_INCOMP_E1GPa_{}_NoDispLat_v97773a1f2.dat'.format(case)
 
         filename_vl = 'SurfaceOutput_DiagStokes_Line_{}_A04_NoSliding_NoDispLat_v97773a1f2.dat'.format(case)
-        # filename_vnl = 'SurfaceOutput_DiagStokes_NonLine_{}_Tmap_NoSliding_NoDispLat_v97773a1f2.dat'.format(case)
+        filename_vnl = 'SurfaceOutput_DiagStokes_NonLine_{}_Tmap_NoSliding_NoDispLat_v97773a1f2.dat'.format(case)
 
         filename_lvelcomp_tsp1s = 'SurfaceOutput_DiagLinearViscoElastic_Poisson045_E1GPa_A04_tsp1s_1mn_{}_v97773a1f2_.dat'.format(case)
         filename_lvelincomp_tsp1s = 'SurfaceOutput_DiagLinearViscoElastic_Incomp_E1GPa_A04_tsp1s_5mn_{}_v97773a1f2_.dat'.format(case)
         # # filename_lvelincomp_tsp1s = 'SurfaceOutput_DiagLinearViscoElastic_Incomp_E1GPa_A04_tsp1s_5mn_{}_v97773a1f2_DispMesh_.dat'.format(case)
-        # filename_nlvelcomp_tsp1s = 'SurfaceOutput_DiagNonLinearViscoElastic_Poisson045_E1GPa_Tmap_tsp1s_1mn_{}_v97773a1f2_.dat'.format(case)
+        filename_nlvelcomp_tsp1s = 'SurfaceOutput_DiagNonLinearViscoElastic_Poisson045_E1GPa_Tmap_tsp1s_1mn_{}_v97773a1f2_.dat'.format(case)
         # filename_nlvelincomp_tsp1s = 'SurfaceOutput_DiagNonLinearViscoElastic_Incomp_E1GPa_Tmap_tsp1s_5mn_{}_v97773a1f2_.dat'.format(case)
         # filename_vl_transient_tsp1s = 'SurfaceOutput_DiagStokesTransient_Line_{}_A04_tsp1s_1mn_v97773a1f2_.dat'.format(case)
         # filename_vnl_transient_tsp1s = 'SurfaceOutput_DiagStokesTransient_NonLine_{}_Tmap_tsp1s_1mn_v97773a1f2_.dat'.format(case)
@@ -187,10 +187,10 @@ if __name__ == "__main__":
         # filename_nlvelcomp_tsp1mn = 'SurfaceOutput_DiagNonLinearViscoElastic_Poisson03_E1GPa_Tmap_tsp1mn_5h_{}_v97773a1f2_.dat'.format(case)
         # filename_nlvelincomp_tsp1mn = 'SurfaceOutput_DiagNonLinearViscoElastic_Incomp_E1GPa_Tmap_tsp1mn_5h_{}_v97773a1f2_.dat'.format(case)
         #
-        # filename_lvelcomp_tsp5mn = 'SurfaceOutput_DiagLinearViscoElastic_Poisson045_E1GPa_A04_tsp5mn_1d_{}_v97773a1f2_.dat'.format(case)
+        filename_lvelcomp_tsp5mn = 'SurfaceOutput_DiagLinearViscoElastic_Poisson045_E1GPa_A04_tsp5mn_1d_{}_v97773a1f2_.dat'.format(case)
         # filename_lvelincomp_tsp5mn = 'SurfaceOutput_DiagLinearViscoElastic_Incomp_E1GPa_A04_tsp5mn_1d_{}_v97773a1f2_.dat'.format(case)
         # # filename_lvelincomp_tsp5mn = 'SurfaceOutput_DiagLinearViscoElastic_Incomp_E1GPa_A04_tsp5mn_1d_{}_v97773a1f2_DispMesh_.dat'.format(case)
-        # filename_nlvelcomp_tsp5mn = 'SurfaceOutput_DiagNonLinearViscoElastic_Poisson045_E1GPa_Tmap_tsp5mn_1d_{}_v97773a1f2_.dat'.format(case)
+        filename_nlvelcomp_tsp5mn = 'SurfaceOutput_DiagNonLinearViscoElastic_Poisson045_E1GPa_Tmap_tsp5mn_1d_{}_v97773a1f2_.dat'.format(case)
         # filename_nlvelincomp_tsp5mn = 'SurfaceOutput_DiagNonLinearViscoElastic_Incomp_E1GPa_Tmap_tsp5mn_1d_{}_v97773a1f2_.dat'.format(case)
         # filename_vl_transient_tsp5mn = 'SurfaceOutput_DiagStokesTransient_Line_{}_A04_tsp5mn_1d_v97773a1f2_.dat'.format(case)
         # filename_vnl_transient_tsp5mn = 'SurfaceOutput_DiagStokesTransient_NonLine_{}_Tmap_tsp5mn_1d_v97773a1f2_.dat'.format(case)
@@ -216,11 +216,11 @@ if __name__ == "__main__":
         Data_Simu_VL_tmp['Case'] = case
         Data_Simu_VL = pd.concat([Data_Simu_VL, Data_Simu_VL_tmp], ignore_index=True)
 
-        # print('Opening file:', filename_vnl)
-        # Data_Simu_VNL_tmp = pd.read_csv(Pathroot_SimuOutput.joinpath(filename_vnl), names=Col_Names_Viscous, delim_whitespace=True)
-        # Data_Simu_VNL_tmp['Case'] = case
-        # Data_Simu_VNL = pd.concat([Data_Simu_VNL, Data_Simu_VNL_tmp], ignore_index=True)
-        #
+        print('Opening file:', filename_vnl)
+        Data_Simu_VNL_tmp = pd.read_csv(Pathroot_SimuOutput.joinpath(filename_vnl), names=Col_Names_Viscous, delim_whitespace=True)
+        Data_Simu_VNL_tmp['Case'] = case
+        Data_Simu_VNL = pd.concat([Data_Simu_VNL, Data_Simu_VNL_tmp], ignore_index=True)
+
         print('Opening file:', filename_lvelcomp_tsp1s)
         Data_Simu_LVELCOMP_tmp_1s = pd.read_csv(Pathroot_SimuOutput.joinpath(filename_lvelcomp_tsp1s), names=Col_Names_ViscoElastic, delim_whitespace=True)
         Data_Simu_LVELCOMP_tmp_1s['Case'] = case
@@ -231,10 +231,10 @@ if __name__ == "__main__":
         Data_Simu_LVELINCOMP_tmp_1s['Case'] = case
         Data_Simu_LVELINCOMP_1s = pd.concat([Data_Simu_LVELINCOMP_1s, Data_Simu_LVELINCOMP_tmp_1s], ignore_index=True)
 
-        # print('Opening file:', filename_nlvelcomp_tsp1s)
-        # Data_Simu_NLVELCOMP_tmp_1s = pd.read_csv(Pathroot_SimuOutput.joinpath(filename_nlvelcomp_tsp1s), names=Col_Names_ViscoElastic, delim_whitespace=True)
-        # Data_Simu_NLVELCOMP_tmp_1s['Case'] = case
-        # Data_Simu_NLVELCOMP_1s = pd.concat([Data_Simu_NLVELCOMP_1s, Data_Simu_NLVELCOMP_tmp_1s], ignore_index=True)
+        print('Opening file:', filename_nlvelcomp_tsp1s)
+        Data_Simu_NLVELCOMP_tmp_1s = pd.read_csv(Pathroot_SimuOutput.joinpath(filename_nlvelcomp_tsp1s), names=Col_Names_ViscoElastic, delim_whitespace=True)
+        Data_Simu_NLVELCOMP_tmp_1s['Case'] = case
+        Data_Simu_NLVELCOMP_1s = pd.concat([Data_Simu_NLVELCOMP_1s, Data_Simu_NLVELCOMP_tmp_1s], ignore_index=True)
 
         # print('Opening file:', filename_nlvelincomp_tsp1s)
         # Data_Simu_NLVELINCOMP_tmp_1s = pd.read_csv(Pathroot_SimuOutput.joinpath(filename_nlvelincomp_tsp1s), names=Col_Names_ViscoElastic, delim_whitespace=True)
@@ -271,20 +271,20 @@ if __name__ == "__main__":
         # Data_Simu_NLVELINCOMP_tmp_1mn['Case'] = case
         # Data_Simu_NLVELINCOMP_1mn = pd.concat([Data_Simu_NLVELINCOMP_1mn, Data_Simu_NLVELINCOMP_tmp_1mn],ignore_index=True)
         #
-        # print('Opening file:', filename_lvelcomp_tsp5mn)
-        # Data_Simu_LVELCOMP_tmp_5mn = pd.read_csv(Pathroot_SimuOutput.joinpath(filename_lvelcomp_tsp5mn), names=Col_Names_ViscoElastic, delim_whitespace=True)
-        # Data_Simu_LVELCOMP_tmp_5mn['Case'] = case
-        # Data_Simu_LVELCOMP_5mn = pd.concat([Data_Simu_LVELCOMP_5mn, Data_Simu_LVELCOMP_tmp_5mn], ignore_index=True)
+        print('Opening file:', filename_lvelcomp_tsp5mn)
+        Data_Simu_LVELCOMP_tmp_5mn = pd.read_csv(Pathroot_SimuOutput.joinpath(filename_lvelcomp_tsp5mn), names=Col_Names_ViscoElastic, delim_whitespace=True)
+        Data_Simu_LVELCOMP_tmp_5mn['Case'] = case
+        Data_Simu_LVELCOMP_5mn = pd.concat([Data_Simu_LVELCOMP_5mn, Data_Simu_LVELCOMP_tmp_5mn], ignore_index=True)
 
         # print('Opening file:', filename_lvelincomp_tsp5mn)
         # Data_Simu_LVELINCOMP_tmp_5mn = pd.read_csv(Pathroot_SimuOutput.joinpath(filename_lvelincomp_tsp5mn), names=Col_Names_ViscoElastic, delim_whitespace=True)
         # Data_Simu_LVELINCOMP_tmp_5mn['Case'] = case
         # Data_Simu_LVELINCOMP_5mn = pd.concat([Data_Simu_LVELINCOMP_5mn, Data_Simu_LVELINCOMP_tmp_5mn], ignore_index=True)
         #
-        # print('Opening file:', filename_nlvelcomp_tsp5mn)
-        # Data_Simu_NLVELCOMP_tmp_5mn = pd.read_csv(Pathroot_SimuOutput.joinpath(filename_nlvelcomp_tsp5mn), names=Col_Names_ViscoElastic, delim_whitespace=True)
-        # Data_Simu_NLVELCOMP_tmp_5mn['Case'] = case
-        # Data_Simu_NLVELCOMP_5mn = pd.concat([Data_Simu_NLVELCOMP_5mn, Data_Simu_NLVELCOMP_tmp_5mn], ignore_index=True)
+        print('Opening file:', filename_nlvelcomp_tsp5mn)
+        Data_Simu_NLVELCOMP_tmp_5mn = pd.read_csv(Pathroot_SimuOutput.joinpath(filename_nlvelcomp_tsp5mn), names=Col_Names_ViscoElastic, delim_whitespace=True)
+        Data_Simu_NLVELCOMP_tmp_5mn['Case'] = case
+        Data_Simu_NLVELCOMP_5mn = pd.concat([Data_Simu_NLVELCOMP_5mn, Data_Simu_NLVELCOMP_tmp_5mn], ignore_index=True)
 
 
         # print('Opening file:', filename_vl_transient_tsp5mn)
@@ -326,15 +326,15 @@ if __name__ == "__main__":
     # ncols4bis = 4  ###elastic, tsp 1s, tsp 1mn, tsp 1h // tsp 6h, tsp 12h, tsp 24h, viscous
     # fig4bis, axes4bis = plt.subplots(nrows4bis, ncols4bis, figsize=(21, 10), sharex=True, sharey=True, constrained_layout=True)
 
-    # ####Figure 5 aims at showing evolution of sigmaI depending on tsp for all linear visco_elastic compressible
-    # nrows5 = 2 ##sub hour, sub-day
-    # ncols5 = 4  ###elastic, tsp 1s, tsp 1mn, tsp 1h // tsp 6h, tsp 12h, tsp 24h, none
-    # fig5, axes5 = plt.subplots(nrows5, ncols5, figsize=(21, 10), sharex=True, sharey=True, constrained_layout=True)
-    #
-    # ####Figure 5 bis : idem Figure 5 for all non_linear visco_elastic compressible
-    # nrows5bis = 2 ##sub hour, sub-day
-    # ncols5bis = 4  ###elastic, tsp 1s, tsp 1mn, tsp 1h // tsp 6h, tsp 12h, tsp 24h, none
-    # fig5bis, axes5bis = plt.subplots(nrows5bis, ncols5bis, figsize=(18, 13), sharex=True, sharey=True, constrained_layout=True)
+    ####Figure 5 aims at showing evolution of sigmaI depending on tsp for all linear visco_elastic compressible
+    nrows5 = 2 ##sub hour, sub-day
+    ncols5 = 4  ###elastic, tsp 1s, tsp 1mn, tsp 1h // tsp 6h, tsp 12h, tsp 24h, none
+    fig5, axes5 = plt.subplots(nrows5, ncols5, figsize=(21, 10), sharex=True, sharey=True, constrained_layout=True)
+
+    ####Figure 5 bis : idem Figure 5 for all non_linear visco_elastic compressible
+    nrows5bis = 2 ##sub hour, sub-day
+    ncols5bis = 4  ###elastic, tsp 1s, tsp 1mn, tsp 1h // tsp 6h, tsp 12h, tsp 24h, none
+    fig5bis, axes5bis = plt.subplots(nrows5bis, ncols5bis, figsize=(18, 13), sharex=True, sharey=True, constrained_layout=True)
 
     # ####Figure 6 aims at showing sensitivity of visco-elastic to timestep : result @1mn with tsp=1s vs tsp=1mn
     # nrows6 = 4 ##Empty cav only but Line comp/incomp and Non Line comp/incomp
@@ -406,6 +406,10 @@ if __name__ == "__main__":
         ax.set_title(Title, fontsize=16)
         ###Force x and y axis to same scale
         ax.set_aspect('equal', adjustable='box')
+        ###SigmaI is max principal stress and at the surface always one of the principal stress is zero
+        ### Therefore SigmaI is either positive or zero. Negative values of SigmaI are numerical artefacts
+        df_nocav.loc[df_nocav["SigmaI"] < 0, "SigmaI"] = 0
+        df_cav.loc[df_cav["SigmaI"] < 0, "SigmaI"] = 0
         ###Poject SigmaI on interpolation grid
         SigmaI_NoCav = Interpolate_field(df_nocav, 'SigmaI', X, Y)
         SigmaI_Cav = Interpolate_field(df_cav, 'SigmaI', X, Y)
@@ -441,7 +445,7 @@ if __name__ == "__main__":
                         ticks=levs_ticks,
                         fraction=0.04,
                         pad=0.08)
-    cbar.set_label(r'$\sigma_\mathrm{I}$ [kPa]', fontsize=20)
+    cbar.set_label(r'$\Delta \sigma_\mathrm{I}$ [kPa]', fontsize=20)
     cbar.ax.tick_params(labelsize=18)  # Adjust tick label size
 
     # ###### START PLOT FIGURE 2 ######
@@ -795,197 +799,205 @@ if __name__ == "__main__":
     # cbar4bis.set_label(r'$\sigma_\mathrm{I}$ [kPa]', fontsize=20)
     # cbar4bis.ax.tick_params(labelsize=18)  # Adjust tick label size
 
-    #
-    # ###### START PLOT FIGURE 5 ######
-    # fig5.suptitle(r'Linear Visco-elastic $\nu = 0.45$', fontsize=23, weight='bold')
-    # print('starting Figure 5')
-    # for i, law in enumerate(['Subhour', 'Subday']):
-    #     for j, tsp in enumerate(['a', 'b', 'c', 'd']):
-    #         ##get proper ax
-    #         ax5 = axes5[i, j]
-    #         ###Get data for each subplots one by one
-    #         df_cav5 = pd.DataFrame()
-    #         df_nocav5 = pd.DataFrame()
-    #         if i == 0:
-    #             if j == 0:  ##Linear elastic
-    #                 ax5.set_ylabel(r'Y [km]', fontsize=22)
-    #                 df_nocav5 = Data_Simu_El[Data_Simu_El['Case'] == 'NoCavity']
-    #                 df_cav5 = Data_Simu_El[Data_Simu_El['Case'] == 'EmptyCavity']
-    #                 Title = r'Elastic $\nu = 0.3$'
-    #             elif j == 1:  ##Linear visco elastic after 1s tsp =1s
-    #                 df_nocav5 = Data_Simu_LVELCOMP_1s[(Data_Simu_LVELCOMP_1s['Timestep'] == 1) & (Data_Simu_LVELCOMP_1s['Case'] == 'NoCavity')]
-    #                 df_cav5 = Data_Simu_LVELCOMP_1s[(Data_Simu_LVELCOMP_1s['Timestep'] == 1) & (Data_Simu_LVELCOMP_1s['Case'] == 'EmptyCavity')]
-    #                 Title = r'@1s tsp = 1s'
-    #             elif j == 2:  ##Linear visco elastic after 1mn tsp =1s
-    #                 df_nocav5 = Data_Simu_LVELCOMP_1s[(Data_Simu_LVELCOMP_1s['Timestep'] == 60) & (Data_Simu_LVELCOMP_1s['Case'] == 'NoCavity')]
-    #                 df_cav5 = Data_Simu_LVELCOMP_1s[(Data_Simu_LVELCOMP_1s['Timestep'] == 60) & (Data_Simu_LVELCOMP_1s['Case'] == 'EmptyCavity')]
-    #                 Title = r'@1mn tsp = 1s'
-    #             elif j == 3:  ##Linear visco elastic after 1h tsp=1mn
-    #                 df_nocav5 = Data_Simu_LVELCOMP_5mn[(Data_Simu_LVELCOMP_5mn['Timestep'] == 12) & (Data_Simu_LVELCOMP_5mn['Case'] == 'NoCavity')]
-    #                 df_cav5 = Data_Simu_LVELCOMP_5mn[(Data_Simu_LVELCOMP_5mn['Timestep'] == 12) & (Data_Simu_LVELCOMP_5mn['Case'] == 'EmptyCavity')]
-    #                 Title = r'@1h tsp = 5mn'
-    #         elif i == 1:
-    #             ax5.set_xlabel(r'X [km]', fontsize=22)
-    #             if j == 0:  ##Linear visco elastic after 6h tsp =5mn
-    #                 ax5.set_ylabel(r'Y [km]', fontsize=22)
-    #                 df_nocav5 = Data_Simu_LVELCOMP_5mn[(Data_Simu_LVELCOMP_5mn['Timestep'] == 6*60/5) & (Data_Simu_LVELCOMP_5mn['Case'] == 'NoCavity')]
-    #                 df_cav5 = Data_Simu_LVELCOMP_5mn[(Data_Simu_LVELCOMP_5mn['Timestep'] == 6*60/5) & (Data_Simu_LVELCOMP_5mn['Case'] == 'EmptyCavity')]
-    #                 Title = r'@6h tsp = 5mn'
-    #             elif j == 1:  ##Linear visco elastic tsp = 12h tsp =5mn
-    #                 df_nocav5 = Data_Simu_LVELCOMP_5mn[(Data_Simu_LVELCOMP_5mn['Timestep'] == 12*60/5) & (Data_Simu_LVELCOMP_5mn['Case'] == 'NoCavity')]
-    #                 df_cav5 = Data_Simu_LVELCOMP_5mn[(Data_Simu_LVELCOMP_5mn['Timestep'] == 12*60/5) & (Data_Simu_LVELCOMP_5mn['Case'] == 'EmptyCavity')]
-    #                 Title = r'@12h tsp = 5mn'
-    #             elif j == 2:  ##Linear visco elastic tsp = 24h tsp =5mn
-    #                 df_nocav5 = Data_Simu_LVELCOMP_5mn[(Data_Simu_LVELCOMP_5mn['Timestep'] == 24*60/5) & (Data_Simu_LVELCOMP_5mn['Case'] == 'NoCavity')]
-    #                 df_cav5 = Data_Simu_LVELCOMP_5mn[(Data_Simu_LVELCOMP_5mn['Timestep'] == 24*60/5) & (Data_Simu_LVELCOMP_5mn['Case'] == 'EmptyCavity')]
-    #                 Title = r'@24h tsp = 5mn'
-    #             elif j == 3:  ##pure linear viscous incomp
-    #                 df_nocav5 = Data_Simu_VL[Data_Simu_VL['Case'] == 'NoCavity']
-    #                 df_cav5 = Data_Simu_VL[Data_Simu_VL['Case'] == 'EmptyCavity']
-    #                 Title = r'pure viscous incomp.'
-    #         ###Fill up the plots
-    #         ax5.set_title(Title, fontsize=18, weight='bold')
-    #         ax5.tick_params(labelsize=18)  # fontsize of the tick labels
-    #         ax5.grid(True)
-    #         ax5.grid(alpha=0.5)
-    #         ###Force x and y axis to same scale
-    #         ax5.set_aspect('equal', adjustable='box')
-    #         ###Poject SigmaI on interpolation grid
-    #         SigmaI_NoCav = Interpolate_field(df_nocav5, 'SigmaI', X, Y)
-    #         SigmaI_Cav = Interpolate_field(df_cav5, 'SigmaI', X, Y)
-    #         ###shading
-    #         clevs5 = clevtight  ## cbar for shading
-    #         # colorbar
-    #         levs_ticks5 = levs_ticktight
-    #         ###Fills up the map with colors for SigmaEq
-    #         CS5 = ax5.contourf(X / 1000, Y / 1000, (SigmaI_Cav - SigmaI_NoCav) * 1000, clevs5, cmap=cmap,
-    #                            extend='both')
-    #         ax5.plot(xc / 1000, yc / 1000, color='k', linewidth=2)
-    #
-    #         ###Below we remove colors that are outside of glacier contour
-    #         clippath = mpltPath(np.c_[xc / 1000, yc / 1000])
-    #         patch = PathPatch(clippath, facecolor='none')
-    #         # ax = plt.gca()
-    #         ax5.add_patch(patch)
-    #         for c in [CS5]:
-    #             c.set_clip_path(patch)
-    #         ##plot crevasses as continuous line
-    #         for crev_num in np.arange(Df_Crevasses['Crevasse Number'].min(),
-    #                                   Df_Crevasses['Crevasse Number'].max() + 1):
-    #             ###get proper points
-    #             Df_plot = Df_Crevasses[Df_Crevasses['Crevasse Number'] == crev_num]
-    #             if Df_plot['IsCircular'].all():  ##different colors for circular crevasses and other crevasses
-    #                 col = Col_Crevasses_Circ
-    #             else:
-    #                 continue  ##We don't plot non circular crevasses anymre. Before we had: col = Col_Crevasses_Other
-    #             ax5.plot(Df_plot['X'].values / 1000, Df_plot['Y'].values / 1000, color=col, linestyle='-',linewidth=2)
-    #             ###Plot cavity contour
-    #             ax5.plot(cavity_contour[:, 0] / 1000, cavity_contour[:, 1] / 1000, color=Col_Cavity, linestyle='-',linewidth=2.5)
-    #         ###Make a horizontal color bar common to all subplots
-    # cbar5 = fig5.colorbar(CS5,
-    #                       ax=axes5.ravel().tolist(),  # all subplots
-    #                       orientation='horizontal',
-    #                       ticks=levs_ticks5,
-    #                       fraction=0.04,
-    #                       pad=0.08)
-    # cbar5.set_label(r'$\sigma_\mathrm{I}$ [kPa]', fontsize=20)
-    # cbar5.ax.tick_params(labelsize=18)  # Adjust tick label size
-    #
-    # ###### START PLOT FIGURE 5 BIS######
-    # fig5bis.suptitle(r'Non Linear Visco-elastic $\nu = 0.45$', fontsize=23, weight='bold')
-    # print('starting Figure 5 bis')
-    # for i, law in enumerate(['Subhour', 'Subday']):
-    #     for j, tsp in enumerate(['a', 'b', 'c', 'd']):
-    #         ##get proper ax
-    #         ax5 = axes5bis[i, j]
-    #         ###Get data for each subplots one by one
-    #         df_cav5 = pd.DataFrame()
-    #         df_nocav5 = pd.DataFrame()
-    #         if i == 0:
-    #             if j == 0:  ##Linear elastic
-    #                 ax5.set_ylabel(r'Y [km]', fontsize=22)
-    #                 df_nocav5 = Data_Simu_El[Data_Simu_El['Case'] == 'NoCavity']
-    #                 df_cav5 = Data_Simu_El[Data_Simu_El['Case'] == 'EmptyCavity']
-    #                 Title = r'Elastic $\nu = 0.3$'
-    #             elif j == 1:  ##Linear visco elastic after 1s tsp =1s
-    #                 df_nocav5 = Data_Simu_NLVELCOMP_1s[(Data_Simu_NLVELCOMP_1s['Timestep'] == 1) & (Data_Simu_NLVELCOMP_1s['Case'] == 'NoCavity')]
-    #                 df_cav5 = Data_Simu_NLVELCOMP_1s[(Data_Simu_NLVELCOMP_1s['Timestep'] == 1) & (Data_Simu_NLVELCOMP_1s['Case'] == 'EmptyCavity')]
-    #                 Title = r'@1s tsp = 1s'
-    #             elif j == 2:  ##Linear visco elastic after 1mn tsp =1s
-    #                 df_nocav5 = Data_Simu_NLVELCOMP_1s[(Data_Simu_NLVELCOMP_1s['Timestep'] == 60) & (Data_Simu_NLVELCOMP_1s['Case'] == 'NoCavity')]
-    #                 df_cav5 = Data_Simu_NLVELCOMP_1s[(Data_Simu_NLVELCOMP_1s['Timestep'] == 60) & (Data_Simu_NLVELCOMP_1s['Case'] == 'EmptyCavity')]
-    #                 Title = r'@1mn tsp = 1s'
-    #             elif j == 3:  ##Linear visco elastic after 1h tsp=1mn
-    #                 df_nocav5 = Data_Simu_NLVELCOMP_5mn[(Data_Simu_NLVELCOMP_5mn['Timestep'] == 12) & (Data_Simu_NLVELCOMP_5mn['Case'] == 'NoCavity')]
-    #                 df_cav5 = Data_Simu_NLVELCOMP_5mn[(Data_Simu_NLVELCOMP_5mn['Timestep'] == 12) & (Data_Simu_NLVELCOMP_5mn['Case'] == 'EmptyCavity')]
-    #                 Title = r'@1h tsp = 5mn'
-    #         elif i == 1:
-    #             ax5.set_xlabel(r'X [km]', fontsize=22)
-    #             if j == 0:  ##Linear visco elastic tsp = 6h
-    #                 ax5.set_ylabel(r'Y [km]', fontsize=22)
-    #                 df_nocav5 = Data_Simu_NLVELCOMP_5mn[(Data_Simu_NLVELCOMP_5mn['Timestep'] == 6 * 60 / 5) & (Data_Simu_NLVELCOMP_5mn['Case'] == 'NoCavity')]
-    #                 df_cav5 = Data_Simu_NLVELCOMP_5mn[(Data_Simu_NLVELCOMP_5mn['Timestep'] == 6 * 60 / 5) & (Data_Simu_NLVELCOMP_5mn['Case'] == 'EmptyCavity')]
-    #                 Title = r'@6h tsp = 5mn'
-    #             elif j == 1:  ##Linear visco elastic tsp = 12h tsp =5mn
-    #                 df_nocav5 = Data_Simu_NLVELCOMP_5mn[(Data_Simu_NLVELCOMP_5mn['Timestep'] == 12 * 60 / 5) & (Data_Simu_NLVELCOMP_5mn['Case'] == 'NoCavity')]
-    #                 df_cav5 = Data_Simu_NLVELCOMP_5mn[(Data_Simu_NLVELCOMP_5mn['Timestep'] == 12 * 60 / 5) & (Data_Simu_NLVELCOMP_5mn['Case'] == 'EmptyCavity')]
-    #                 Title = r'@12h tsp = 5mn'
-    #             elif j == 2:  ##Linear visco elastic tsp = 24h tsp =5mn
-    #                 df_nocav5 = Data_Simu_NLVELCOMP_5mn[(Data_Simu_NLVELCOMP_5mn['Timestep'] == 24 * 60 / 5) & (Data_Simu_NLVELCOMP_5mn['Case'] == 'NoCavity')]
-    #                 df_cav5 = Data_Simu_NLVELCOMP_5mn[(Data_Simu_NLVELCOMP_5mn['Timestep'] == 24 * 60 / 5) & (Data_Simu_NLVELCOMP_5mn['Case'] == 'EmptyCavity')]
-    #                 Title = r'@24h tsp = 5mn'
-    #             elif j == 3:  ##pure Glen
-    #                 df_nocav5 = Data_Simu_VNL[Data_Simu_VNL['Case'] == 'NoCavity']
-    #                 df_cav5 = Data_Simu_VNL[Data_Simu_VNL['Case'] == 'EmptyCavity']
-    #                 Title = 'pure Glen incomp.'
-    #         ###Fill up the plots
-    #         ax5.set_title(Title, fontsize=18, weight='bold')
-    #         ax5.tick_params(labelsize=18)  # fontsize of the tick labels
-    #         ax5.grid(True)
-    #         ax5.grid(alpha=0.5)
-    #         ###Force x and y axis to same scale
-    #         ax5.set_aspect('equal', adjustable='box')
-    #         ###Poject SigmaI on interpolation grid
-    #         SigmaI_NoCav = Interpolate_field(df_nocav5, 'SigmaI', X, Y)
-    #         SigmaI_Cav = Interpolate_field(df_cav5, 'SigmaI', X, Y)
-    #         ###shading
-    #         clevs5 = clevwide ## cbar for shading
-    #         # colorbar
-    #         levs_ticks5 = levs_tickwide
-    #         ###Fills up the map with colors for SigmaEq
-    #         CS5 = ax5.contourf(X / 1000, Y / 1000, (SigmaI_Cav - SigmaI_NoCav) * 1000, clevs5, cmap=cmap,
-    #                            extend='both')
-    #         ax5.plot(xc / 1000, yc / 1000, color='k', linewidth=2)
-    #
-    #         ###Below we remove colors that are outside of glacier contour
-    #         clippath = mpltPath(np.c_[xc / 1000, yc / 1000])
-    #         patch = PathPatch(clippath, facecolor='none')
-    #         # ax = plt.gca()
-    #         ax5.add_patch(patch)
-    #         for c in [CS5]:
-    #             c.set_clip_path(patch)
-    #         ##plot crevasses as continuous line
-    #         for crev_num in np.arange(Df_Crevasses['Crevasse Number'].min(),
-    #                                   Df_Crevasses['Crevasse Number'].max() + 1):
-    #             ###get proper points
-    #             Df_plot = Df_Crevasses[Df_Crevasses['Crevasse Number'] == crev_num]
-    #             if Df_plot['IsCircular'].all():  ##different colors for circular crevasses and other crevasses
-    #                 col = Col_Crevasses_Circ
-    #             else:
-    #                 continue  ##We don't plot non circular crevasses anymre. Before we had: col = Col_Crevasses_Other
-    #             ax5.plot(Df_plot['X'].values / 1000, Df_plot['Y'].values / 1000, color=col, linestyle='-',
-    #                      linewidth=2)
-    #         ###Plot cavity contour
-    #         ax5.plot(cavity_contour[:, 0] / 1000, cavity_contour[:, 1] / 1000, color=Col_Cavity, linestyle='-',linewidth=2.5)
-    #         ###Make a horizontal color bar common to all subplots
-    # cbar5bis = fig5bis.colorbar(CS5,
-    #                       ax=axes5bis.ravel().tolist(),  # all subplots
-    #                       orientation='horizontal',
-    #                       ticks=levs_ticks5,
-    #                       fraction=0.04,
-    #                       pad=0.08)
-    # cbar5bis.set_label(r'$\sigma_\mathrm{I}$ [kPa]', fontsize=20)
-    # cbar5bis.ax.tick_params(labelsize=18)  # Adjust tick label size
+
+    ###### START PLOT FIGURE 5 ######
+    fig5.suptitle(r'Linear Visco-elastic $\nu = 0.45$', fontsize=23, weight='bold')
+    print('starting Figure 5')
+    for i, law in enumerate(['Subhour', 'Subday']):
+        for j, tsp in enumerate(['a', 'b', 'c', 'd']):
+            ##get proper ax
+            ax5 = axes5[i, j]
+            ###Get data for each subplots one by one
+            df_cav5 = pd.DataFrame()
+            df_nocav5 = pd.DataFrame()
+            if i == 0:
+                if j == 0:  ##Linear elastic
+                    ax5.set_ylabel(r'Y [km]', fontsize=22)
+                    df_nocav5 = Data_Simu_El[Data_Simu_El['Case'] == 'NoCavity']
+                    df_cav5 = Data_Simu_El[Data_Simu_El['Case'] == 'EmptyCavity']
+                    Title = r'Elastic $\nu = 0.3$'
+                elif j == 1:  ##Linear visco elastic after 1s tsp =1s
+                    df_nocav5 = Data_Simu_LVELCOMP_1s[(Data_Simu_LVELCOMP_1s['Timestep'] == 1) & (Data_Simu_LVELCOMP_1s['Case'] == 'NoCavity')]
+                    df_cav5 = Data_Simu_LVELCOMP_1s[(Data_Simu_LVELCOMP_1s['Timestep'] == 1) & (Data_Simu_LVELCOMP_1s['Case'] == 'EmptyCavity')]
+                    Title = r'@1s tsp = 1s'
+                elif j == 2:  ##Linear visco elastic after 1mn tsp =1s
+                    df_nocav5 = Data_Simu_LVELCOMP_1s[(Data_Simu_LVELCOMP_1s['Timestep'] == 60) & (Data_Simu_LVELCOMP_1s['Case'] == 'NoCavity')]
+                    df_cav5 = Data_Simu_LVELCOMP_1s[(Data_Simu_LVELCOMP_1s['Timestep'] == 60) & (Data_Simu_LVELCOMP_1s['Case'] == 'EmptyCavity')]
+                    Title = r'@1mn tsp = 1s'
+                elif j == 3:  ##Linear visco elastic after 1h tsp=1mn
+                    df_nocav5 = Data_Simu_LVELCOMP_5mn[(Data_Simu_LVELCOMP_5mn['Timestep'] == 12) & (Data_Simu_LVELCOMP_5mn['Case'] == 'NoCavity')]
+                    df_cav5 = Data_Simu_LVELCOMP_5mn[(Data_Simu_LVELCOMP_5mn['Timestep'] == 12) & (Data_Simu_LVELCOMP_5mn['Case'] == 'EmptyCavity')]
+                    Title = r'@1h tsp = 5mn'
+            elif i == 1:
+                ax5.set_xlabel(r'X [km]', fontsize=22)
+                if j == 0:  ##Linear visco elastic after 6h tsp =5mn
+                    ax5.set_ylabel(r'Y [km]', fontsize=22)
+                    df_nocav5 = Data_Simu_LVELCOMP_5mn[(Data_Simu_LVELCOMP_5mn['Timestep'] == 6*60/5) & (Data_Simu_LVELCOMP_5mn['Case'] == 'NoCavity')]
+                    df_cav5 = Data_Simu_LVELCOMP_5mn[(Data_Simu_LVELCOMP_5mn['Timestep'] == 6*60/5) & (Data_Simu_LVELCOMP_5mn['Case'] == 'EmptyCavity')]
+                    Title = r'@6h tsp = 5mn'
+                elif j == 1:  ##Linear visco elastic tsp = 12h tsp =5mn
+                    df_nocav5 = Data_Simu_LVELCOMP_5mn[(Data_Simu_LVELCOMP_5mn['Timestep'] == 12*60/5) & (Data_Simu_LVELCOMP_5mn['Case'] == 'NoCavity')]
+                    df_cav5 = Data_Simu_LVELCOMP_5mn[(Data_Simu_LVELCOMP_5mn['Timestep'] == 12*60/5) & (Data_Simu_LVELCOMP_5mn['Case'] == 'EmptyCavity')]
+                    Title = r'@12h tsp = 5mn'
+                elif j == 2:  ##Linear visco elastic tsp = 24h tsp =5mn
+                    df_nocav5 = Data_Simu_LVELCOMP_5mn[(Data_Simu_LVELCOMP_5mn['Timestep'] == 24*60/5) & (Data_Simu_LVELCOMP_5mn['Case'] == 'NoCavity')]
+                    df_cav5 = Data_Simu_LVELCOMP_5mn[(Data_Simu_LVELCOMP_5mn['Timestep'] == 24*60/5) & (Data_Simu_LVELCOMP_5mn['Case'] == 'EmptyCavity')]
+                    Title = r'@24h tsp = 5mn'
+                elif j == 3:  ##pure linear viscous incomp
+                    df_nocav5 = Data_Simu_VL[Data_Simu_VL['Case'] == 'NoCavity']
+                    df_cav5 = Data_Simu_VL[Data_Simu_VL['Case'] == 'EmptyCavity']
+                    Title = r'pure viscous incomp.'
+            ###Fill up the plots
+            ax5.set_title(Title, fontsize=18, weight='bold')
+            ax5.tick_params(labelsize=18)  # fontsize of the tick labels
+            ax5.grid(True)
+            ax5.grid(alpha=0.5)
+            ###Force x and y axis to same scale
+            ax5.set_aspect('equal', adjustable='box')
+            ###SigmaI is max principal stress and at the surface always one of the principal stress is zero
+            ### Therefore SigmaI is either positive or zero. Negative values of SigmaI are numerical artefacts
+            df_nocav5.loc[df_nocav5["SigmaI"] < 0, "SigmaI"] = 0
+            df_cav5.loc[df_cav5["SigmaI"] < 0, "SigmaI"] = 0
+            ###Poject SigmaI on interpolation grid
+            SigmaI_NoCav = Interpolate_field(df_nocav5, 'SigmaI', X, Y)
+            SigmaI_Cav = Interpolate_field(df_cav5, 'SigmaI', X, Y)
+            ###shading
+            clevs5 = clevtight  ## cbar for shading
+            # colorbar
+            levs_ticks5 = levs_ticktight
+            ###Fills up the map with colors for SigmaEq
+            CS5 = ax5.contourf(X / 1000, Y / 1000, (SigmaI_Cav - SigmaI_NoCav) * 1000, clevs5, cmap=cmap,
+                               extend='both')
+            ax5.plot(xc / 1000, yc / 1000, color='k', linewidth=2)
+
+            ###Below we remove colors that are outside of glacier contour
+            clippath = mpltPath(np.c_[xc / 1000, yc / 1000])
+            patch = PathPatch(clippath, facecolor='none')
+            # ax = plt.gca()
+            ax5.add_patch(patch)
+            for c in [CS5]:
+                c.set_clip_path(patch)
+            ##plot crevasses as continuous line
+            for crev_num in np.arange(Df_Crevasses['Crevasse Number'].min(),
+                                      Df_Crevasses['Crevasse Number'].max() + 1):
+                ###get proper points
+                Df_plot = Df_Crevasses[Df_Crevasses['Crevasse Number'] == crev_num]
+                if Df_plot['IsCircular'].all():  ##different colors for circular crevasses and other crevasses
+                    col = Col_Crevasses_Circ
+                else:
+                    continue  ##We don't plot non circular crevasses anymre. Before we had: col = Col_Crevasses_Other
+                ax5.plot(Df_plot['X'].values / 1000, Df_plot['Y'].values / 1000, color=col, linestyle='-',linewidth=2)
+                ###Plot cavity contour
+                ax5.plot(cavity_contour[:, 0] / 1000, cavity_contour[:, 1] / 1000, color=Col_Cavity, linestyle='-',linewidth=2.5)
+            ###Make a horizontal color bar common to all subplots
+    cbar5 = fig5.colorbar(CS5,
+                          ax=axes5.ravel().tolist(),  # all subplots
+                          orientation='horizontal',
+                          ticks=levs_ticks5,
+                          fraction=0.04,
+                          pad=0.08)
+    cbar5.set_label(r'$\Delta \sigma_\mathrm{I}$ [kPa]', fontsize=20)
+    cbar5.ax.tick_params(labelsize=18)  # Adjust tick label size
+
+    ###### START PLOT FIGURE 5 BIS######
+    fig5bis.suptitle(r'Non Linear Visco-elastic $\nu = 0.45$', fontsize=23, weight='bold')
+    print('starting Figure 5 bis')
+    for i, law in enumerate(['Subhour', 'Subday']):
+        for j, tsp in enumerate(['a', 'b', 'c', 'd']):
+            ##get proper ax
+            ax5 = axes5bis[i, j]
+            ###Get data for each subplots one by one
+            df_cav5 = pd.DataFrame()
+            df_nocav5 = pd.DataFrame()
+            if i == 0:
+                if j == 0:  ##Linear elastic
+                    ax5.set_ylabel(r'Y [km]', fontsize=22)
+                    df_nocav5 = Data_Simu_El[Data_Simu_El['Case'] == 'NoCavity']
+                    df_cav5 = Data_Simu_El[Data_Simu_El['Case'] == 'EmptyCavity']
+                    Title = r'Elastic $\nu = 0.3$'
+                elif j == 1:  ##Linear visco elastic after 1s tsp =1s
+                    df_nocav5 = Data_Simu_NLVELCOMP_1s[(Data_Simu_NLVELCOMP_1s['Timestep'] == 1) & (Data_Simu_NLVELCOMP_1s['Case'] == 'NoCavity')]
+                    df_cav5 = Data_Simu_NLVELCOMP_1s[(Data_Simu_NLVELCOMP_1s['Timestep'] == 1) & (Data_Simu_NLVELCOMP_1s['Case'] == 'EmptyCavity')]
+                    Title = r'@1s tsp = 1s'
+                elif j == 2:  ##Linear visco elastic after 1mn tsp =1s
+                    df_nocav5 = Data_Simu_NLVELCOMP_1s[(Data_Simu_NLVELCOMP_1s['Timestep'] == 60) & (Data_Simu_NLVELCOMP_1s['Case'] == 'NoCavity')]
+                    df_cav5 = Data_Simu_NLVELCOMP_1s[(Data_Simu_NLVELCOMP_1s['Timestep'] == 60) & (Data_Simu_NLVELCOMP_1s['Case'] == 'EmptyCavity')]
+                    Title = r'@1mn tsp = 1s'
+                elif j == 3:  ##Linear visco elastic after 1h tsp=1mn
+                    df_nocav5 = Data_Simu_NLVELCOMP_5mn[(Data_Simu_NLVELCOMP_5mn['Timestep'] == 12) & (Data_Simu_NLVELCOMP_5mn['Case'] == 'NoCavity')]
+                    df_cav5 = Data_Simu_NLVELCOMP_5mn[(Data_Simu_NLVELCOMP_5mn['Timestep'] == 12) & (Data_Simu_NLVELCOMP_5mn['Case'] == 'EmptyCavity')]
+                    Title = r'@1h tsp = 5mn'
+            elif i == 1:
+                ax5.set_xlabel(r'X [km]', fontsize=22)
+                if j == 0:  ##Linear visco elastic tsp = 6h
+                    ax5.set_ylabel(r'Y [km]', fontsize=22)
+                    df_nocav5 = Data_Simu_NLVELCOMP_5mn[(Data_Simu_NLVELCOMP_5mn['Timestep'] == 6 * 60 / 5) & (Data_Simu_NLVELCOMP_5mn['Case'] == 'NoCavity')]
+                    df_cav5 = Data_Simu_NLVELCOMP_5mn[(Data_Simu_NLVELCOMP_5mn['Timestep'] == 6 * 60 / 5) & (Data_Simu_NLVELCOMP_5mn['Case'] == 'EmptyCavity')]
+                    Title = r'@6h tsp = 5mn'
+                elif j == 1:  ##Linear visco elastic tsp = 12h tsp =5mn
+                    df_nocav5 = Data_Simu_NLVELCOMP_5mn[(Data_Simu_NLVELCOMP_5mn['Timestep'] == 12 * 60 / 5) & (Data_Simu_NLVELCOMP_5mn['Case'] == 'NoCavity')]
+                    df_cav5 = Data_Simu_NLVELCOMP_5mn[(Data_Simu_NLVELCOMP_5mn['Timestep'] == 12 * 60 / 5) & (Data_Simu_NLVELCOMP_5mn['Case'] == 'EmptyCavity')]
+                    Title = r'@12h tsp = 5mn'
+                elif j == 2:  ##Linear visco elastic tsp = 24h tsp =5mn
+                    df_nocav5 = Data_Simu_NLVELCOMP_5mn[(Data_Simu_NLVELCOMP_5mn['Timestep'] == 24 * 60 / 5) & (Data_Simu_NLVELCOMP_5mn['Case'] == 'NoCavity')]
+                    df_cav5 = Data_Simu_NLVELCOMP_5mn[(Data_Simu_NLVELCOMP_5mn['Timestep'] == 24 * 60 / 5) & (Data_Simu_NLVELCOMP_5mn['Case'] == 'EmptyCavity')]
+                    Title = r'@24h tsp = 5mn'
+                elif j == 3:  ##pure Glen
+                    df_nocav5 = Data_Simu_VNL[Data_Simu_VNL['Case'] == 'NoCavity']
+                    df_cav5 = Data_Simu_VNL[Data_Simu_VNL['Case'] == 'EmptyCavity']
+                    Title = 'Glen-Nye incomp.'
+            ###Fill up the plots
+            ax5.set_title(Title, fontsize=18, weight='bold')
+            ax5.tick_params(labelsize=18)  # fontsize of the tick labels
+            ax5.grid(True)
+            ax5.grid(alpha=0.5)
+            ###Force x and y axis to same scale
+            ax5.set_aspect('equal', adjustable='box')
+            ###SigmaI is max principal stress and at the surface always one of the principal stress is zero
+            ### Therefore SigmaI is either positive or zero. Negative values of SigmaI are numerical artefacts
+            df_nocav5.loc[df_nocav5["SigmaI"] < 0, "SigmaI"] = 0
+            df_cav5.loc[df_cav5["SigmaI"] < 0, "SigmaI"] = 0
+            ###Poject SigmaI on interpolation grid
+            SigmaI_NoCav = Interpolate_field(df_nocav5, 'SigmaI', X, Y)
+            SigmaI_Cav = Interpolate_field(df_cav5, 'SigmaI', X, Y)
+            ###shading
+            clevs5 = clevwide ## cbar for shading
+            # colorbar
+            levs_ticks5 = levs_tickwide
+            ###Fills up the map with colors for SigmaEq
+            CS5 = ax5.contourf(X / 1000, Y / 1000, (SigmaI_Cav - SigmaI_NoCav) * 1000, clevs5, cmap=cmap,
+                               extend='both')
+            ax5.plot(xc / 1000, yc / 1000, color='k', linewidth=2)
+
+            ###Below we remove colors that are outside of glacier contour
+            clippath = mpltPath(np.c_[xc / 1000, yc / 1000])
+            patch = PathPatch(clippath, facecolor='none')
+            # ax = plt.gca()
+            ax5.add_patch(patch)
+            for c in [CS5]:
+                c.set_clip_path(patch)
+            ##plot crevasses as continuous line
+            for crev_num in np.arange(Df_Crevasses['Crevasse Number'].min(),
+                                      Df_Crevasses['Crevasse Number'].max() + 1):
+                ###get proper points
+                Df_plot = Df_Crevasses[Df_Crevasses['Crevasse Number'] == crev_num]
+                if Df_plot['IsCircular'].all():  ##different colors for circular crevasses and other crevasses
+                    col = Col_Crevasses_Circ
+                else:
+                    continue  ##We don't plot non circular crevasses anymre. Before we had: col = Col_Crevasses_Other
+                ax5.plot(Df_plot['X'].values / 1000, Df_plot['Y'].values / 1000, color=col, linestyle='-',
+                         linewidth=2)
+            ###Plot cavity contour
+            ax5.plot(cavity_contour[:, 0] / 1000, cavity_contour[:, 1] / 1000, color=Col_Cavity, linestyle='-',linewidth=2.5)
+            ###Make a horizontal color bar common to all subplots
+    cbar5bis = fig5bis.colorbar(CS5,
+                          ax=axes5bis.ravel().tolist(),  # all subplots
+                          orientation='horizontal',
+                          ticks=levs_ticks5,
+                          fraction=0.04,
+                          pad=0.08)
+    cbar5bis.set_label(r'$\Delta \sigma_\mathrm{I}$ [kPa]', fontsize=20)
+    cbar5bis.ax.tick_params(labelsize=18)  # Adjust tick label size
 
     # ###### START PLOT FIGURE 6 ######
     # fig6.suptitle('Sensitivity to timestep (Empty Cavity @5mn)', fontsize=23, weight='bold')

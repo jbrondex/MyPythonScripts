@@ -132,7 +132,7 @@ if __name__ == "__main__":
     Data_Simu_VL = pd.DataFrame()
     Data_Simu_VNL = pd.DataFrame()
     for case in ['NoCavity', 'EmptyCavity']:
-        filename_el = 'SurfaceOutput_DiagElastic_Poisson03_E1GPa_{}_NoDispLat_v97773a1f2.dat'.format(case)
+        filename_el = 'SurfaceOutput_DiagElastic_Poisson03_E1GPa_{}_NoDispLat_.dat'.format(case)
         filename_vl = 'SurfaceOutput_DiagStokes_Line_{}_A04_NoSliding_NoDispLat.dat'.format(case)
         filename_vnl = 'SurfaceOutput_DiagStokes_NonLine_{}_Tmap_NoSliding_NoDispLat.dat'.format(case)
 

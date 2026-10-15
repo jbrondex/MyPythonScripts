@@ -110,9 +110,11 @@ if __name__ == "__main__":
     Timestep_size = 0.01/365 ### In years !!
     OutputInterval = 10 ###Execution interval of the solver producing the simu output
     DaysOfMay25 = [19, 21, 24, 27] ##Day of May 2025 at which we want an output
-    DayStartSimu = 16 ##Day of May 2025 at which the simu is starting
     DayStopLoad = 23 ##Day of May 2025 at which the load stops build up in simulation of interest
-    SimuDuration = 15 ##How many days does the simu last ?
+    # DayStartSimu = 16 ##Day of May 2025 at which the simu is starting
+    # SimuDuration = 15 ##How many days does the simu last ?
+    DayStartSimu = 19 ##Day of May 2025 at which the simu is starting
+    SimuDuration = 12 ##How many days does the simu last ?
     t0 = pd.Timestamp("2025-05-{} 00:00".format(DayStartSimu))
     tf = t0 + pd.Timedelta(days=SimuDuration)
     ###Coordinate of bed point at which we want to plot the variables vs time (this is done in the other python script)
@@ -162,7 +164,8 @@ if __name__ == "__main__":
     Df_SurfDebrisDEM = pd.read_csv(Pathroot_DEMs.joinpath(Filename_SurfDebrisDEM), names=['X', 'Y', 'Z'], sep=r'\s+')
 
     #### Load file containing factors to apply to Hdebris as a function of day of May for progressive load
-    Pathroot_Factors= Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_Jan2026/5_PRONO_PROGRESSIVELOAD_FS_NoGMLat_MaxLoadFromDEMs/.')
+    # Pathroot_Factors= Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_Jan2026/5_PRONO_PROGRESSIVELOAD_FS_NoGMLat_MaxLoadFromDEMs/.')
+    Pathroot_Factors= Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_Jan2026/4_PRONO_PROGRESSIVELOAD_FS_NoGMLat/.')
     Filename_Factors= 'OverloadFactors.dat'
     Df_Factors = pd.read_csv(Pathroot_Factors.joinpath(Filename_Factors), names=['Day','Factor'], sep=r'\s+', skiprows=1)
     #########################################
@@ -171,8 +174,10 @@ if __name__ == "__main__":
     ###load file as dataframe
     Col_Name = ['Timestep', 'Count', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'H', 'N', 'theta_dagger', 'theta', 'taub','nodearea', 'fx', 'fy', 'fz', 'u', 'v', 'w', 'nx', 'ny', 'nz', 'Chi', 'GM']
     if str_Year == '2025':
-        Pathroot = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_Jan2026/5_PRONO_PROGRESSIVELOAD_FS_NoGMLat_MaxLoadFromDEMs/GlacierOut/.')
-        Filename = 'MyBirch_RS_C{}_tsp001d_Start16May_StopLoad{}May_Stop31May__bed.dat'.format(str_Cvalue,DayStopLoad)
+        # Pathroot = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_Jan2026/5_PRONO_PROGRESSIVELOAD_FS_NoGMLat_MaxLoadFromDEMs/GlacierOut/.')
+        # Filename = 'MyBirch_RS_C{}_tsp001d_Start16May_StopLoad{}May_Stop31May__bed.dat'.format(str_Cvalue,DayStopLoad)
+        Pathroot = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_Jan2026/4_PRONO_PROGRESSIVELOAD_FS_NoGMLat/GlacierOut/.')
+        Filename = 'MyBirch_RS_C{}_BothFS_NoGMLat_tsp001d_StopLoad{}May__bed.dat'.format(str_Cvalue,DayStopLoad)
     # else: ##To adapt later if I run these simu for older geometries
     #     Pathroot = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup/4_RateAndState_WithDamage_WithContact_{}/GlacierOut/.'.format(str_Year))
     #     Filename = 'MyBirch{}_RS_C{}_WithD_Cont_SaveScalInt10_tsp001d__bed.dat'.format(str_Year, str_Cvalue)
@@ -418,9 +423,9 @@ if __name__ == "__main__":
         CS1 = ax.contourf(Xbed / 1000, Ybed / 1000, taub_over_N, levels=clevs, cmap=cmap, extend='both', alpha=0.7, antialiased=True)
         # CS1 = ax.pcolormesh(Xbed / 1000, Ybed / 1000, taub_over_N,  cmap=cmap, shading='auto', vmin=vmin, vmax =vmax ,alpha=0.6,zorder=1)
         # ### Plot contours of debris thickness
-        # CS1_debriscontour = ax.contour(Xbed/1000, Ybed/1000, Hdebris_smoothed , levels= DebrisContour_Levels, colors=DebrisContour_Color, linewidths=DebrisContour_Thick, linestyles='-')
+        CS1_debriscontour = ax.contour(Xbed/1000, Ybed/1000, Hdebris_smoothed , levels= DebrisContour_Levels, colors=DebrisContour_Color, linewidths=DebrisContour_Thick, linestyles='-')
         # ###Put labels with position determined manually
-        # ax.clabel(CS1_debriscontour, DebrisContour_Levels, inline=True, inline_spacing=2, fmt="%d", manual=DebrisContour_LabelPositions, fontsize=7.5)
+        ax.clabel(CS1_debriscontour, DebrisContour_Levels, inline=True, inline_spacing=2, fmt="%d", manual=DebrisContour_LabelPositions, fontsize=7.5)
         ax.plot(xc / 1000, yc / 1000, color='k', linewidth=2)
         #### For the steady state of cavitation (so only if day of output is greater than day at which steady state is reached), hatched places
         #### where taub/N has reached the threshold C (with a margin of 1%)
@@ -440,7 +445,7 @@ if __name__ == "__main__":
         clippath = mpltPath(np.c_[xc / 1000, yc / 1000])
         patch = PathPatch(clippath, facecolor='none')
         ax.add_patch(patch)
-        for c in [CS1, CS1_GLcontour]:
+        for c in [CS1, CS1_GLcontour, CS1_debriscontour]:
             c.set_clip_path(patch)
         if j == len(DaysOfMay25) - 1:
             for c in [CS1_contour]:
@@ -477,8 +482,10 @@ if __name__ == "__main__":
         # CS1 = ax.contourf(Xbed/1000, Ybed/1000, Sigma_nn, levels=clevs, cmap=cmap, extend='both', alpha=0.7, antialiased=True)
         CS1 = ax.pcolormesh(Xbed / 1000, Ybed / 1000, Sigma_nn, cmap=cmap, shading='auto', vmin=vmin, vmax=vmax, alpha=0.6,zorder=1)
         # ### Plot contours of debris thickness
-        # CS1_debriscontour = ax.contour(Xbed/1000, Ybed/1000, Hdebris_smoothed , levels= DebrisContour_Levels, colors=DebrisContour_Color, linewidths=DebrisContour_Thick, linestyles='-')
-        # ax.plot(xc / 1000, yc / 1000, color='k', linewidth=2)
+        CS1_debriscontour = ax.contour(Xbed/1000, Ybed/1000, Hdebris_smoothed , levels= DebrisContour_Levels, colors='k', linewidths=DebrisContour_Thick, linestyles='-')
+        # ###Put labels with position determined manually
+        ax.clabel(CS1_debriscontour, DebrisContour_Levels, inline=True, inline_spacing=2, fmt="%d", manual=DebrisContour_LabelPositions, fontsize=7.5)
+        ax.plot(xc / 1000, yc / 1000, color='k', linewidth=2)
 
         ### At floating areas (GM <0), make a contour
         CS1_GLcontour = ax.contour(Xbed / 1000, Ybed / 1000, GM, levels=[-0.1], colors='black',linewidths=1.2, linestyles='-')
@@ -490,7 +497,7 @@ if __name__ == "__main__":
         clippath = mpltPath(np.c_[xc / 1000, yc / 1000])
         patch = PathPatch(clippath, facecolor='none')
         ax.add_patch(patch)
-        for c in [CS1, CS1_GLcontour]:
+        for c in [CS1, CS1_GLcontour, CS1_debriscontour]:
             c.set_clip_path(patch)
         if j == len(DaysOfMay25) - 1:
             cbar = fig1.colorbar(CS1, ax=ax, shrink=0.6, pad=0.05)

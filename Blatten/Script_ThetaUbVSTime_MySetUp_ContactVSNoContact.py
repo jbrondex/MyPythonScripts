@@ -18,7 +18,8 @@ import matplotlib.colors as colors
 import matplotlib.cm as cmx
 
 from pathlib import Path
-
+import re
+import os
 import numpy as np
 from matplotlib.ticker import FormatStrFormatter
 import matplotlib.gridspec as gridspec
@@ -29,6 +30,8 @@ from matplotlib.dates import MonthLocator, DayLocator, HourLocator, DateFormatte
 from matplotlib import ticker
 from scipy.interpolate import griddata
 from matplotlib.ticker import MultipleLocator
+import rasterio
+from rasterio.windows import from_bounds
 
 # formatter = ticker.ScalarFormatter(useMathText=True)
 # formatter.set_scientific(True)
@@ -61,8 +64,15 @@ if __name__ == "__main__":
     ### In this script I want to compare with and without contact at given C value
     C = 0.3
     str_Cvalue = f"{int(C * 10):02d}"
+    str_Year = '2025' ###year of interest FOR NOW WORKS ONLY WITH 2025
     ### velocity max for plot of ub (to adapt depending on C)
     velocitymax = 40 ##in m/d !
+    Timestep_size = 0.01/365 ### In years !!
+    ###Coordinate of bed point at which we want to plot the variables vs time (this is done in the other python script)
+    xplot = [2630580, 2630620.9, 2630653.6]
+    yplot = [1139265, 1139221.7, 1139188.3]
+    colplot = ['#00FF66','#8D5FD3','#FFD42A']
+
     ###Path to Data
     Pathroot1 = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup/2_RateAndState_NoDamage_NoContact/GlacierOut/.')
     Filename1 = 'MyBirch_RS_C{}_WithD_NoCont__bed.dat'.format(str_Cvalue)
@@ -72,17 +82,11 @@ if __name__ == "__main__":
     Col_Name1 =  ['Timestep', 'Count', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'H', 'N', 'theta_dagger', 'theta', 'taub', 'nodearea', 'fx', 'fy', 'fz', 'u', 'v', 'w', 'nx', 'ny', 'nz', 'Chi']
     Col_Name2 =  ['Timestep', 'Count', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'H', 'N', 'theta_dagger', 'theta', 'taub', 'nodearea', 'fx', 'fy', 'fz', 'u', 'v', 'w', 'nx', 'ny', 'nz', 'Chi', 'GM']
     ###Line styles for the various case
-    Pathroots= [Pathroot1, Pathroot2]
-    Filenames = [Filename1, Filename2]
-    Col_Names = [Col_Name1, Col_Name2]
-    LiStyles = ['--', '-']
-    Labels = ['No Contact', 'Contact']
-    ###Parameter of Simu
-    Timestep_size = 0.02/365 ### In years !!
-    ###Coordinate of bed point at which we want to plot the variables vs time (this is done in the other python script)
-    xplot = [2630580, 2630620.9, 2630653.6]
-    yplot = [1139265, 1139221.7, 1139188.3]
-    colplot = ['#00FF66','#8D5FD3','#FFD42A']
+    Pathroots= [Pathroot2]#[Pathroot1, Pathroot2]
+    Filenames = [Filename2]#[Filename1, Filename2]
+    Col_Names = [Col_Name2]#[Col_Name1, Col_Name2]
+    LiStyles = ['-']#['--', '-']
+    Labels = ['Contact']#['No Contact', 'Contact']
 
     ###PREPARE THE PLOT
     ###Fig1 is subplot of various variables
@@ -101,241 +105,73 @@ if __name__ == "__main__":
     handles=[]
     ###Loop on each case (contact vs no contact) considered
     for j,(Pathroot, Filename, Col_Name , Label, LiStyle) in enumerate(zip(Pathroots, Filenames, Col_Names, Labels, LiStyles)):
-        ###Correct time step size for the simu for which I changes to 0.01 day:
-        if 'tsp001d' in Filename:
-            Timestep_size = 0.01/365 ### In years !!
+        ###Correct time step size for old simu where I was using tsp 0.02 days:
+        if Filename == 'MyBirch_RS_C{}_WithD_NoCont__bed.dat'.format(str_Cvalue):
+            Timestep_size = 0.02/365 ### In years !!
         ###Fill up handles for the common legend regarding C values
         handles.append(Line2D([0], [0], color='black', linestyle=LiStyle, linewidth=3, label=Label))
-        Df_wholebed = pd.DataFrame()
         ###load file as dataframe
         Df_wholebed = pd.read_csv(Pathroot.joinpath(Filename), names=Col_Name, sep=r'\s+')
-        #####For the with contact case, several restart have been required: build a single dataframe from all restart
-        if Pathroot == Pathroot2: ##Only for the with contact case
-            ###number of restart required depends on value of C
-            if C == 0.7:
-                Filename_Rstt1 = 'MyBirch_RS_C07_WithD_Cont_SaveScalInt10_tsp001d_ThetaLimited_FullPicard_Rstt1_tsp2901__bed.dat'
-                Df_wholebed_Rstt1 = pd.read_csv(Pathroot.joinpath(Filename_Rstt1), names=Col_Name, sep=r'\s+')
-                # 1. Remove rows where Timestep == 1
-                Df_wholebed_Rstt1 = Df_wholebed_Rstt1[Df_wholebed_Rstt1["Timestep"] != 1].copy()
-                # 2. Shift timesteps to continue after the last timestep of Df_wholebed
-                last_timestep = Df_wholebed["Timestep"].max()
-                Df_wholebed_Rstt1["Timestep"] = Df_wholebed_Rstt1["Timestep"] + last_timestep - 1
-                last_count = Df_wholebed["Count"].max()
-                Df_wholebed_Rstt1["Count"] = Df_wholebed_Rstt1["Count"] + last_count - 1
-                # 3. Concatenate back into Df_wholebed
-                Df_wholebed = pd.concat([Df_wholebed, Df_wholebed_Rstt1], ignore_index=True)
-            elif C == 0.6:
-                ###For this case, there is overlap between end of simu R0 and beginning of simu R1
-                ###To remove the overlap I remove all lines of simu R0 that are after the restart time of R1 (tsp 2501)
-                Df_wholebed = Df_wholebed[Df_wholebed['Timestep'] <= 2501].reset_index(drop=True)
-                Filename_Rstt1 = 'MyBirch_RS_C06_WithD_Cont_SaveScalInt10_tsp001d_ThetaLimited_FullPicard_Rstt1_tsp2501__bed.dat'
-                Df_wholebed_Rstt1 = pd.read_csv(Pathroot.joinpath(Filename_Rstt1), names=Col_Name, sep=r'\s+')
-                # 1. Remove rows where Timestep == 1
-                Df_wholebed_Rstt1 = Df_wholebed_Rstt1[Df_wholebed_Rstt1["Timestep"] != 1].copy()
-                # 2. Shift timesteps to continue after the last timestep of Df_wholebed
-                last_timestep = Df_wholebed["Timestep"].max()
-                Df_wholebed_Rstt1["Timestep"] = Df_wholebed_Rstt1["Timestep"] + last_timestep - 1
-                last_count = Df_wholebed["Count"].max()
-                Df_wholebed_Rstt1["Count"] = Df_wholebed_Rstt1["Count"] + last_count - 1
-                # 3. Concatenate back into Df_wholebed
-                Df_wholebed = pd.concat([Df_wholebed, Df_wholebed_Rstt1], ignore_index=True)
-                ###Same thing for restart R2 (tsp 1000 of R1 so 3501 from R0) :
-                Df_wholebed = Df_wholebed[Df_wholebed['Timestep'] <= 3501].reset_index(drop=True)
-                Filename_Rstt2 = 'MyBirch_RS_C06_WithD_Cont_SaveScalInt10_tsp001d_ThetaLimited_FullPicard_Rstt2_tsp1000__bed.dat'
-                Df_wholebed_Rstt2 = pd.read_csv(Pathroot.joinpath(Filename_Rstt2), names=Col_Name, sep=r'\s+')
-                # 1. Remove rows where Timestep == 1
-                Df_wholebed_Rstt2 = Df_wholebed_Rstt2[Df_wholebed_Rstt2["Timestep"] != 1].copy()
-                # 2. Shift timesteps to continue after the last timestep of Df_wholebed
-                last_timestep = Df_wholebed["Timestep"].max()
-                Df_wholebed_Rstt2["Timestep"] = Df_wholebed_Rstt2["Timestep"] + last_timestep - 1
-                last_count = Df_wholebed["Count"].max()
-                Df_wholebed_Rstt2["Count"] = Df_wholebed_Rstt2["Count"] + last_count - 1
-                # 3. Concatenate back into Df_wholebed
-                Df_wholebed = pd.concat([Df_wholebed, Df_wholebed_Rstt2], ignore_index=True)
+        ####For the case with contact problem solved, there are restarts to handle
+        if Filename ==  'MyBirch_RS_C{}_WithD_Cont_SaveScalInt10_tsp001d_ThetaLimited_FullPicard__bed.dat'.format(str_Cvalue):
+            # For following restarts: Regex pattern to extract Restart Number and restart position ($ compulsory to avoid the .dat.names)
+            pattern = re.compile(r"MyBirch_RS_C{}_WithD_Cont_SaveScalInt10_tsp001d_ThetaLimited_FullPicard_Rstt(\d+)_tsp(\d+)__bed\.dat$".format(str_Cvalue))
+            if str_Year== '2025': ###COMPULSORY FOR NOW
+                ###For year 2025, there is overlap between end of simu R0 and beginning of simu R1
+                ###To remove the overlap I remove all lines of simu R0 that are after the restart time of R1 (tsp 701 for C=0.3)
+                if C == 0.3:
+                    Df_wholebed = Df_wholebed[Df_wholebed['Timestep'] <= 701].reset_index(drop=True)
+                elif C == 0.4:
+                    Df_wholebed = Df_wholebed[Df_wholebed['Timestep'] <= 1101].reset_index(drop=True)
+                elif C == 0.5:
+                    Df_wholebed = Df_wholebed[Df_wholebed['Timestep'] <= 1601].reset_index(drop=True)
+                elif C == 0.6:
+                    Df_wholebed = Df_wholebed[Df_wholebed['Timestep'] <= 2501].reset_index(drop=True)
+                elif C == 0.7:
+                    Df_wholebed = Df_wholebed[Df_wholebed['Timestep'] <= 2901].reset_index(drop=True)
+            # Collect restart DataFrames into a list
+            Restart_dfs = []
+            # Gather all restart files and sort them by Rstt (restart number)
+            matches = []
+            for fname in os.listdir(Pathroot):
+                match = pattern.match(fname)
+                if match:
+                    Rstt, RsttPos = map(int, match.groups())
+                    matches.append((Rstt, RsttPos, fname))
+            matches.sort(key=lambda x: x[0])  # ensure correct order : Restart 1, then restart 2 and so on
+            # Loop efficiently over sorted restart files
+            last_timestep = Df_wholebed["Timestep"].max()
+            last_count = Df_wholebed["Count"].max()
+            ###Now loop on each restart output for current C and year
+            for Rstt, RsttPos, fname in matches:
+                df_rstt = pd.read_csv(Pathroot.joinpath(fname), names=Col_Name, sep=r'\s+')
+                ###For year 2025, there is a problem of overlap between lines of Rj and lines of Rj+1
+                if Rstt < matches[-1][0]:  ###This operation is meaningful only if we are not at the last restart
+                    ###Get restart position of the next restart
+                    NextRstt = Rstt + 1
+                    ###Get corresponding RsttPos
+                    NextRsttPos = next((pos for (rstt, pos, fname) in matches if rstt == NextRstt),None)  # default if not found
+                    ###Remove overlapping lines
+                    df_rstt = df_rstt[df_rstt['Timestep'] <= NextRsttPos + 1].reset_index(drop=True)
+                ###NOW TREAT THE DATAFRAME OF THE RESTART
+                # Skip first timestep and shift
+                df_rstt = df_rstt[df_rstt["Timestep"] != 1].copy()
+                df_rstt["Timestep"] += last_timestep - 1
+                df_rstt["Count"] += last_count - 1
+                # Update counters
+                last_timestep = df_rstt["Timestep"].max()
+                last_count = df_rstt["Count"].max()
+                ## Add to the full dataframe (first as a list)
+                Restart_dfs.append(df_rstt)
 
-            elif C == 0.5:
-                ###For this case, there is overlap between end of simu R0 and beginning of simu R1
-                ###To remove the overlap I remove all lines of simu R0 that are after the restart time of R1 (tsp 1601)
-                Df_wholebed = Df_wholebed[Df_wholebed['Timestep'] <= 1601].reset_index(drop=True)
-                Filename_Rstt1 = 'MyBirch_RS_C05_WithD_Cont_SaveScalInt10_tsp001d_ThetaLimited_FullPicard_Rstt1_tsp1601__bed.dat'
-                Df_wholebed_Rstt1 = pd.read_csv(Pathroot.joinpath(Filename_Rstt1), names=Col_Name, sep=r'\s+')
-                # 1. Remove rows where Timestep == 1
-                Df_wholebed_Rstt1 = Df_wholebed_Rstt1[Df_wholebed_Rstt1["Timestep"] != 1].copy()
-                # 2. Shift timesteps to continue after the last timestep of Df_wholebed
-                last_timestep = Df_wholebed["Timestep"].max()
-                Df_wholebed_Rstt1["Timestep"] = Df_wholebed_Rstt1["Timestep"] + last_timestep - 1
-                last_count = Df_wholebed["Count"].max()
-                Df_wholebed_Rstt1["Count"] = Df_wholebed_Rstt1["Count"] + last_count - 1
-                # 3. Concatenate back into Df_wholebed
-                Df_wholebed = pd.concat([Df_wholebed, Df_wholebed_Rstt1], ignore_index=True)
-                ###Same thing for restart R2 (tsp 600 of R1 so 2201 from R0) :
-                Df_wholebed = Df_wholebed[Df_wholebed['Timestep'] <= 2201].reset_index(drop=True)
-                Filename_Rstt2 = 'MyBirch_RS_C05_WithD_Cont_SaveScalInt10_tsp001d_ThetaLimited_FullPicard_Rstt2_tsp600__bed.dat'
-                Df_wholebed_Rstt2 = pd.read_csv(Pathroot.joinpath(Filename_Rstt2), names=Col_Name, sep=r'\s+')
-                # 1. Remove rows where Timestep == 1
-                Df_wholebed_Rstt2 = Df_wholebed_Rstt2[Df_wholebed_Rstt2["Timestep"] != 1].copy()
-                # 2. Shift timesteps to continue after the last timestep of Df_wholebed
-                last_timestep = Df_wholebed["Timestep"].max()
-                Df_wholebed_Rstt2["Timestep"] = Df_wholebed_Rstt2["Timestep"] + last_timestep - 1
-                last_count = Df_wholebed["Count"].max()
-                Df_wholebed_Rstt2["Count"] = Df_wholebed_Rstt2["Count"] + last_count - 1
-                # 3. Concatenate back into Df_wholebed
-                Df_wholebed = pd.concat([Df_wholebed, Df_wholebed_Rstt2], ignore_index=True)
-                ###Same thing for restart R3 (tsp 500 of R2 so 2701 from R0) :
-                Df_wholebed = Df_wholebed[Df_wholebed['Timestep'] <= 2701].reset_index(drop=True)
-                Filename_Rstt3 = 'MyBirch_RS_C05_WithD_Cont_SaveScalInt10_tsp001d_ThetaLimited_FullPicard_Rstt3_tsp500__bed.dat'
-                Df_wholebed_Rstt3 = pd.read_csv(Pathroot.joinpath(Filename_Rstt3), names=Col_Name, sep=r'\s+')
-                # 1. Remove rows where Timestep == 1
-                Df_wholebed_Rstt3 = Df_wholebed_Rstt3[Df_wholebed_Rstt3["Timestep"] != 1].copy()
-                # 2. Shift timesteps to continue after the last timestep of Df_wholebed
-                last_timestep = Df_wholebed["Timestep"].max()
-                Df_wholebed_Rstt3["Timestep"] = Df_wholebed_Rstt3["Timestep"] + last_timestep - 1
-                last_count = Df_wholebed["Count"].max()
-                Df_wholebed_Rstt3["Count"] = Df_wholebed_Rstt3["Count"] + last_count - 1
-                # 3. Concatenate back into Df_wholebed
-                Df_wholebed = pd.concat([Df_wholebed, Df_wholebed_Rstt3], ignore_index=True)
-                ###Same thing for restart R4 (tsp 700 of R3 so 3401 from R0) :
-                Df_wholebed = Df_wholebed[Df_wholebed['Timestep'] <= 3401].reset_index(drop=True)
-                Filename_Rstt4 = 'MyBirch_RS_C05_WithD_Cont_SaveScalInt10_tsp001d_ThetaLimited_FullPicard_Rstt4_tsp700__bed.dat'
-                Df_wholebed_Rstt4 = pd.read_csv(Pathroot.joinpath(Filename_Rstt4), names=Col_Name, sep=r'\s+')
-                # 1. Remove rows where Timestep == 1
-                Df_wholebed_Rstt4 = Df_wholebed_Rstt4[Df_wholebed_Rstt4["Timestep"] != 1].copy()
-                # 2. Shift timesteps to continue after the last timestep of Df_wholebed
-                last_timestep = Df_wholebed["Timestep"].max()
-                Df_wholebed_Rstt4["Timestep"] = Df_wholebed_Rstt4["Timestep"] + last_timestep - 1
-                last_count = Df_wholebed["Count"].max()
-                Df_wholebed_Rstt4["Count"] = Df_wholebed_Rstt4["Count"] + last_count - 1
-                # 3. Concatenate back into Df_wholebed
-                Df_wholebed = pd.concat([Df_wholebed, Df_wholebed_Rstt4], ignore_index=True)
-            elif C == 0.4:
-                ###For this case, there is overlap between end of simu R0 and beginning of simu R1
-                ###To remove the overlap I remove all lines of simu R0 that are after the restart time of R1 (tsp 1101)
-                Df_wholebed = Df_wholebed[Df_wholebed['Timestep'] <= 1101].reset_index(drop=True)
-                Filename_Rstt1 = 'MyBirch_RS_C04_WithD_Cont_SaveScalInt10_tsp001d_ThetaLimited_FullPicard_Rstt1_tsp1101__bed.dat'
-                Df_wholebed_Rstt1 = pd.read_csv(Pathroot.joinpath(Filename_Rstt1), names=Col_Name, sep=r'\s+')
-                # 1. Remove rows where Timestep == 1
-                Df_wholebed_Rstt1 = Df_wholebed_Rstt1[Df_wholebed_Rstt1["Timestep"] != 1].copy()
-                # 2. Shift timesteps to continue after the last timestep of Df_wholebed
-                last_timestep = Df_wholebed["Timestep"].max()
-                Df_wholebed_Rstt1["Timestep"] = Df_wholebed_Rstt1["Timestep"] + last_timestep - 1
-                last_count = Df_wholebed["Count"].max()
-                Df_wholebed_Rstt1["Count"] = Df_wholebed_Rstt1["Count"] + last_count - 1
-                # 3. Concatenate back into Df_wholebed
-                Df_wholebed = pd.concat([Df_wholebed, Df_wholebed_Rstt1], ignore_index=True)
-                ###Same thing for restart R2 (tsp 400 of R1 so 1501 from R0) :
-                Df_wholebed = Df_wholebed[Df_wholebed['Timestep'] <= 1501].reset_index(drop=True)
-                Filename_Rstt2 = 'MyBirch_RS_C04_WithD_Cont_SaveScalInt10_tsp001d_ThetaLimited_FullPicard_Rstt2_tsp400__bed.dat'
-                Df_wholebed_Rstt2 = pd.read_csv(Pathroot.joinpath(Filename_Rstt2), names=Col_Name, sep=r'\s+')
-                # 1. Remove rows where Timestep == 1
-                Df_wholebed_Rstt2 = Df_wholebed_Rstt2[Df_wholebed_Rstt2["Timestep"] != 1].copy()
-                # 2. Shift timesteps to continue after the last timestep of Df_wholebed
-                last_timestep = Df_wholebed["Timestep"].max()
-                Df_wholebed_Rstt2["Timestep"] = Df_wholebed_Rstt2["Timestep"] + last_timestep - 1
-                last_count = Df_wholebed["Count"].max()
-                Df_wholebed_Rstt2["Count"] = Df_wholebed_Rstt2["Count"] + last_count - 1
-                # 3. Concatenate back into Df_wholebed
-                Df_wholebed = pd.concat([Df_wholebed, Df_wholebed_Rstt2], ignore_index=True)
-                ###Same thing for restart R3 (tsp 600 of R2 so 2101 from R0) :
-                Df_wholebed = Df_wholebed[Df_wholebed['Timestep'] <= 2101].reset_index(drop=True)
-                Filename_Rstt3 = 'MyBirch_RS_C04_WithD_Cont_SaveScalInt10_tsp001d_ThetaLimited_FullPicard_Rstt3_tsp600__bed.dat'
-                Df_wholebed_Rstt3 = pd.read_csv(Pathroot.joinpath(Filename_Rstt3), names=Col_Name, sep=r'\s+')
-                # 1. Remove rows where Timestep == 1
-                Df_wholebed_Rstt3 = Df_wholebed_Rstt3[Df_wholebed_Rstt3["Timestep"] != 1].copy()
-                # 2. Shift timesteps to continue after the last timestep of Df_wholebed
-                last_timestep = Df_wholebed["Timestep"].max()
-                Df_wholebed_Rstt3["Timestep"] = Df_wholebed_Rstt3["Timestep"] + last_timestep - 1
-                last_count = Df_wholebed["Count"].max()
-                Df_wholebed_Rstt3["Count"] = Df_wholebed_Rstt3["Count"] + last_count - 1
-                # 3. Concatenate back into Df_wholebed
-                Df_wholebed = pd.concat([Df_wholebed, Df_wholebed_Rstt3], ignore_index=True)
-                ###Same thing for restart R4 (tsp 500 of R3 so 2601 from R0) :
-                Df_wholebed = Df_wholebed[Df_wholebed['Timestep'] <= 2601].reset_index(drop=True)
-                Filename_Rstt4 = 'MyBirch_RS_C04_WithD_Cont_SaveScalInt10_tsp001d_ThetaLimited_FullPicard_Rstt4_tsp500__bed.dat'
-                Df_wholebed_Rstt4 = pd.read_csv(Pathroot.joinpath(Filename_Rstt4), names=Col_Name, sep=r'\s+')
-                # 1. Remove rows where Timestep == 1
-                Df_wholebed_Rstt4 = Df_wholebed_Rstt4[Df_wholebed_Rstt4["Timestep"] != 1].copy()
-                # 2. Shift timesteps to continue after the last timestep of Df_wholebed
-                last_timestep = Df_wholebed["Timestep"].max()
-                Df_wholebed_Rstt4["Timestep"] = Df_wholebed_Rstt4["Timestep"] + last_timestep - 1
-                last_count = Df_wholebed["Count"].max()
-                Df_wholebed_Rstt4["Count"] = Df_wholebed_Rstt4["Count"] + last_count - 1
-                # 3. Concatenate back into Df_wholebed
-                Df_wholebed = pd.concat([Df_wholebed, Df_wholebed_Rstt4], ignore_index=True)
-            elif C == 0.3:
-                ###For this case, there is overlap between end of simu R0 and beginning of simu R1
-                ###To remove the overlap I remove all lines of simu R0 that are after the restart time of R1 (tsp 701)
-                Df_wholebed = Df_wholebed[Df_wholebed['Timestep'] <= 701].reset_index(drop=True)
-                Filename_Rstt1 = 'MyBirch_RS_C03_WithD_Cont_SaveScalInt10_tsp001d_ThetaLimited_FullPicard_Rstt1_tsp701__bed.dat'
-                Df_wholebed_Rstt1 = pd.read_csv(Pathroot.joinpath(Filename_Rstt1), names=Col_Name, sep=r'\s+')
-                # 1. Remove rows where Timestep == 1
-                Df_wholebed_Rstt1 = Df_wholebed_Rstt1[Df_wholebed_Rstt1["Timestep"] != 1].copy()
-                # 2. Shift timesteps to continue after the last timestep of Df_wholebed
-                last_timestep = Df_wholebed["Timestep"].max()
-                Df_wholebed_Rstt1["Timestep"] = Df_wholebed_Rstt1["Timestep"] + last_timestep - 1
-                last_count = Df_wholebed["Count"].max()
-                Df_wholebed_Rstt1["Count"] = Df_wholebed_Rstt1["Count"] + last_count - 1
-                # 3. Concatenate back into Df_wholebed
-                Df_wholebed = pd.concat([Df_wholebed, Df_wholebed_Rstt1], ignore_index=True)
-                ###Same thing for restart R2 (tsp 300 of R1 so 1001 from R0) :
-                Df_wholebed = Df_wholebed[Df_wholebed['Timestep'] <= 1001].reset_index(drop=True)
-                Filename_Rstt2 = 'MyBirch_RS_C03_WithD_Cont_SaveScalInt10_tsp001d_ThetaLimited_FullPicard_Rstt2_tsp300__bed.dat'
-                Df_wholebed_Rstt2 = pd.read_csv(Pathroot.joinpath(Filename_Rstt2), names=Col_Name, sep=r'\s+')
-                # 1. Remove rows where Timestep == 1
-                Df_wholebed_Rstt2 = Df_wholebed_Rstt2[Df_wholebed_Rstt2["Timestep"] != 1].copy()
-                # 2. Shift timesteps to continue after the last timestep of Df_wholebed
-                last_timestep = Df_wholebed["Timestep"].max()
-                Df_wholebed_Rstt2["Timestep"] = Df_wholebed_Rstt2["Timestep"] + last_timestep - 1
-                last_count = Df_wholebed["Count"].max()
-                Df_wholebed_Rstt2["Count"] = Df_wholebed_Rstt2["Count"] + last_count - 1
-                # 3. Concatenate back into Df_wholebed
-                Df_wholebed = pd.concat([Df_wholebed, Df_wholebed_Rstt2], ignore_index=True)
-                ###Same thing for restart R3 (tsp 500 of R2 so 1501 from R0) :
-                Df_wholebed = Df_wholebed[Df_wholebed['Timestep'] <= 1501].reset_index(drop=True)
-                Filename_Rstt3 = 'MyBirch_RS_C03_WithD_Cont_SaveScalInt10_tsp001d_ThetaLimited_FullPicard_Rstt3_tsp500__bed.dat'
-                Df_wholebed_Rstt3 = pd.read_csv(Pathroot.joinpath(Filename_Rstt3), names=Col_Name, sep=r'\s+')
-                # 1. Remove rows where Timestep == 1
-                Df_wholebed_Rstt3 = Df_wholebed_Rstt3[Df_wholebed_Rstt3["Timestep"] != 1].copy()
-                # 2. Shift timesteps to continue after the last timestep of Df_wholebed
-                last_timestep = Df_wholebed["Timestep"].max()
-                Df_wholebed_Rstt3["Timestep"] = Df_wholebed_Rstt3["Timestep"] + last_timestep - 1
-                last_count = Df_wholebed["Count"].max()
-                Df_wholebed_Rstt3["Count"] = Df_wholebed_Rstt3["Count"] + last_count - 1
-                # 3. Concatenate back into Df_wholebed
-                Df_wholebed = pd.concat([Df_wholebed, Df_wholebed_Rstt3], ignore_index=True)
-                ###Same thing for restart R4 (tsp 400 of R3 so 1901 from R0) :
-                Df_wholebed = Df_wholebed[Df_wholebed['Timestep'] <= 1901].reset_index(drop=True)
-                Filename_Rstt4 = 'MyBirch_RS_C03_WithD_Cont_SaveScalInt10_tsp001d_ThetaLimited_FullPicard_Rstt4_tsp400__bed.dat'
-                Df_wholebed_Rstt4 = pd.read_csv(Pathroot.joinpath(Filename_Rstt4), names=Col_Name, sep=r'\s+')
-                # 1. Remove rows where Timestep == 1
-                Df_wholebed_Rstt4 = Df_wholebed_Rstt4[Df_wholebed_Rstt4["Timestep"] != 1].copy()
-                # 2. Shift timesteps to continue after the last timestep of Df_wholebed
-                last_timestep = Df_wholebed["Timestep"].max()
-                Df_wholebed_Rstt4["Timestep"] = Df_wholebed_Rstt4["Timestep"] + last_timestep - 1
-                last_count = Df_wholebed["Count"].max()
-                Df_wholebed_Rstt4["Count"] = Df_wholebed_Rstt4["Count"] + last_count - 1
-                # 3. Concatenate back into Df_wholebed
-                Df_wholebed = pd.concat([Df_wholebed, Df_wholebed_Rstt4], ignore_index=True)
-                ###Same thing for restart R5 (tsp 400 of R4 so 2301 from R0) :
-                Df_wholebed = Df_wholebed[Df_wholebed['Timestep'] <= 2301].reset_index(drop=True)
-                Filename_Rstt5 = 'MyBirch_RS_C03_WithD_Cont_SaveScalInt10_tsp001d_ThetaLimited_FullPicard_Rstt5_tsp400__bed.dat'
-                Df_wholebed_Rstt5 = pd.read_csv(Pathroot.joinpath(Filename_Rstt5), names=Col_Name, sep=r'\s+')
-                # 1. Remove rows where Timestep == 1
-                Df_wholebed_Rstt5 = Df_wholebed_Rstt5[Df_wholebed_Rstt5["Timestep"] != 1].copy()
-                # 2. Shift timesteps to continue after the last timestep of Df_wholebed
-                last_timestep = Df_wholebed["Timestep"].max()
-                Df_wholebed_Rstt5["Timestep"] = Df_wholebed_Rstt5["Timestep"] + last_timestep - 1
-                last_count = Df_wholebed["Count"].max()
-                Df_wholebed_Rstt5["Count"] = Df_wholebed_Rstt5["Count"] + last_count - 1
-                # 3. Concatenate back into Df_wholebed
-                Df_wholebed = pd.concat([Df_wholebed, Df_wholebed_Rstt5], ignore_index=True)
+            # Concatenate once at the end (much faster)
+            if Restart_dfs:  ##Only if Restart_dfs is not empty (there are restarts !)
+                Df_wholebed = pd.concat([Df_wholebed] + Restart_dfs, ignore_index=True)
+
         ###Create a column with time (in years !)
         Df_wholebed['Time'] = Timestep_size * Df_wholebed['Timestep']
         # We look only the 40 first days : Keep only rows where Time <= 40/365 and reset index
         Df_wholebed = Df_wholebed[Df_wholebed['Time'] <= 40 / 365].reset_index(drop=True)
-        # ### At the moment of this script, there was a bug in the diagnostic of taub in Elmer. Force taub to zero at all floating nodes:
-        # if Pathroot == Pathroot2: ##Only for the case with contact
-        #     # Force taub = 0 where GM < 0
-        #     Df_wholebed.loc[Df_wholebed["GM"] < 0, "taub"] = 0
         ###Calculate ub from velocity and normal vector
         ###Start by calculating un (should be zero but there is some residual)
         Df_wholebed['un'] = Df_wholebed['u'] * Df_wholebed['nx'] + Df_wholebed['v'] * Df_wholebed['ny'] + Df_wholebed['w'] * Df_wholebed['nz']
@@ -349,6 +185,8 @@ if __name__ == "__main__":
             variable_columns = [col for col in Df_wholebed.columns if col in ['H', 'N', 'theta_dagger', 'theta', 'taub', 'fz', 'ub', 'Sigma_nn']]
         elif Pathroot == Pathroot2: ##For the with contact case, we also interpolate the GM to correct the diagnosed taub
             variable_columns = [col for col in Df_wholebed.columns if col in ['H', 'N', 'theta_dagger', 'theta', 'taub', 'fz', 'ub', 'Sigma_nn', 'GM']]
+            ### At the moment of this script, there was a bug in the diagnostic of taub in Elmer. Force taub to zero at all floating nodes:
+            Df_wholebed.loc[Df_wholebed['GM'] < 0, 'taub'] = 0
         ###Loop on each of the point at which we want a curve
         for i,(xstar,ystar,colstar) in enumerate(zip(xplot,yplot,colplot)):
             # Prepare result container
@@ -370,7 +208,7 @@ if __name__ == "__main__":
             interpolated_df = pd.DataFrame(results)
             # Sort by time
             interpolated_df = interpolated_df.sort_values(by='Time').reset_index(drop=True)
-            # ### At the moment of this script, there was a bug in the diagnostic of taub in Elmer. Force taub to zero at all floating nodes for the with contact case:
+            # # ### At the moment of this script, there was a bug in the diagnostic of taub in Elmer. Force taub to zero at all floating nodes for the with contact case:
             if Pathroot == Pathroot2: ##Only for the case with contact
                 # Force taub = 0 where GM < 0
                 interpolated_df .loc[interpolated_df ["GM"] < 0, "taub"] = 0
@@ -403,7 +241,7 @@ if __name__ == "__main__":
             ###Subplot 3 = taub/N
             ax = axes[1, 0]
             ###Plot horizontal line for value of C
-            if C < 0.6:
+            if C <= 0.6:
                 ax.axhline(y=C, color='gray', linestyle='--', linewidth=1.5)
                 # Add text label above the line on the left side
                 ax.text(
@@ -475,7 +313,7 @@ if __name__ == "__main__":
             ###Subplot 2 = taub/N
             ax = axes2[1]
             ###Plot horizontal line for value of C
-            if C < 0.6:
+            if C <= 0.6:
                 ax.axhline(y=C, color='gray', linestyle='--', linewidth=1.5)
                 # Add text label above the line on the left side
                 ax.text(
@@ -559,7 +397,7 @@ if __name__ == "__main__":
                 ax.grid(which="minor", color="gray", linestyle="-", linewidth=0.4, alpha=0.6)
 
                 ###Plot horizontal line for value of C
-                if C < 0.6:
+                if C <= 0.6:
                     ax.axhline(y=C, color='gray', linestyle='--', linewidth=1.5)
                     # Add text label above the line on the left side
                     ax.text(

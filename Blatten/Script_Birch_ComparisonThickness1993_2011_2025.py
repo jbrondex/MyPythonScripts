@@ -26,6 +26,7 @@ from matplotlib.dates import MonthLocator, DayLocator, HourLocator, DateFormatte
 import numpy as np
 from scipy.interpolate import griddata
 from scipy.ndimage import gaussian_filter
+from scipy.spatial.distance import cdist
 from scipy.interpolate import interp1d
 from scipy.optimize import fsolve
 from matplotlib.ticker import FormatStrFormatter
@@ -119,13 +120,21 @@ if __name__ == "__main__":
     ####~~~~~~~~~~~   LOAD ALL DATA AND PLOT DIRECTLY IN THIS PART OF THE CODE   ~~~~~~~~~~~~~####
     ####~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~####
     ###Parameter of Script
-    Pathroot = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup/1_Mesh/.')
+    Pathroot = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_Jan2026/1_Mesh/.')
     Years = [1993,2011,2025]
     Col_Name = ['Count', 'BC', 'X', 'Y', 'Z', 'H']
     ####Plot parameters###
     ###Defines bounds of the plot
     xmin,xmax = 2630250, 2631250
     ymin,ymax = 1138750, 1139500
+
+    ### Contours we want to plot for debris thickness
+    DebrisContour_Levels = [10, 20, 30, 40, 50, 60]
+    DebrisContour_LabelPositions = [(2630.73,1139.097), (2630.587,1139.089), (2630.877,1139.018), (2630.917,1138.978), (2630.736,1138.978), (2630.853,1138.930)]
+    DebrisContour_Color = 'grey'
+    DebrisContour_Thick = 0.9
+    SaveDebrisContourOutline = True ###Do we want to save the approximated debris contour outline ? (Requested by Mylène)
+
     ### Load Orthophoto for Background
     # --- Load orthophoto
     Pathroot_Ortho = Path('/home/brondexj/Documents/Expertises/Blatten/OrthoPhotos/.')
@@ -138,10 +147,25 @@ if __name__ == "__main__":
     # --- Compute extent in km
     extent_km = [xmin / 1000, xmax / 1000, ymin / 1000, ymax / 1000]
 
+    ### Load DEM of surface of glacier and rock deposit to build contour line of rock debris thickness
+    Pathroot_DEMs= Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_Jan2026/1_Mesh/MESH2025/.')
+    Filename_SurfGlacierDEM = 'DEM_surf_Corrected.dat'
+    Df_SurfGlacierDEM = pd.read_csv(Pathroot_DEMs.joinpath(Filename_SurfGlacierDEM), names=['X', 'Y', 'Z'], sep=r'\s+')
+    Filename_SurfDebrisDEM = 'DEMSurfPre.dat'
+    Df_SurfDebrisDEM = pd.read_csv(Pathroot_DEMs.joinpath(Filename_SurfDebrisDEM), names=['X', 'Y', 'Z'], sep=r'\s+')
+
     ### START OF SCRIPT###
     xbed = np.arange(xmin + 30, xmax - 30, 0.5)
     ybed = np.arange(ymin + 30, ymax - 30, 0.5)
     Xbed, Ybed = np.meshgrid(xbed, ybed)
+    ### Interpolate DEMs over same grid for debris thickness distribution (just needed once)
+    ZSurfGlacier = Interpolate_field(Df_SurfGlacierDEM, 'Z', Xbed, Ybed)
+    ZSurfDebris = Interpolate_field(Df_SurfDebrisDEM, 'Z', Xbed, Ybed)
+    Hdebris_notclipped = ZSurfDebris - ZSurfGlacier
+    ### If H debris is less than 1.5m -> Zero
+    Hdebris = np.where(Hdebris_notclipped < 1.5, 0, Hdebris_notclipped)
+    Hdebris_smoothed = gaussian_filter(Hdebris, sigma=6)
+
     ###Prepare the figure : subplots with absolute thickness for each year
     fig1, axes1 = plt.subplots(nrows=1, ncols=len(Years), figsize=(12, 8), constrained_layout=True, sharex=True, sharey=True)
     ###Start loop on years
@@ -149,12 +173,8 @@ if __name__ == "__main__":
     Allthickness=pd.DataFrame()
     for i,Year in enumerate(Years):
         ###Load glacier contour
-        if Year == 2025:
-            Filename_GlacierContour = 'ContourGlacier_FromMesh3D.dat'
-            Pathroot_Contour = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup/Visu_Bed/.')
-        else:
-            Filename_GlacierContour = 'Contour_Birch_{}.dat'.format(Year)
-            Pathroot_Contour = Pathroot.joinpath('MESH{}'.format(Year))
+        Pathroot_Contour = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_Jan2026/1_Mesh/MESH{}/.'.format(Year))
+        Filename_GlacierContour = 'Contour_Birch_{}_Julien.dat'.format(Year)
         ###Print some info
         print('Opening file:', Pathroot_Contour.joinpath(Filename_GlacierContour))
         ###Load glacier contour
@@ -170,9 +190,9 @@ if __name__ == "__main__":
         Allcontours = pd.concat([Allcontours, Df_GlacierContour], ignore_index=True)
         ###Load Ice thickness
         if Year == 2025:
-            Filename_Thick = './MESH{}/GlacierOut/MyBirch_Init_DEMCorrected_GL_NoFS__bed.dat'.format(Year)
+            Filename_Thick = './MESH{}/GlacierOut/MyBirch_Init_DEMCorrected_GL_FS__bed.dat'.format(Year)
         else:
-            Filename_Thick = './MESH{}/GlacierOut/MyBirch{}_Init_DEMCorrected_GL_NoFS__bed.dat'.format(Year,Year)
+            Filename_Thick = './MESH{}/GlacierOut/MyBirch{}_Init_DEMCorrected_GL_FS__bed.dat'.format(Year,Year)
         Df_Thick = pd.read_csv(Pathroot.joinpath(Filename_Thick), names=Col_Name, sep=r'\s+')
         ##Add a column corresponding to year
         Df_Thick['Year'] = Year
@@ -210,12 +230,16 @@ if __name__ == "__main__":
         ax.imshow(ortho_crop, extent=extent_km, origin='upper', cmap='gray', zorder=0)
         ###Fills up the map with colors for SigmaEq
         CS1 = ax.contourf(Xbed/1000, Ybed/1000, ThickGlacier, levels=clevs, cmap=cmap, extend='both', alpha=0.9, antialiased=True)
+        ### Plot contours of debris thickness
+        CS1_debriscontour = ax.contour(Xbed/1000, Ybed/1000, Hdebris_smoothed , levels= DebrisContour_Levels, colors=DebrisContour_Color, linewidths=DebrisContour_Thick, linestyles='-')
+        ###Put labels with position determined manually
+        ax.clabel(CS1_debriscontour, DebrisContour_Levels, inline=True, inline_spacing=2, fmt="%d", manual=DebrisContour_LabelPositions, fontsize=7.5)
         ax.plot(xc/1000, yc/1000 , color='k', linewidth=2)
         ###Below we remove colors that are outside of glacier contour
         clippath = mpltPath(np.c_[xc/1000, yc/1000])
         patch = PathPatch(clippath, facecolor='none')
         ax.add_patch(patch)
-        for c in [CS1]:
+        for c in [CS1, CS1_debriscontour]:
             c.set_clip_path(patch)
         if i == len(Years)-1:
             cbar = fig1.colorbar(CS1, ax=ax, shrink=0.45, pad=0.05)
@@ -264,6 +288,10 @@ if __name__ == "__main__":
     CS1 = ax.contourf(Xbed / 1000, Ybed / 1000, ThickGlacier2011-ThickGlacier1993, levels=clevs, cmap=cmap, extend='both', alpha=0.9,antialiased=True)
     ax.plot(Contour1993['X'].values / 1000, Contour1993['Y'].values / 1000, color='k', linewidth=2, linestyle = '--')
     ax.plot(Contour2011['X'].values / 1000, Contour2011['Y'].values / 1000, color='k', linewidth=2, linestyle = ':')
+    ### Plot contours of debris thickness
+    CS1_debriscontour = ax.contour(Xbed / 1000, Ybed / 1000, Hdebris_smoothed, levels=DebrisContour_Levels,colors=DebrisContour_Color, linewidths=DebrisContour_Thick, linestyles='-')
+    ###Put labels with position determined manually
+    ax.clabel(CS1_debriscontour, DebrisContour_Levels, inline=True, inline_spacing=2, fmt="%d",manual=DebrisContour_LabelPositions, fontsize=7.5)
     # Add labels along contours
     label_along_line(ax, Contour2011['X'].values / 1000, Contour2011['Y'].values / 1000, '2011', idx=len(Contour2011['X'])-5, fontsize=12, color='k')
     label_along_line(ax, Contour1993['X'].values / 1000, Contour1993['Y'].values / 1000, '1993', idx=len(Contour1993['X'])-12, fontsize=12, color='k')
@@ -272,7 +300,7 @@ if __name__ == "__main__":
     clippath = mpltPath(np.c_[ Contour1993['X'].values/ 1000, Contour1993['Y'].values / 1000])
     patch = PathPatch(clippath, facecolor='none')
     ax.add_patch(patch)
-    for c in [CS1]:
+    for c in [CS1, CS1_debriscontour]:
         c.set_clip_path(patch)
 
     ###Subplot 2 is 2025-2011
@@ -298,14 +326,18 @@ if __name__ == "__main__":
                       antialiased=True)
     ax.plot(Contour2025['X'].values / 1000, Contour2025['Y'].values / 1000, color='k', linewidth=2)
     ax.plot(Contour2011['X'].values / 1000, Contour2011['Y'].values / 1000, color='k', linewidth=2, linestyle = '--')
+    ### Plot contours of debris thickness
+    CS1_debriscontour = ax.contour(Xbed / 1000, Ybed / 1000, Hdebris_smoothed, levels=DebrisContour_Levels,colors=DebrisContour_Color, linewidths=DebrisContour_Thick, linestyles='-')
+    ###Put labels with position determined manually
+    ax.clabel(CS1_debriscontour, DebrisContour_Levels, inline=True, inline_spacing=2, fmt="%d",manual=DebrisContour_LabelPositions, fontsize=7.5)
     # Add labels along contours
     label_along_line(ax, Contour2011['X'].values / 1000, Contour2011['Y'].values / 1000, '2011', idx=len(Contour2011['X'])-5, fontsize=12, color='k')
-    label_along_line(ax, Contour2025['X'].values / 1000, Contour2025['Y'].values / 1000, '2025', idx=len(Contour2025['X'])-140, fontsize=12, color='k')
+    label_along_line(ax, Contour2025['X'].values / 1000, Contour2025['Y'].values / 1000, '2025', idx=len(Contour2025['X'])-60, fontsize=12, color='k')
     ###Below we remove colors that are outside of glacier contour
     clippath = mpltPath(np.c_[xc / 1000, yc / 1000])
     patch = PathPatch(clippath, facecolor='none')
     ax.add_patch(patch)
-    for c in [CS1]:
+    for c in [CS1,CS1_debriscontour]:
         c.set_clip_path(patch)
 
     ###Subplot 3 is 2025-1993
@@ -333,14 +365,18 @@ if __name__ == "__main__":
                       antialiased=True)
     ax.plot(Contour2025['X'].values / 1000, Contour2025['Y'].values / 1000, color='k', linewidth=2)
     ax.plot(Contour1993['X'].values / 1000, Contour1993['Y'].values / 1000, color='k', linewidth=2, linestyle='--')
+    ### Plot contours of debris thickness
+    CS1_debriscontour = ax.contour(Xbed / 1000, Ybed / 1000, Hdebris_smoothed, levels=DebrisContour_Levels,colors=DebrisContour_Color, linewidths=DebrisContour_Thick, linestyles='-')
+    ###Put labels with position determined manually
+    ax.clabel(CS1_debriscontour, DebrisContour_Levels, inline=True, inline_spacing=2, fmt="%d",manual=DebrisContour_LabelPositions, fontsize=7.5)
     # Add labels along contours
-    label_along_line(ax, Contour2025['X'].values / 1000, Contour2025['Y'].values / 1000, '2025', idx=len(Contour2025['X'])-140, fontsize=12, color='k')
+    label_along_line(ax, Contour2025['X'].values / 1000, Contour2025['Y'].values / 1000, '2025', idx=len(Contour2025['X'])-60, fontsize=12, color='k')
     label_along_line(ax, Contour1993['X'].values / 1000, Contour1993['Y'].values / 1000, '1993', idx=len(Contour1993['X'])-10, offset=-0.03, fontsize=12, color='k')
     ###Below we remove colors that are outside of the wider of the glacier contour
     clippath = mpltPath(np.c_[xc / 1000, yc / 1000])
     patch = PathPatch(clippath, facecolor='none')
     ax.add_patch(patch)
-    for c in [CS1]:
+    for c in [CS1, CS1_debriscontour]:
         c.set_clip_path(patch)
     cbar = fig2.colorbar(CS1, ax=ax, shrink=0.45, pad=0.05)
     cbar.set_ticks(np.arange(-30, 30.01, 10))
@@ -381,10 +417,13 @@ if __name__ == "__main__":
             color='k', linewidth=2)
     ax.plot(Contour1993['X'].values / 1000, Contour1993['Y'].values / 1000,
             color='k', linewidth=2, linestyle='--')
-
+    ### Plot contours of debris thickness
+    CS1_debriscontour = ax.contour(Xbed / 1000, Ybed / 1000, Hdebris_smoothed, levels=DebrisContour_Levels,colors=DebrisContour_Color, linewidths=DebrisContour_Thick, linestyles='-')
+    ###Put labels with position determined manually
+    ax.clabel(CS1_debriscontour, DebrisContour_Levels, inline=True, inline_spacing=2, fmt="%d",manual=DebrisContour_LabelPositions, fontsize=7.5)
     # --- Labels along contours ---
     label_along_line(ax, Contour2025['X'].values / 1000, Contour2025['Y'].values / 1000,
-                     '2025', idx=len(Contour2025['X']) - 140,
+                     '2025', idx=len(Contour2025['X']) - 60,
                      fontsize=12, color='k')
     label_along_line(ax, Contour1993['X'].values / 1000, Contour1993['Y'].values / 1000,
                      '1993', idx=len(Contour1993['X']) - 10,
@@ -394,7 +433,68 @@ if __name__ == "__main__":
     clippath = mpltPath(np.c_[xc / 1000, yc / 1000])
     patch = PathPatch(clippath, facecolor='none')
     ax.add_patch(patch)
-    CS1.set_clip_path(patch)
+    for c in [CS1, CS1_debriscontour]:
+        c.set_clip_path(patch)
+    # --- If we need to save the debris contour outline ---
+    if SaveDebrisContourOutline:
+        # =========================
+        # 1. MASQUE GLACIER
+        # =========================
+        points = np.c_[Xbed.ravel()/1000, Ybed.ravel()/1000]
+        mask = clippath.contains_points(points).reshape(Xbed.shape)
+        Hmasked = np.where(mask, Hdebris_smoothed, np.nan)
+        # =========================
+        # 2. CONTOUR ISO
+        # =========================
+        CS2_debriscontour = ax.contour(Xbed / 1000, Ybed / 1000, Hmasked, levels=[0.1], colors='m', linewidths=DebrisContour_Thick * 1.5, linestyles='-')
+        segments = CS2_debriscontour.allsegs[0]
+        # garder le segment principal
+        isoDebris = max(segments, key=len)
+        # =========================
+        # 3. BORD GLACIER
+        # =========================
+        glacier_edge = np.column_stack([xc/1000, yc/1000])
+        # fermer explicitement
+        if not np.allclose(glacier_edge[0], glacier_edge[-1]):
+            glacier_edge = np.vstack([glacier_edge, glacier_edge[0]])
+        # =========================
+        # 4. RACCORDEMENT ISO / GLACIER
+        # =========================
+        D = cdist(isoDebris, glacier_edge)
+        i, j = np.unravel_index(np.argmin(D), D.shape)
+        iso_ordered = np.vstack([isoDebris[i:], isoDebris[:i]])
+        glacier_ordered = np.vstack([glacier_edge[j:], glacier_edge[:j]])
+        # =========================
+        # 5. POLYGONE FINAL
+        # =========================
+        # inverser l'ordre
+        iso_ordered = iso_ordered[::-1]
+        polygon_reduced  = np.vstack([iso_ordered[::4], glacier_ordered])
+        # fermeture
+        if not np.allclose(polygon_reduced [0], polygon_reduced [-1]):
+            polygon = np.vstack([polygon_reduced , polygon_reduced [0]])
+        # =========================
+        # 6. SOUS-ÉCHANTILLONNAGE
+        # # =========================
+        # polygon_reduced = polygon[::2]
+        # if not np.allclose(polygon_reduced[0], polygon_reduced[-1]):
+        #     polygon_reduced = np.vstack([polygon_reduced, polygon_reduced[0]])
+        # =========================
+        # 7. DEBUG VISUEL
+        # =========================
+        plt.figure()
+
+        plt.plot(polygon[:, 0], polygon[:, 1], 'k-', linewidth=1, label='polygon')
+        plt.plot(polygon_reduced[:, 0], polygon_reduced[:, 1], 'ro-', label='reduced')
+        plt.plot(glacier_edge[:, 0], glacier_edge[:, 1], 'b--', label='glacier edge')
+
+        plt.legend()
+        plt.axis('equal')
+        plt.title("Check polygon")
+        # =========================
+        # 8. SAUVEGARDE
+        # =========================
+        np.savetxt("/home/brondexj/Documents/Expertises/Blatten/DEMs/ForMylene/Outline_Debris_ToCorrect.dat",polygon_reduced*1000,header="X Y",fmt="%.6f", comments='')
 
     # --- Colorbar ---
     cbar = fig.colorbar(CS1, ax=ax, shrink=0.8, pad=0.05)

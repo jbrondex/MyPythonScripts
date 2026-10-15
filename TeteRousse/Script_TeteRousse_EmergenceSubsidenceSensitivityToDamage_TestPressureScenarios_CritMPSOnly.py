@@ -158,9 +158,9 @@ if __name__ == "__main__":
     Col_Names_ParamSet = ['Sigmath', 'B', 'Lambdah']
     Data_ParamSet = pd.read_csv(Pathroot_ParamSet.joinpath(Filename_ParamSet), names=Col_Names_ParamSet, delim_whitespace=True)
     ###Add colums to Data_ParamSet corresponding to parameters converted in file names (convert to string and remove dot)
-    Data_ParamSet['Sigmath_name']=Data_ParamSet['Sigmath'].astype(str).replace('\.', '',regex=True)
-    Data_ParamSet['B_name']=Data_ParamSet['B'].astype(str).replace('\.', '',regex=True)
-    Data_ParamSet['Lambdah_name']=Data_ParamSet['Lambdah'].astype(str).replace('\.', '',regex=True)
+    Data_ParamSet['Sigmath_name']=Data_ParamSet['Sigmath'].astype(str).replace(r'\.', '',regex=True)
+    Data_ParamSet['B_name']=Data_ParamSet['B'].astype(str).replace(r'\.', '',regex=True)
+    Data_ParamSet['Lambdah_name']=Data_ParamSet['Lambdah'].astype(str).replace(r'\.', '',regex=True)
     ###List of tested lambdah values
     Lambdah_list = [0.0]#, 0.5, 1.0]
     ###Corresponding linestyle
