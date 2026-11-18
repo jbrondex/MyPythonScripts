@@ -14,7 +14,7 @@ The figure will likely consist of several subplots, including:
 
 The exact layout and content of the figure will be refined as the analysis progresses.
 """
-from cProfile import label
+
 
 ################################################################################
 # import #####
@@ -107,7 +107,7 @@ if __name__ == "__main__":
     valid_ids = {1, 2, 3, 4}
     Colors_Points_Timelapse = ['#cc00cc']##['#00bcd4']##['blue', 'orange','g','r'] ###Colors of dots and stars corresponding to the point at which TimeLapse velocity is reconstructed
     ###Do we want to show hatches in places where taub = CN and theta is at steady state ?
-    IsHatches = False
+    IsHatches = True ##False
     ### Contours we want to plot for debris thickness on maps
     DebrisContour_Levels = [10, 20, 30, 40, 50, 60]
     DebrisContour_LabelPositions = [(2630.73,1139.097), (2630.587,1139.089), (2630.877,1139.018), (2630.917,1138.978), (2630.736,1138.978), (2630.853,1138.930)]
@@ -116,21 +116,29 @@ if __name__ == "__main__":
     ###Defines bounds of the maps
     xmin,xmax = 2630250, 2631250
     ymin,ymax = 1138750, 1139500
-    ###For the last subplot, do we want velocities in log scale ?
-    LogScale = False #True
 
     ##Parameters last subplot (velocity versus time)
     ###For bottom plot, chose color and linesize of full overload case
     Color_FullOverloadCase = 'k'
     LineSize_FullOverloadCase = 2.4
-    ###Limit on yaxis for last subplot
-    ylimlastsubplot = 60
+    ###Broken y-axis for last subplot
+    ylim_low = (0, 40)  ##lower panel: early days
+    ylim_high = (160, 220)  ##upper panel: collapse
+    HeightRatios_Broken = [1, 2]  ##[upper, lower]: more room for the lower panel
+    gap = 0.017 ###gap between the two panels, in fraction of figure height
     #### Do we want to plot the cases for which overload is stopped on a given day ?
     PlotPartialOverload = False #True
     EndOfLoadingDays = [19, 20, 21,22]  ###Which cases of partial overload do we want to plot ? Full overload is systematically plotted
     ## One color per end of overloading day. In this order: blue/orange/green/brown/purple/grey/red/yellow
     ColorBlindFriendly_List = ['#377eb8', '#ff7f00', '#4daf4a', '#a65628']
     LineSizes = [1.8, 1.8, 1.8, 1.8]
+
+    ####If we want to automatically save the figure
+    SaveFig = True
+    SaveDpi = 300   ##resolution of the png (the pdf is vectorial)
+    Pathroot_Save = Path('/home/brondexj/Documents/Expertises/Blatten/FiguresForDiscussions/Figures_PROD_Juillet2026/Figures_Paper_Draf1')
+    HatchTag = 'WithHatches' if IsHatches else 'NoHatches'
+    Filename_Save = 'Fig_Paper_Draft5_Line1{}_Line2{}_Line3AbsVeloCut_{}'.format(variablesToMap[0], variablesToMap[1], HatchTag)
 
     ########################
     ###TREAT OBSERVATIONS###
@@ -204,8 +212,9 @@ if __name__ == "__main__":
     TotalDebrisVolume=3.36 ###Total debris volume on 23rd of May in Mm3
     #######################
     ###PREPARE THE PLOT ###
-    fig = plt.figure(figsize=(10, 12), constrained_layout=True)
-    gs = fig.add_gridspec(nrows=3,ncols=2,height_ratios=[1, 1, 1.2])
+    fig = plt.figure(figsize=(11, 14), dpi=60, constrained_layout=True)
+    # fig.get_layout_engine().set(h_pad=0, hspace=0)
+    gs = fig.add_gridspec(nrows=3,ncols=2,height_ratios=[1, 1, 2.0])
     # Top row
     ax00 = fig.add_subplot(gs[0, 0])
     ax01 = fig.add_subplot(gs[0, 1], sharey=ax00)
@@ -217,8 +226,11 @@ if __name__ == "__main__":
         [ax00, ax01],
         [ax10, ax11]
     ]
-    # # Bottom row spanning both columns
-    ax20 = fig.add_subplot(gs[2, :])
+    # # # Bottom row spanning both columns
+    # ax20 = fig.add_subplot(gs[2, :])
+    gs_bot = gs[2, :].subgridspec(2, 1, height_ratios=HeightRatios_Broken, hspace=0.0)
+    ax_top = fig.add_subplot(gs_bot[0])
+    ax20 = fig.add_subplot(gs_bot[1], sharex=ax_top)  ##ax20 = lower panel, so the rest of your code still works
     # Right column: hide y tick labels
     for ax in (ax01, ax11):
         plt.setp(ax.get_yticklabels(), visible=False)
@@ -269,6 +281,7 @@ if __name__ == "__main__":
     #####################################################################################################
     ###     PLOT MAPS OF VARIABLE OF INTEREST AT DAYS OF INTEREST FOR FIRST TWO LINES AND COLUMNS     ###
     #####################################################################################################
+    cbars = []
     #### For first and second lines we only work on dates of interest in May 25 (one day per column j)
     for j, DayOfMay25 in enumerate(DaysOfMay25_ForMaps ):
         ###Convert day in date
@@ -522,6 +535,7 @@ if __name__ == "__main__":
                     c.set_clip_path(patch)
             if j == len(DaysOfMay25_ForMaps) - 1:
                 cbar = fig.colorbar(CS1, ax=ax, shrink=0.95, pad=0.05)
+                cbars.append((ax, cbar))
                 if VarToPlot == 'thetadag_minus_theta':
                     cbar.set_ticks(cbar_ticks)
                 else:
@@ -582,55 +596,67 @@ if __name__ == "__main__":
     ax = ax20
     ax.tick_params(labelsize=14)
     ax.set_ylabel(r'Ice velocity [m d$^{-1}$]', fontsize=18)
-    ### If desired, use a logarithmic scale for all velocities
-    if LogScale:
-        ax.set_yscale('log')
-    ###We plot Mean front velo in radar direction + Horizontal velocity at selected surface points ~~~~~~~~~~~~~~~
-    ### Radar Data
-    ax.plot(Df_Radar['Date'], Df_Radar['mean_Fullfront'].abs()/1000, color='b', label="Radar observations (front)", linestyle='--', linewidth=LineSize_FullOverloadCase*1.5, zorder=20)
-    ### Modeled mean front velo in radar direction
-    ax.plot(mean_uf_radarproj_by_time.index, mean_uf_radarproj_by_time.abs()/365, label="Modelled front velocity", color='k',linestyle='--', linewidth=LineSize_FullOverloadCase)
-    ### TimeLapse Velocities Modeled versus Observed
-    for Points_Timelapse_Id, colstar in zip(Points_Timelapse_Ids, Colors_Points_Timelapse):
-        if len(Points_Timelapse_Ids) != len(Colors_Points_Timelapse):
-            raise ValueError(
-                "Points_Timelapse_Ids and Colors_Points_Timelapse "
-                "must have the same length."
-            )
-        if Points_Timelapse_Id not in valid_ids:
-            raise ValueError(f"Invalid value in Points_Timelapse_Ids: '{Points_Timelapse_Id}'. "
-                             "There are 4 points at which we have data so should be 1, 2, 3 or 4.")
-        Point = Points_Timelapse[Points_Timelapse_Id-1]
-        subset2 = Df_ModelInterpAtTimeLapsePoints[Df_ModelInterpAtTimeLapsePoints['Point_id'] == Points_Timelapse_Id]
-        subset_Obs = Df_Timelapse[(Df_Timelapse['X0'] == Point[0]) & (Df_Timelapse['Y0'] == Point[1])]
-        ax.scatter(subset_Obs['t_mid'],subset_Obs['horizontal_velo'], label="Time-lapse observations (surface point)", color=colstar, s=20)
-        ax.plot(subset2['Date'],subset2['u_interp_norm'] / 365, label="Modelled velocity (surface point)", color='k',linestyle='-',linewidth=LineSize_FullOverloadCase)
-    ###Add vertical line for collapse day and annotate
-    ax.axvline(CollapseTime, linestyle='--', linewidth=2.7, color='r')
-    ax.text(CollapseTime+ pd.Timedelta(hours=17, minutes=30), ylimlastsubplot-5,'Collapse', fontsize=18, color='r', rotation=90, va='top', ha='right')
+    ax.yaxis.set_label_coords(-0.06, 0.75)  ##centre the label across both panels (adjust the x value)
+
+    for ax in (ax_top, ax20):
+        ###We plot Mean front velo in radar direction + Horizontal velocity at selected surface points ~~~~~~~~~~~~~~~
+        ax.plot(Df_Radar['Date'], Df_Radar['mean_Fullfront'].abs() / 1000, color='b', linestyle='--',linewidth=LineSize_FullOverloadCase * 1.5, zorder=20)
+        ax.plot(mean_uf_radarproj_by_time.index, mean_uf_radarproj_by_time.abs() / 365, color='k', linestyle='--',linewidth=LineSize_FullOverloadCase)
+        ### TimeLapse Velocities Modeled versus Observed
+        for Points_Timelapse_Id, colstar in zip(Points_Timelapse_Ids, Colors_Points_Timelapse):
+            if len(Points_Timelapse_Ids) != len(Colors_Points_Timelapse):
+                raise ValueError(
+                    "Points_Timelapse_Ids and Colors_Points_Timelapse "
+                    "must have the same length.")
+            if Points_Timelapse_Id not in valid_ids:
+                raise ValueError(f"Invalid value in Points_Timelapse_Ids: '{Points_Timelapse_Id}'. "
+                                 "There are 4 points at which we have data so should be 1, 2, 3 or 4.")
+            Point = Points_Timelapse[Points_Timelapse_Id-1]
+            subset2 = Df_ModelInterpAtTimeLapsePoints[Df_ModelInterpAtTimeLapsePoints['Point_id'] == Points_Timelapse_Id]
+            subset_Obs = Df_Timelapse[(Df_Timelapse['X0'] == Point[0]) & (Df_Timelapse['Y0'] == Point[1])]
+            ax.scatter(subset_Obs['t_mid'],subset_Obs['horizontal_velo'], color=colstar, s=20)
+            ax.plot(subset2['Date'],subset2['u_interp_norm'] / 365, color='k',linestyle='-',linewidth=LineSize_FullOverloadCase)
+        ###Add vertical line for collapse day
+        ax.axvline(CollapseTime, linestyle='--', linewidth=2.7, color='r')
+    ##the text only goes on the upper panel
+    ax_top.text(CollapseTime+ pd.Timedelta(hours=17, minutes=30), ylim_high[1]-5,'Collapse', fontsize=18, color='r', rotation=90, va='top', ha='right')
     ###Add vertical lines for the dates shown on the two columns of subplots above
     # ax.axvline(pd.to_datetime("2025-05-{}".format(DaysOfMay25_ForMaps[0])), color='0.5', ls=':', lw=1, zorder=10)
     # ax.axvline(pd.to_datetime("2025-05-{}".format(DaysOfMay25_ForMaps[1])), color='0.5', ls=':', lw=1, zorder=10)
     # #ax.text(CollapseTime, 40,'Effondrement', fontsize=26, color='r', rotation=90, va='top', ha='right')
-    ###Dummy plots for legend regarding lateral B
-    if LogScale:
-        ax.set_ylim(0.01, 300.0)
-    else:
-        ax.set_ylim(0.0, ylimlastsubplot)
-    ax.set_xlim(t0, tf)
-    ax.xaxis.set_major_locator(mdates.DayLocator(interval=2))
-    ax.xaxis.set_minor_locator(mdates.DayLocator(interval=1))
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d %b %y'))
-    if LogScale:
-        ax.yaxis.set_major_locator(matplotlib.ticker.LogLocator(base=10))
-        ax.yaxis.set_minor_locator(matplotlib.ticker.LogLocator(base=10,subs=np.arange(2, 10) * 0.1))
-        ax.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
-    # Add grid for both major and minor ticks
-    ax.grid(which="major", color="black", linestyle="-", linewidth=0.9, alpha=0.6)
-    ax.grid(which="minor", color="gray", linestyle="-", linewidth=0.7, alpha=0.4)
+
+    ax20.set_ylim(*ylim_low)
+    ax_top.set_ylim(*ylim_high)
+    for ax in (ax_top, ax20):
+        ax.set_xlim(t0, tf)
+        ax.tick_params(labelsize=14)
+        ax.yaxis.set_major_locator(MultipleLocator(20))  ##ticks (and major grid) every 20 m/d
+        ax.yaxis.set_minor_locator(MultipleLocator(10)) ##minor grid every 10 m/d
+        # Add grid for both major and minor ticks
+        ax.grid(which="major", color="black", linestyle="-", linewidth=0.9, alpha=0.6)
+        ax.grid(which="minor", color="gray", linestyle="-", linewidth=0.7, alpha=0.4)
+    ax20.xaxis.set_major_locator(mdates.DayLocator(interval=2))
+    ax20.xaxis.set_minor_locator(mdates.DayLocator(interval=1))
+    ax20.xaxis.set_major_formatter(mdates.DateFormatter('%d %b %y'))
     for label in ax20.get_xticklabels():
         label.set_rotation(30)
         label.set_horizontalalignment('right')
+    ##Hide the spines and x labels at the break
+    ax_top.spines['bottom'].set_visible(False)
+    ax20.spines['top'].set_visible(False)
+    ax_top.tick_params(axis='x', which='both', bottom=False, labelbottom=False)
+
+    ##Diagonal break marks
+    d = 0.012
+    kw = dict(color='k', clip_on=False, lw=1.5)
+    ax_top.plot((-d, +d), (-2 * d, +2 * d), transform=ax_top.transAxes, **kw)
+    ax_top.plot((1 - d, 1 + d), (-2 * d, +2 * d), transform=ax_top.transAxes, **kw)
+    ax20.plot((-d, +d), (1 - 2 * d, 1 + 2 * d), transform=ax20.transAxes, **kw)
+    ax20.plot((1 - d, 1 + d), (1 - 2 * d, 1 + 2 * d), transform=ax20.transAxes, **kw)
+
+
+
+
 
     ####Here I deal with the right axis about debris overload
     # Secondary y-axis
@@ -708,7 +734,8 @@ if __name__ == "__main__":
                                      "There are 4 points at which we have data so should be 1, 2, 3 or 4.")
                 Point = Points_Timelapse[Points_Timelapse_Id - 1]
                 subset2_PartialOv = Df_ModelInterpAtTimeLapsePoints_PartialOv[Df_ModelInterpAtTimeLapsePoints_PartialOv['Point_id'] == Points_Timelapse_Id]
-                ax.plot(subset2_PartialOv['Date'],subset2_PartialOv['u_interp_norm'] / 365, label="Modelled velocity (surface point)", color=blue_col,linestyle='-',linewidth=LineSize)
+                for axx in (ax_top, ax20):
+                    axx.plot(subset2_PartialOv['Date'],subset2_PartialOv['u_interp_norm'] / 365, color=blue_col,linestyle='-',linewidth=LineSize)
 
     ###############################################
     ### NOW DEAL WITH LEGEND FOR BOTTOM SUBPLOT ###
@@ -733,7 +760,7 @@ if __name__ == "__main__":
             Line2D([0], [0],color='b',linestyle='--',linewidth=LineSize_FullOverloadCase*1.5,label='Observed front velocity (radar)'),
             Line2D([0], [0],color='k',linestyle='--',linewidth=LineSize_FullOverloadCase,label='Modelled mean front velocity')
             ]
-    leg = ax20.legend(
+    leg = ax_top.legend(
         handles=legend_handles,
         loc="upper left",
         bbox_to_anchor=(0.01, 0.98),
@@ -747,6 +774,20 @@ if __name__ == "__main__":
         if text.get_text() == 'Overload stopped on:':
             text.set_fontweight('bold')
 
+    fig.canvas.draw()  ##let constrained_layout compute positions
+    fig.set_layout_engine('none')  ##freeze them
+    pos_t, pos_b = ax_top.get_position(), ax20.get_position()
+    ax_top.set_position([pos_t.x0, pos_b.y1 + gap, pos_t.width, pos_t.height])
+    for ax_map, cb in cbars:
+        pa, pc = ax_map.get_position(), cb.ax.get_position()
+        cb.ax.set_position([pc.x0, pa.y0, pc.width, pa.height])  ##same bottom and height as the map
 
+    if SaveFig:
+        fig.savefig(Pathroot_Save / f"{Filename_Save}.png", dpi=SaveDpi)
+        fig.savefig(Pathroot_Save / f"{Filename_Save}.pdf")
+        fig.savefig(Pathroot_Save / f"{Filename_Save}.svg", transparent=True)
+        print('Figure saved in:', Pathroot_Save / Filename_Save)
 
     plt.show()
+
+

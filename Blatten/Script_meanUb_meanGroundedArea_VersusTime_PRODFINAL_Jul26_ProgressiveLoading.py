@@ -192,41 +192,56 @@ if __name__ == "__main__":
     for i, (EndDay, blue_col, LineSize) in enumerate(zip(EndOfLoadingDays, ColorBlindFriendly_List, LineSizes)):
         ###First Data for control runs (or something else)
         if EndDay ==23:
-            # Pathroot_CTRL = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_FINAL_Juin2026/2_CONTROL_FS_NoGMLat/GlacierOut/.')
-            # Filename_CTRL = 'MyBirch_RS_C{}_{}tsp01d_CTRL__bed.dat'.format(str_Cvalue,str_dcvalue)
-            Pathroot_CTRL = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_FINAL_Juin2026/5_PRONO_PROGRESSIVELOAD_FS_NoGMLat_FULLFRICTION/GlacierOut/.')
-            Filename_CTRL = 'MyBirch_RS_C{}_{}tsp001d_Start16May_StopLoad{}May_Stop31May__bed.dat'.format(str_Cvalue,str_dcvalue,EndDay)
+            Pathroot_CTRL = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_FINAL_Juin2026/6_PRONO_PROGRESSIVELOAD_FS_NoGMLat_PARAMETERIZEDFRICTION/GlacierOut/.')
+            Filename_CTRL = 'MyBirch_C029_dc5m_h003m_As37000_Start16May_StopLoad23May_Stop31May__bed.dat'
+            leg_CTRl = r'C = 0.29, dc = 5m, h0 = 0.3m, As = 37000 m a$^{-1}$ MPa$^{-3}$'
+            Pathroot_CTRL1 = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_FINAL_Juin2026/6_PRONO_PROGRESSIVELOAD_FS_NoGMLat_PARAMETERIZEDFRICTION/GlacierOut/.')
+            Filename_CTRL1 = 'MyBirch_C028_dc5m_h003m_As37000_Start16May_StopLoad23May_Stop31May__bed.dat'
+            leg_CTRl1 = r'C = 0.28, dc = 5m, h0 = 0.3m, As = 37000 m a$^{-1}$ MPa$^{-3}$'
             ###Time step size for control run:
-            #Timestep_size_CTRL = 0.1 / 365  ### In years !!
             Timestep_size_CTRL = 0.01 / 365  ### In years !!
+            Timestep_size_CTRL1 = 0.01 / 365  ### In years !!
             ###load file as dataframe
             print('Opening file CTRL:', Filename_CTRL)
             Df_wholebed_CTRL = pd.read_csv(Pathroot_CTRL.joinpath(Filename_CTRL), names=Col_Name, sep=r'\s+')
+            print('Opening file CTRL:', Filename_CTRL1)
+            Df_wholebed_CTRL1 = pd.read_csv(Pathroot_CTRL1.joinpath(Filename_CTRL1), names=Col_Name, sep=r'\s+')
             ###Create a column with time (in years !)
             Df_wholebed_CTRL['Time'] = Timestep_size_CTRL * Df_wholebed_CTRL['Timestep']
+            Df_wholebed_CTRL1['Time'] = Timestep_size_CTRL1 * Df_wholebed_CTRL1['Timestep']
             ###Convert absolute time in terms of date
             Df_wholebed_CTRL['Date'] = t0 + pd.to_timedelta(Df_wholebed_CTRL['Time'] * 365, unit='D')
+            Df_wholebed_CTRL1['Date'] = t0 + pd.to_timedelta(Df_wholebed_CTRL1['Time'] * 365, unit='D')
             ###Create a dedicated dataframe for each boundary of interest
             Df_wholebed_CTRL_front = Df_wholebed_CTRL[Df_wholebed_CTRL['BC'] == 2]
             Df_wholebed_CTRL_bed = Df_wholebed_CTRL[Df_wholebed_CTRL['BC'] == 3]
             Df_wholebed_CTRL_top = Df_wholebed_CTRL[Df_wholebed_CTRL['BC'] == 4]
+            Df_wholebed_CTRL1_front = Df_wholebed_CTRL1[Df_wholebed_CTRL1['BC'] == 2]
+            Df_wholebed_CTRL1_bed = Df_wholebed_CTRL1[Df_wholebed_CTRL1['BC'] == 3]
+            Df_wholebed_CTRL1_top = Df_wholebed_CTRL1[Df_wholebed_CTRL1['BC'] == 4]
 
             ####MEAN BASAL VELOCITY ####
             ###Calculate ub from velocity and normal vector
             ###Start by calculating un (should be zero but there is some residual)
             Df_wholebed_CTRL_bed['un'] = Df_wholebed_CTRL_bed['u'] * Df_wholebed_CTRL_bed['nx'] + Df_wholebed_CTRL_bed['v'] * Df_wholebed_CTRL_bed['ny'] + Df_wholebed_CTRL_bed['w'] * Df_wholebed_CTRL_bed['nz']
+            Df_wholebed_CTRL1_bed['un'] = Df_wholebed_CTRL1_bed['u'] * Df_wholebed_CTRL1_bed['nx'] + Df_wholebed_CTRL1_bed['v'] * Df_wholebed_CTRL1_bed['ny'] + Df_wholebed_CTRL1_bed['w'] * Df_wholebed_CTRL1_bed['nz']
             ###Deduce ub from u and un
             Df_wholebed_CTRL_bed['ub'] = np.sqrt((Df_wholebed_CTRL_bed['u'] - Df_wholebed_CTRL_bed['un'] * Df_wholebed_CTRL_bed['nx']) ** 2 + (Df_wholebed_CTRL_bed['v'] - Df_wholebed_CTRL_bed['un'] * Df_wholebed_CTRL_bed['ny']) ** 2 + (Df_wholebed_CTRL_bed['w'] - Df_wholebed_CTRL_bed['un'] * Df_wholebed_CTRL_bed['nz']) ** 2)
+            Df_wholebed_CTRL1_bed['ub'] = np.sqrt((Df_wholebed_CTRL1_bed['u'] - Df_wholebed_CTRL1_bed['un'] * Df_wholebed_CTRL1_bed['nx']) ** 2 + (Df_wholebed_CTRL1_bed['v'] - Df_wholebed_CTRL1_bed['un'] * Df_wholebed_CTRL1_bed['ny']) ** 2 + (Df_wholebed_CTRL1_bed['w'] - Df_wholebed_CTRL1_bed['un'] * Df_wholebed_CTRL1_bed['nz']) ** 2)
             ###Now calculate the mean basal velocity
             mean_ub_by_time_CTRL = Df_wholebed_CTRL_bed.groupby('Date')['ub'].mean()
+            mean_ub_by_time_CTRL1 = Df_wholebed_CTRL1_bed.groupby('Date')['ub'].mean()
 
             ###GROUNDED AREA FRACTION
             ### Calculate total area over the whole glacier for each time step
             Total_Area_CTRL = Df_wholebed_CTRL_bed.groupby('Date')['nodearea'].sum()
+            Total_Area_CTRL1 = Df_wholebed_CTRL1_bed.groupby('Date')['nodearea'].sum()
             ### Grounded area
             Total_GroundedArea_CTRL = (Df_wholebed_CTRL_bed[Df_wholebed_CTRL_bed['GM'] == 1].groupby('Date')['nodearea'].sum())
+            Total_GroundedArea_CTRL1 = (Df_wholebed_CTRL1_bed[Df_wholebed_CTRL1_bed['GM'] == 1].groupby('Date')['nodearea'].sum())
             ### Fraction of grounded area over total area
             Ratio_CTRL = Total_GroundedArea_CTRL / Total_Area_CTRL
+            Ratio_CTRL1 = Total_GroundedArea_CTRL1 / Total_Area_CTRL1
 
             ####FRONT VELOCITY IN RADAR DIRECTION ####
             ###for each node of front, we calculate the vector from radar to node:
@@ -239,6 +254,18 @@ if __name__ == "__main__":
             Df_wholebed_CTRL_front['uf_radarproj'] = (Df_wholebed_CTRL_front['u']*dx + Df_wholebed_CTRL_front['v']*dy + Df_wholebed_CTRL_front['w']*dz)/r_norm
             ###Now calculate the mean of all nodes at front for each Date
             mean_uf_radarproj_by_time_CTRL = Df_wholebed_CTRL_front.groupby('Date')['uf_radarproj'].mean()
+
+            ####FRONT VELOCITY IN RADAR DIRECTION ####
+            ###for each node of front, we calculate the vector from radar to node:
+            dx1 = Df_wholebed_CTRL1_front['X']-RadarPosition[0]
+            dy1 = Df_wholebed_CTRL1_front['Y']-RadarPosition[1]
+            dz1 = Df_wholebed_CTRL1_front['Z']-RadarPosition[2]
+            ###for each node of front, we calculate norm of this vector:
+            r_norm1 = np.sqrt(dx1**2 + dy1**2 + dz1**2)
+            ###Now do the projection through scalar product with unit vector
+            Df_wholebed_CTRL1_front['uf_radarproj'] = (Df_wholebed_CTRL1_front['u']*dx1 + Df_wholebed_CTRL1_front['v']*dy1 + Df_wholebed_CTRL1_front['w']*dz1)/r_norm1
+            ###Now calculate the mean of all nodes at front for each Date
+            mean_uf_radarproj_by_time_CTRL1 = Df_wholebed_CTRL1_front.groupby('Date')['uf_radarproj'].mean()
 
             ####SURFACE VELOCITY####
             ###first calculate mean surface velocity
@@ -270,10 +297,43 @@ if __name__ == "__main__":
             ###Calculate norm of horizontal velocity
             Df_ModelInterpAtTimeLapsePoints_CTRL['u_interp_norm']=np.sqrt(Df_ModelInterpAtTimeLapsePoints_CTRL['u_interp'] ** 2 + Df_ModelInterpAtTimeLapsePoints_CTRL['v_interp'] ** 2)
 
+            ####SURFACE VELOCITY FOR CONTROL 1####
+            ###first calculate mean surface velocity
+            Df_wholebed_CTRL1_top['us_norm'] = np.sqrt(Df_wholebed_CTRL1_top['u'] ** 2 + Df_wholebed_CTRL1_top['v'] ** 2 + Df_wholebed_CTRL1_top['w'] ** 2)
+            ###Now calculate the mean norm of surface velocity for each Date
+            mean_us_norm_by_time_CTRL1 = Df_wholebed_CTRL1_top.groupby('Date')['us_norm'].mean()
+            ###Now I interpolate the modeled horizontal velocity at the four points of the timelapse camera for each date
+            results_CTRL1 = []
+            # first I will do that for each date available
+            for t, group in Df_wholebed_CTRL1_top.groupby('Date'):
+                ###get x and y of all nodes
+                nodes = group[['X', 'Y']].values
+                # get horizontal velocities at nodes
+                u_vals = group['u'].values
+                v_vals = group['v'].values
+                # do the interpolation at each of the four points of the timelapse camera
+                for id, Point in enumerate(Points_Timelapse):
+                    u_interp = griddata(nodes, u_vals, Point, method='linear')[0]
+                    v_interp = griddata(nodes, v_vals, Point, method='linear')[0]
+                    results_CTRL1.append({
+                        'Date': t,
+                        'Point_id': id + 1,  ##id starts at 1
+                        'Xpt': Point[0],
+                        'Ypt': Point[1],
+                        'u_interp': u_interp,
+                        'v_interp': v_interp
+                    })
+            Df_ModelInterpAtTimeLapsePoints_CTRL1 = pd.DataFrame(results_CTRL1)
+            ###Calculate norm of horizontal velocity
+            Df_ModelInterpAtTimeLapsePoints_CTRL1['u_interp_norm']=np.sqrt(Df_ModelInterpAtTimeLapsePoints_CTRL1['u_interp'] ** 2 + Df_ModelInterpAtTimeLapsePoints_CTRL1['v_interp'] ** 2)
+
         ####NOW LOAD DATA CORRESPONDING TO PRONOSTIC RUNS WITH OVERLOAD
         print('Dealing with simu with overload finished on :', EndDay, 'of May')
-        Pathroot = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_FINAL_Juin2026/4_PRONO_PROGRESSIVELOAD_FS_NoGMLat/GlacierOut/.')
-        Filename = 'MyBirch_RS_C{}_{}tsp001d_Start16May_StopLoad{}May_Stop31May__bed.dat'.format(str_Cvalue,str_dcvalue,EndDay)
+        # Pathroot = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_FINAL_Juin2026/4_PRONO_PROGRESSIVELOAD_FS_NoGMLat/GlacierOut/.')
+        # Filename = 'MyBirch_RS_C{}_{}tsp001d_Start16May_StopLoad{}May_Stop31May__bed.dat'.format(str_Cvalue,str_dcvalue,EndDay)
+        Pathroot = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_FINAL_Juin2026/6_PRONO_PROGRESSIVELOAD_FS_NoGMLat_PARAMETERIZEDFRICTION/GlacierOut/.')
+        Filename = 'MyBirch_C026_dc5m_h003m_As37000_Start16May_StopLoad23May_Stop31May__bed.dat'
+        leg = r'C = 0.26, dc = 5m, h0 = 0.3m, As = 37000 m a$^{-1}$ MPa$^{-3}$'
         ###Time step size for prono simu with overload:
         Timestep_size = 0.01 / 365  ### In years !!
         ###load file corresponding to first simu as dataframe
@@ -352,8 +412,9 @@ if __name__ == "__main__":
         #################################################
         ###Fig 1: Mean ub ~~~~~~~~~~~~~~~
         if blue_col=='k':
-            ax.plot(mean_ub_by_time.index, mean_ub_by_time/365, label= 'C = {}'.format(Cvalue), color=blue_col,linestyle='-', linewidth=LineSize)
-            ax.plot(mean_ub_by_time_CTRL.index, mean_ub_by_time_CTRL/365, label= 'Full friction', color='r',linestyle='-', linewidth=LineSize)
+            ax.plot(mean_ub_by_time.index, mean_ub_by_time/365, label= leg, color=blue_col,linestyle='-', linewidth=LineSize)
+            ax.plot(mean_ub_by_time_CTRL.index, mean_ub_by_time_CTRL/365, label= leg_CTRl, color='r',linestyle='-', linewidth=LineSize)
+            ax.plot(mean_ub_by_time_CTRL1.index, mean_ub_by_time_CTRL1/365, label= leg_CTRl1, color='b',linestyle='-', linewidth=LineSize)
         else:
             ax.plot(mean_ub_by_time.index, mean_ub_by_time / 365, label='{} May'.format(EndDay), color=blue_col, linestyle='-', linewidth=LineSize)
         if i == 0:
@@ -388,6 +449,9 @@ if __name__ == "__main__":
                 subset_CTRL = Df_ModelInterpAtTimeLapsePoints_CTRL[Df_ModelInterpAtTimeLapsePoints_CTRL['Point_id'] == l + 1]
                 ax2.plot(subset_CTRL['Date'], subset_CTRL['u_interp_norm'] / 365, label=f'Point {l + 1} Full friction',
                          color=Colors_Points_Timelapse_FullSet[l], linestyle=':', linewidth=LineSize)
+                subset_CTRL1 = Df_ModelInterpAtTimeLapsePoints_CTRL1[Df_ModelInterpAtTimeLapsePoints_CTRL1['Point_id'] == l + 1]
+                ax2.plot(subset_CTRL1['Date'], subset_CTRL1['u_interp_norm'] / 365, label=f'Point {l + 1} Param. Full',
+                         color=Colors_Points_Timelapse_FullSet[l], linestyle='-.', linewidth=LineSize)
 
                 subset_Obs = Df_Timelapse[(Df_Timelapse['X0'] == Point[0]) & (Df_Timelapse['Y0'] == Point[1])]
                 ax2.scatter(subset_Obs['t_mid'], subset_Obs['horizontal_velo'], color=Colors_Points_Timelapse_FullSet[l], s=30)
@@ -410,8 +474,9 @@ if __name__ == "__main__":
         if blue_col=='k':
         # ax3.plot(mean_ub_by_time.index, mean_ub_by_time.abs()/365, label= r'$\langle u_\mathrm{b} \rangle$', color=blue_col,linestyle=':', linewidth=LineSize)
         # ax3.plot(mean_us_norm_by_time.index, mean_us_norm_by_time.abs() / 365, label=r'$\langle u_\mathrm{s} \rangle$', color=blue_col, linestyle='--', linewidth=LineSize)
-            ax3.plot(mean_uf_radarproj_by_time.index, mean_uf_radarproj_by_time.abs()/365, label= 'C = {}'.format(Cvalue), color=blue_col,linestyle='-', linewidth=LineSize)
-            ax3.plot(mean_uf_radarproj_by_time_CTRL.index, mean_uf_radarproj_by_time_CTRL.abs()/365, label= 'Full friction', color='r',linestyle='-', linewidth=LineSize)
+            ax3.plot(mean_uf_radarproj_by_time.index, mean_uf_radarproj_by_time.abs()/365, label= leg, color=blue_col,linestyle='-', linewidth=LineSize)
+            ax3.plot(mean_uf_radarproj_by_time_CTRL.index, mean_uf_radarproj_by_time_CTRL.abs()/365, label= leg_CTRl, color='r',linestyle='-', linewidth=LineSize)
+            ax3.plot(mean_uf_radarproj_by_time_CTRL1.index, mean_uf_radarproj_by_time_CTRL1.abs() / 365, label= leg_CTRl1, color='b', linestyle='-', linewidth=LineSize)
             ax3.plot(Df_Radar['Date'], Df_Radar['mean_Fullfront'].abs() / 1000, color='b', label='Radar', linestyle='--',linewidth=LineSize * 2)
         else:
             ax3.plot(mean_uf_radarproj_by_time.index, mean_uf_radarproj_by_time.abs() / 365, label='{} May'.format(EndDay), color=blue_col, linestyle='-', linewidth=LineSize)
@@ -434,8 +499,9 @@ if __name__ == "__main__":
         ###Fig 4: Grounded Area Fraction
         ### Plot ratio
         if blue_col=='k':
-            ax4.plot(Total_Area.index, Ratio, color=blue_col,linestyle='-', linewidth=LineSize)
-            ax4.plot(Total_Area_CTRL.index, Ratio_CTRL, color='r',linestyle='-', linewidth=LineSize)
+            ax4.plot(Total_Area.index, Ratio, label= leg, color=blue_col,linestyle='-', linewidth=LineSize)
+            ax4.plot(Total_Area_CTRL.index, Ratio_CTRL, label= leg_CTRl, color='r',linestyle='-', linewidth=LineSize)
+            ax4.plot(Total_Area_CTRL1.index, Ratio_CTRL1, label= leg_CTRl1,color='b',linestyle='-', linewidth=LineSize)
         else:
             ax4.plot(Total_Area.index, Ratio, label='{} May'.format(EndDay), color=blue_col, linestyle='-', linewidth=LineSize)
         if i==0:
@@ -467,9 +533,11 @@ if __name__ == "__main__":
             Point = Points_Timelapse[Points_Timelapse_Id - 1]
             subset2 = Df_ModelInterpAtTimeLapsePoints[Df_ModelInterpAtTimeLapsePoints['Point_id'] == Points_Timelapse_Id]
             subset2_CTRL = Df_ModelInterpAtTimeLapsePoints_CTRL[Df_ModelInterpAtTimeLapsePoints_CTRL['Point_id'] == Points_Timelapse_Id]
+            subset2_CTRL1 = Df_ModelInterpAtTimeLapsePoints_CTRL1[Df_ModelInterpAtTimeLapsePoints_CTRL1['Point_id'] == Points_Timelapse_Id]
             if blue_col == 'k':
                 ax5.plot(subset2['Date'], subset2['u_interp_norm'] / 365,label="Modelled velocity (surface point)", color=blue_col, linestyle='-',linewidth=LineSize)
                 ax5.plot(subset2_CTRL['Date'], subset2_CTRL['u_interp_norm'] / 365,label="Full Friction", color='r', linestyle='-',linewidth=LineSize)
+                ax5.plot(subset2_CTRL1['Date'], subset2_CTRL1['u_interp_norm'] / 365,label="Param. Full", color='b', linestyle='-',linewidth=LineSize)
                 subset_Obs = Df_Timelapse[(Df_Timelapse['X0'] == Point[0]) & (Df_Timelapse['Y0'] == Point[1])]
                 ax5.scatter(subset_Obs['t_mid'], subset_Obs['horizontal_velo'], label="Time-lapse observations (surface point)", color=colstar, s=20)
                 ax5.plot(subset2['Date'], subset2['u_interp_norm'] / 365,label='{} May'.format(EndDay), color=blue_col, linestyle='-',linewidth=LineSize)
@@ -479,6 +547,7 @@ if __name__ == "__main__":
             ax5.plot(Df_Radar['Date'], Df_Radar['mean_Fullfront'].abs() / 1000, color='b', label="Radar observations (front)", linestyle='--', linewidth=LineSize * 2)
             ax5.plot(mean_uf_radarproj_by_time.index, mean_uf_radarproj_by_time.abs() / 365, label="Modelled front velocity",color=blue_col, linestyle='--', linewidth=LineSize*0.8)
             ax5.plot(mean_uf_radarproj_by_time_CTRL.index, mean_uf_radarproj_by_time_CTRL.abs() / 365, label="Modelled front velocity",color='r', linestyle='--', linewidth=LineSize*0.8)
+            ax5.plot(mean_uf_radarproj_by_time_CTRL1.index, mean_uf_radarproj_by_time_CTRL1.abs() / 365, label="Modelled front velocity",color='b', linestyle='--', linewidth=LineSize*0.8)
         else:
             ax5.plot(mean_uf_radarproj_by_time.index, mean_uf_radarproj_by_time.abs() / 365, color=blue_col, linestyle='--', linewidth=LineSize*0.8)
 
