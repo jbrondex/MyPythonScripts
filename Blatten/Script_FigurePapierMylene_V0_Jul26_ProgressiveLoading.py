@@ -87,8 +87,10 @@ def Interpolate_field(df, field_name, x, y): ###Returned field interpolated from
 if __name__ == "__main__":
     #### SCRIPT PARAMETERS ###
     ### Parameter of Simulation of interest ###
-    Cvalue= 0.3
+    Cvalue= 0.28
     dcvalue = 5.0
+    h0value = 0.3 ##in m
+    Asvalue = 37000 ##in m a-1 MPa-n
     Year = '2025'
     StartSimuDay = 16 ####Day of May 2025 corresponding to simulation start
     SimuDuration = 15 ###Simu duration in days
@@ -248,12 +250,20 @@ if __name__ == "__main__":
         str_Cvalue = f"{int(Cvalue * 100):03d}"
 
     if dcvalue <1:
-        str_dcvalue = f"dc{int(dcvalue * 10):02d}m_"
+        str_dcvalue = f"dc{int(dcvalue * 10):02d}m"
     elif dcvalue.is_integer():
-        str_dcvalue = f"dc{int(dcvalue):01d}m_"
+        str_dcvalue = f"dc{int(dcvalue):01d}m"
     else:
         x, y =str(dcvalue).split(".")
-        str_dcvalue = f"dc{x}dot{y}m_"
+        str_dcvalue = f"dc{x}dot{y}m"
+
+    str_Asvalue = f"As{int(Asvalue):05d}"
+    
+    if h0value < 1:
+        str_h0value = f"h0{int(round(h0value * 10)):02d}m"
+    else:
+        x, y = str(float(h0value)).split(".")
+        str_h0value = f"h0{x}dot{y}m"
 
     ####definition of time limits from simu parameters
     t0 = pd.Timestamp("2025-05-{} 00:00".format(StartSimuDay))
@@ -261,8 +271,8 @@ if __name__ == "__main__":
     CollapseTime = pd.Timestamp("2025-05-28 15:30")
 
     ####NOW LOAD DATA CORRESPONDING TO PRONOSTIC RUNS WITH OVERLOAD
-    Pathroot = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_FINAL_Juin2026/4_PRONO_PROGRESSIVELOAD_FS_NoGMLat/GlacierOut/.')
-    Filename = 'MyBirch_RS_C{}_{}tsp001d_Start16May_StopLoad23May_Stop31May__bed.dat'.format(str_Cvalue,str_dcvalue)
+    Pathroot = Path('/home/brondexj/BETTIK/BlattenEventAdri/MyRateAndStateSetup_PROD_FINAL_Juin2026/6_PRONO_PROGRESSIVELOAD_FS_NoGMLat_PARAMETERIZEDFRICTION/GlacierOut/.')
+    Filename = 'MyBirch_C{}_{}_{}_{}_Start16May_StopLoad23May_Stop31May__bed.dat'.format(str_Cvalue,str_dcvalue,str_h0value,str_Asvalue)
     Col_Name = ['Timestep', 'Count', 'BC', 'NodeNumber', 'X', 'Y', 'Z', 'H', 'Normal Stress', 'theta_dagger', 'theta', 'taub','nodearea', 'fx', 'fy', 'fz', 'u', 'v', 'w', 'nx', 'ny', 'nz', 'Chi', 'GM']
     ###Time step size for prono simu with overload:
     Timestep_size = 0.01 / 365  ### In years !!
